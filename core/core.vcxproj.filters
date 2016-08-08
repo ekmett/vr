@@ -19,23 +19,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="GLEW.props">
-      <Filter>Properties</Filter>
-    </None>
-    <None Include="OpenVR.props">
-      <Filter>Properties</Filter>
-    </None>
-    <None Include="SDL2.props">
-      <Filter>Properties</Filter>
-    </None>
-    <None Include="Win32.props">
-      <Filter>Properties</Filter>
-    </None>
-    <None Include="Win64.props">
-      <Filter>Properties</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

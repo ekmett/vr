@@ -18,5 +18,6 @@ int main(int argc, char *argv[]) {
 		printf("%s - SDL could not initialize! SDL Error: %s\n", __FUNCTION__, SDL_GetError());
 		return false;
 	}
+	_sleep(1000);
 	return 0;
 }

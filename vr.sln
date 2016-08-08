@@ -3,6 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scene", "scene\scene.vcxproj", "{FF19F6AE-67E0-4585-9D4A-038CB6E8DD09}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{3E37E7E8-DF0F-4CD8-BA9C-141EB8102A94}"
+	ProjectSection(SolutionItems) = preProject
+		properties\GLEW.props = properties\GLEW.props
+		properties\OpenVR.props = properties\OpenVR.props
+		properties\SDL2.props = properties\SDL2.props
+		properties\Win32.props = properties\Win32.props
+		properties\Win64.props = properties\Win64.props
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "core\core.vcxproj", "{80D6964D-C863-428E-8902-A2C6ED39383A}"
 EndProject
 Global
@@ -13,6 +24,12 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FF19F6AE-67E0-4585-9D4A-038CB6E8DD09}.Debug|x64.ActiveCfg = Debug|Win32
+		{FF19F6AE-67E0-4585-9D4A-038CB6E8DD09}.Debug|x86.ActiveCfg = Debug|Win32
+		{FF19F6AE-67E0-4585-9D4A-038CB6E8DD09}.Debug|x86.Build.0 = Debug|Win32
+		{FF19F6AE-67E0-4585-9D4A-038CB6E8DD09}.Release|x64.ActiveCfg = Release|Win32
+		{FF19F6AE-67E0-4585-9D4A-038CB6E8DD09}.Release|x86.ActiveCfg = Release|Win32
+		{FF19F6AE-67E0-4585-9D4A-038CB6E8DD09}.Release|x86.Build.0 = Release|Win32
 		{80D6964D-C863-428E-8902-A2C6ED39383A}.Debug|x64.ActiveCfg = Debug|x64
 		{80D6964D-C863-428E-8902-A2C6ED39383A}.Debug|x64.Build.0 = Debug|x64
 		{80D6964D-C863-428E-8902-A2C6ED39383A}.Debug|x86.ActiveCfg = Debug|Win32
