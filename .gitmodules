@@ -1,3 +1,9 @@
 [submodule "third-party/openvr"]
 	path = third-party/openvr-1.0.2
 	url = https://github.com/ValveSoftware/openvr.git
+[submodule "third-party/spdlog"]
+	path = third-party/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "third-party/glm"]
+	path = third-party/glm-0.9.8.0
+	url = https://github.com/g-truc/glm.git

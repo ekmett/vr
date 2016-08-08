@@ -7,9 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scene", "scene\scene.vcxpro
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{3E37E7E8-DF0F-4CD8-BA9C-141EB8102A94}"
 	ProjectSection(SolutionItems) = preProject
-		properties\GLEW.props = properties\GLEW.props
-		properties\OpenVR.props = properties\OpenVR.props
-		properties\SDL2.props = properties\SDL2.props
+		properties\ThirdParty.props = properties\ThirdParty.props
 		properties\Win32.props = properties\Win32.props
 		properties\Win64.props = properties\Win64.props
 	EndProjectSection
