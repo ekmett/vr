@@ -8,10 +8,13 @@
 #include <string>
 #include <Windows.h>
 #include <ShlObj.h>
-#include "app.h"
+#include <glm/gtc/type_ptr.hpp>
 
 #define SPDLOG_WCHAR_FILENAMES
 #include <spdlog/spdlog.h>
+
+#include "app.h"
+#include "gl_util.h"
 
 using namespace vr;
 using namespace std;
@@ -20,33 +23,8 @@ using namespace spdlog;
 static const bool debugOpenGL = true;
 static const bool vblank = false;
 static const string windowTitle = "core";
-
-inline const char * gl_source(GLenum source) {
-  switch (source) {
-  case GL_DEBUG_SOURCE_API: return "API";
-  case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "window system";
-  case GL_DEBUG_SOURCE_SHADER_COMPILER: return "shader compiler";
-  case GL_DEBUG_SOURCE_THIRD_PARTY: return "third party";
-  case GL_DEBUG_SOURCE_APPLICATION: return "application";
-  case GL_DEBUG_SOURCE_OTHER: return "other";
-  default: return "unknown";
-  }
-}
-
-inline const char * gl_message_type(GLenum type) {
-  switch (type) {
-  case GL_DEBUG_TYPE_ERROR: return "error";
-  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "deprecated behavior";
-  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "undefined behavior";
-  case GL_DEBUG_TYPE_PORTABILITY: return "portability";
-  case GL_DEBUG_TYPE_PERFORMANCE: return "performance";
-  case GL_DEBUG_TYPE_MARKER: return "marker";
-  case GL_DEBUG_TYPE_PUSH_GROUP: return "push group";
-  case GL_DEBUG_TYPE_POP_GROUP: return "pop group";
-  case GL_DEBUG_TYPE_OTHER: return "other";
-  default: return "unknown";
-  }
-}
+static const float nearZ = 0.1f;
+static const float farZ = 30.0f;
 
 inline spdlog::level::level_enum gl_log_severity(GLenum severity) {
   using namespace spdlog::level;
@@ -73,15 +51,16 @@ void die(const char * title, const char *fmt, ...) {
   exit(1);
 }
 
-void objectLabelf(GLenum id, GLuint name, const char *fmt, ...) {
-  va_list args;
-  char buffer[2048];
+static inline glm::mat4 hmd_mat4(const vr::HmdMatrix44_t & m) {
+  return glm::make_mat4((float*)&m.m);
+}
 
-  va_start(args, fmt);
-  vsprintf_s(buffer, fmt, args);
-  va_end(args);
+static inline glm::mat3x4 hmd_mat3x4(const vr::HmdMatrix34_t & m) {
+  return glm::make_mat3x4((float*)&m.m);
+}
 
-  glObjectLabel(id, name, strnlen_s(buffer, 2048), buffer);
+static inline vr::EVREye vr_eye(int i) {
+  return (i == 0) ? vr::Eye_Left : vr::Eye_Right;
 }
 
 std::string GetTrackedDeviceString(vr::IVRSystem *hmd, vr::TrackedDeviceIndex_t device, vr::TrackedDeviceProperty prop, vr::TrackedPropertyError *error = NULL) {
@@ -188,12 +167,18 @@ int app::run(int argc, char ** argv) {
     glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_MARKER, 0, GL_DEBUG_SEVERITY_LOW, 5, "start");
   }
 
-  // start interactivity
+  // how big does the hmd want the render target to be, anyways?
   uint32_t renderWidth, renderHeight;
   hmd->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
 
   // allocate eyes
   struct eyes eyes;
+
+  for (int i=0;i<2;++i) {
+    auto e = vr_eye(i);
+    eyes.projection[i] = hmd_mat4(hmd->GetProjectionMatrix(e, nearZ, farZ, API_OpenGL));
+    eyes.pose[i] = hmd_mat3x4(hmd->GetEyeToHeadTransform(e));
+  }
 
   glGenFramebuffers(2, eyes.renderFramebufferId);
   glGenRenderbuffers(2, eyes.depthBufferId);
@@ -201,10 +186,9 @@ int app::run(int argc, char ** argv) {
   glGenFramebuffers(2, eyes.resolveFramebufferId);
   glGenTextures(2, eyes.resolveTextureId);
 
-  
+  // build eyes so we can see
   for (int i = 0;i < 2;++i) {
     const char * l = label_eye(i);
-
     glBindFramebuffer(GL_FRAMEBUFFER, eyes.renderFramebufferId[i]);
     objectLabelf(GL_FRAMEBUFFER, eyes.renderFramebufferId[i], "%s eye render frame buffer", l);
     glBindRenderbuffer(GL_RENDERBUFFER, eyes.depthBufferId[i]);
@@ -230,10 +214,13 @@ int app::run(int argc, char ** argv) {
   if (status != GL_FRAMEBUFFER_COMPLETE)
     die(__FUNCTION__, "Unable to construct your eyes");
 
+  // let it go
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   // run the application
   app game(*hmd, *renderModels, windowWidth, windowHeight, window, eyes);
+
+  return 0; // game.play();
 }
 
 app::~app() {

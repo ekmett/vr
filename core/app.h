@@ -6,6 +6,7 @@
 #include <SDL_opengl.h>
 #include <GL/glu.h>
 #include "noncopyable.h"
+#include <glm/glm.hpp>
 
 struct eyes {
   GLuint depthBufferId[2];
@@ -13,11 +14,15 @@ struct eyes {
   GLuint renderFramebufferId[2];
   GLuint resolveTextureId[2];
   GLuint resolveFramebufferId[2];
+  glm::mat4 projection[2];
+  glm::mat3x4 pose[2];
+  float nearZ, farZ;
 };
 
-class app : noncopyable {
-public:
+struct app : noncopyable {
+  
   static int run(int argc, char ** argv);
+
 private:
   app(
     vr::IVRSystem & hmd,
@@ -31,13 +36,12 @@ private:
       windowWidth(windowWidth),
       windowHeight(windowHeight),
       window(window),
-      eyes(eyes) {
-  }
+      eyes(eyes) {}
   virtual ~app();
-  private:
-    int windowWidth, windowHeight;
-    vr::IVRSystem & hmd;
-    vr::IVRRenderModels & renderModels;
-    SDL_Window * window;
-    eyes eyes; // left and right
+
+  int windowWidth, windowHeight;
+  vr::IVRSystem & hmd;
+  vr::IVRRenderModels & renderModels;
+  SDL_Window * window;
+  eyes eyes; // left and right
 };

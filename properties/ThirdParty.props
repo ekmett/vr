@@ -7,6 +7,7 @@
     <OpenVRDir>$(SolutionDir)third-party\openvr-1.0.2\</OpenVRDir>
     <SDL2Dir>$(SolutionDir)third-party\SDL2-2.0.4\</SDL2Dir>
     <SPDLogDir>$(SolutionDir)third-party\spdlog\</SPDLogDir>
+    <GLMDir>$(SolutionDir)third-party\glm-0.9.8.0\</GLMDir>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup>
@@ -28,6 +29,10 @@
     </BuildMacro>
     <BuildMacro Include="SPDLogDir">
       <Value>$(SPDLogDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="GLMDir">
+      <Value>$(GLMDir)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>
