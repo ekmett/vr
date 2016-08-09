@@ -28,7 +28,10 @@
     <ClCompile Include="model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gl_util.cpp">
+    <ClCompile Include="shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,7 +48,10 @@
     <ClInclude Include="model.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="gl_util.h">
+    <ClInclude Include="shader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

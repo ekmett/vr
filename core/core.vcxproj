@@ -222,16 +222,18 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="app.cpp" />
-    <ClCompile Include="gl_util.cpp" />
+    <ClCompile Include="util.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model.cpp" />
+    <ClCompile Include="shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app.h" />
-    <ClInclude Include="gl_util.h" />
+    <ClInclude Include="util.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="noncopyable.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="shader.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="core.rc" />

@@ -1,10 +1,13 @@
 #include "model.h"
-#include "gl_util.h"
+#include "util.h"
 
 using namespace vr;
 using namespace std;
+using namespace util;
 
-model::model(string & name, RenderModel_t & vrModel, RenderModel_TextureMap_t & diffuse) {  
+model::model(string & name, RenderModel_t & vrModel, RenderModel_TextureMap_t & diffuse)
+: vertexCount(vrModel.unTriangleCount * 3) {
+
   // create and bind a VAO to hold state for this model
   glGenVertexArrays(1, &vertArray);
   glBindVertexArray(vertArray);
@@ -50,11 +53,9 @@ model::model(string & name, RenderModel_t & vrModel, RenderModel_TextureMap_t & 
 
   // let it go..
   glBindTexture(GL_TEXTURE_2D, 0);
-
-  vertexCount = vrModel.unTriangleCount * 3;
 }
 
-model::~model() {
+model::~model() {  
   glDeleteBuffers(1, &indexBuffer);
   glDeleteVertexArrays(1, &vertArray);
   glDeleteBuffers(1, &vertBuffer);

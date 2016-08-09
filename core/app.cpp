@@ -14,10 +14,12 @@
 #include <spdlog/spdlog.h>
 
 #include "app.h"
-#include "gl_util.h"
+#include "util.h"
+#include "shader.h"
 
 using namespace vr;
 using namespace std;
+using namespace util;
 using namespace spdlog;
 
 static const bool debugOpenGL = true;
@@ -36,27 +38,21 @@ inline spdlog::level::level_enum gl_log_severity(GLenum severity) {
 }
 
 void APIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, const void* userParam) {  
-  ((logger*)userParam)->log(gl_log_severity(severity), "{}: {}: {}: {}", gl_source(source), gl_message_type(type), id, message);
+  ((logger*)userParam)->log(gl_log_severity(severity), "{}: {}: {}: {}", util::source(source), util::message_type(type), id, message);
 }
 
-void die(const char * title, const char *fmt, ...) {
-	va_list args;
-	char buffer[2048];
-
-	va_start(args, fmt);
-	vsprintf_s(buffer, fmt, args);
-	va_end(args);
-
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, buffer, NULL);
-  exit(1);
-}
 
 static inline glm::mat4 hmd_mat4(const vr::HmdMatrix44_t & m) {
   return glm::make_mat4((float*)&m.m);
 }
 
-static inline glm::mat3x4 hmd_mat3x4(const vr::HmdMatrix34_t & m) {
-  return glm::make_mat3x4((float*)&m.m);
+static inline glm::mat4 hmd_mat3x4(const vr::HmdMatrix34_t & m) {
+  return glm::mat4(
+    m.m[0][0], m.m[1][0], m.m[2][0], 0.0,
+    m.m[0][1], m.m[1][1], m.m[2][1], 0.0,
+    m.m[0][2], m.m[1][2], m.m[2][2], 0.0,
+    m.m[0][3], m.m[1][3], m.m[2][3], 1.0f
+  );
 }
 
 static inline vr::EVREye vr_eye(int i) {
@@ -83,7 +79,10 @@ const char * label_eye(int i) {
   }
 }
 
-int app::run(int argc, char ** argv) {
+app::app(int argc, char ** argv) 
+  : windowWidth(1280)
+  , windowHeight(720)
+{
   if (!VR_IsHmdPresent()) {
     printf("No head mounted device detected.\n");
     exit(1);
@@ -97,21 +96,18 @@ int app::run(int argc, char ** argv) {
 
   // Initialize OpenVR
   auto eError = VRInitError_None;
-  auto hmd = VR_Init(&eError, VRApplication_Scene);
+  hmd = VR_Init(&eError, VRApplication_Scene);
 
-  if (eError != VRInitError_None) {
-    hmd = nullptr;
+  if (eError != VRInitError_None)
     die(__FUNCTION__, "Unable to initialize OpenVR.\n%s", VR_GetVRInitErrorAsEnglishDescription(eError));
-  }
-
+  
   auto renderModels = (IVRRenderModels *)VR_GetGenericInterface(IVRRenderModels_Version, &eError);
   if (!renderModels) {
-    hmd = nullptr;
     VR_Shutdown();
     die(__FUNCTION__, "Unable to get render model interface.\n%s", VR_GetVRInitErrorAsEnglishDescription(eError));
   }
 
-  int windowX = 700, windowY = 100, windowWidth = 1280, windowHeight = 720;
+  int windowX = 700, windowY = 100;
 
   Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 
@@ -126,7 +122,7 @@ int app::run(int argc, char ** argv) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
   // create the sdl window
-  auto window = SDL_CreateWindow(windowTitle.c_str(), windowX, windowY, windowWidth, windowHeight, windowFlags);
+  window = SDL_CreateWindow(windowTitle.c_str(), windowX, windowY, windowWidth, windowHeight, windowFlags);
   if (window == nullptr)
     die(__FUNCTION__, "Window could not be created.\n%s\n", SDL_GetError());
 
@@ -217,10 +213,48 @@ int app::run(int argc, char ** argv) {
   // let it go
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  // run the application
-  app game(*hmd, *renderModels, windowWidth, windowHeight, window, eyes);
+  shared_ptr<shader> controllerProgram(new shader(
+    "controller",
+    R"(#version 410    
+       uniform mat4 matrix;
+       layout(location = 0) in vec4 position;
+       layout(location = 1) in vec3 v3ColorIn;
+       out vec4 v4Color;
+       void main() {
+         v4Color.xyz = v3ColorIn; v4Color.a = 1.0;
+         gl_Position = matrix * position;
+       })",
+    R"(#version 410
+       in vec4 v4Color;
+       out vec4 outputColor;
+       void main() {
+         outputColor = v4Color;
+       })"
+  ));
+  shared_ptr<shader> modelProgram(new shader(
+    "model",
+    R"(#version 410
+		   uniform mat4 matrix;
+		   layout(location = 0) in vec4 position;
+		   layout(location = 1) in vec3 v3NormalIn;
+		   layout(location = 2) in vec2 v2TexCoordsIn;
+		   out vec2 v2TexCoord;
+		   void main() {
+		     v2TexCoord = v2TexCoordsIn;
+		     gl_Position = matrix * vec4(position.xyz, 1);
+		   })",
+    R"(#version 410 core
+		   uniform sampler2D diffuse;
+		   in vec2 v2TexCoord;
+		   out vec4 outputColor;
+		   void main() {
+		     outputColor = texture( diffuse, v2TexCoord);
+		   })"
+  ));
+}
 
-  return 0; // game.play();
+void app::run() {
+  
 }
 
 app::~app() {

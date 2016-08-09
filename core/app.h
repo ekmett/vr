@@ -15,33 +15,19 @@ struct eyes {
   GLuint resolveTextureId[2];
   GLuint resolveFramebufferId[2];
   glm::mat4 projection[2];
-  glm::mat3x4 pose[2];
+  glm::mat4 pose[2];
   float nearZ, farZ;
 };
 
 struct app : noncopyable {
-  
-  static int run(int argc, char ** argv);
-
-private:
-  app(
-    vr::IVRSystem & hmd,
-    vr::IVRRenderModels & renderModels,
-    int windowWidth,
-    int windowHeight,
-    SDL_Window * window,
-    eyes eyes
-  ) : hmd(hmd),
-      renderModels(renderModels),
-      windowWidth(windowWidth),
-      windowHeight(windowHeight),
-      window(window),
-      eyes(eyes) {}
+  app(int argc, char ** argv);
+  void run();
   virtual ~app();
 
+private:
   int windowWidth, windowHeight;
-  vr::IVRSystem & hmd;
-  vr::IVRRenderModels & renderModels;
+  vr::IVRSystem * hmd;
+  vr::IVRRenderModels * renderModels;
   SDL_Window * window;
   eyes eyes; // left and right
 };
