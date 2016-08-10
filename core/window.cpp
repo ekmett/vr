@@ -106,26 +106,50 @@ bool sdl_window::poll() {
   SDL_Event sdlEvent;
   while (SDL_PollEvent(&sdlEvent) != 0) {
     switch (sdlEvent.type) {
+    case SDL_APP_TERMINATING: 
     case SDL_QUIT: 
-    case SDL_APP_TERMINATING: return true;
+      on_quit();
+      return true;
 
-    case SDL_WINDOWEVENT:
+    case SDL_WINDOWEVENT: {
+      uint32_t id = sdlEvent.window.windowID;
       switch (sdlEvent.window.event) {
-      case SDL_WINDOWEVENT_SIZE_CHANGED:
-      case SDL_WINDOWEVENT_RESIZED:
-        width = sdlEvent.window.data1;
-        height = sdlEvent.window.data2;
-        break;      
+      case SDL_WINDOWEVENT_SHOWN: on_window_shown(id); break;
+      case SDL_WINDOWEVENT_HIDDEN: on_window_hidden(id); break;
+      case SDL_WINDOWEVENT_CLOSE: on_window_close(id); break;
+      case SDL_WINDOWEVENT_EXPOSED: on_window_exposed(id); break;
+      case SDL_WINDOWEVENT_MINIMIZED: on_window_minimized(id); break;
+      case SDL_WINDOWEVENT_MAXIMIZED: on_window_maximized(id); break;
+      case SDL_WINDOWEVENT_RESTORED: on_window_restored(id); break;
+      case SDL_WINDOWEVENT_LEAVE: on_window_leave(id); break;
+      case SDL_WINDOWEVENT_FOCUS_GAINED: on_window_focus_gained(id); break;
+      case SDL_WINDOWEVENT_FOCUS_LOST: on_window_focus_lost(id); break;
+      case SDL_WINDOWEVENT_SIZE_CHANGED: on_window_size_changed(id, sdlEvent.window.data1, sdlEvent.window.data2); break;
+      case SDL_WINDOWEVENT_RESIZED: on_window_resize(id, sdlEvent.window.data1, sdlEvent.window.data2); break;
       default:
-        log->info("unhandled SDL window event: {}", sdlEvent.window.event);
+        log->info("unhandled SDL window event ({}) on window {}", sdlEvent.window.event, id);
         break;
       }
+    }
 
-    case SDL_KEYDOWN: 
+    case SDL_KEYUP: on_key_up(sdlEvent.key); break;
+    case SDL_KEYDOWN:
+      on_key_down(sdlEvent.key);
       if (sdlEvent.key.keysym.sym == SDLK_ESCAPE || sdlEvent.key.keysym.sym == SDLK_q)
         return true;
-      log->info("unhandled keydown");
-    
+      break;
+
+    case SDL_MOUSEBUTTONDOWN: on_mouse_button_down(sdlEvent.button); break;
+    case SDL_MOUSEBUTTONUP: on_mouse_button_up(sdlEvent.button); break;
+    case SDL_MOUSEMOTION: on_mouse_motion(sdlEvent.motion); break;
+
+    case SDL_DROPFILE: {
+      wstring filename = from_utf8(sdlEvent.drop.file);
+      on_drop_file(filename);
+      SDL_free(sdlEvent.drop.file);
+      break;
+    }
+
     default:
       log->info("unhandled SDL event: {}", show_sdl_event(sdlEvent.type));
       break;

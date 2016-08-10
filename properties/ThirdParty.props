@@ -8,6 +8,7 @@
     <SDL2Dir>$(SolutionDir)third-party\SDL2-2.0.4\</SDL2Dir>
     <SPDLogDir>$(SolutionDir)third-party\spdlog\</SPDLogDir>
     <GLMDir>$(SolutionDir)third-party\glm-0.9.8.0\</GLMDir>
+    <BoostDir>$(SolutionDir)third-party\boost_1_61_0\</BoostDir>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup>
@@ -33,6 +34,10 @@
     </BuildMacro>
     <BuildMacro Include="GLMDir">
       <Value>$(GLMDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BoostDir">
+      <Value>$(BoostDir)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

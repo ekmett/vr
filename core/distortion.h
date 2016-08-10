@@ -13,15 +13,14 @@ struct openvr_distortion : shader {
 
   void render();
   void recalculate_ipd();
-  float ipd(); // inter-pupilary distance in meters
+  float ipd(); // current inter-pupilary distance in meters
   
   template <typename f, typename ... T> void stereo(f fun, T ... args) {
+    glClearColor(1.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-
-
-    glClearColor(0.15f, 0.15f, 0.18f, 1.0f); // nice background color, but not black
+    //glClearColor(0.15f, 0.15f, 0.18f, 1.0f); // nice background color, but not black
 
     for (int i=0;i<2;++i) {
       glEnable(GL_MULTISAMPLE);

@@ -19,6 +19,70 @@ typedef spdlog::sinks::null_sink_mt default_sink;
 
 using spdlog::filename_t;
 
+
+template <typename mutex, typename base, typename ... T> struct squelched_sink : public spdlog::sinks::base_sink<mutex> {
+
+public:
+  squelched_sink(uint64_t limit, T... args) 
+  : spdlog::sinks::base_sink<mutex>, impl(args...), limit(n), last_exists(false), repetitions(0) {
+    
+  }
+  ~squelched_sink() {}
+  void log(const spdlog::details::log_msg & msg) {
+    if (last_exists &&
+        last_logger_name == msg.logger_name &&
+        last_level == msg.level &&
+        last_thread_id == msg.thread_id &&
+        !strncmp(last_msg_buffer,msg.raw.c_str(),sizeof(last_msg_buffer))      
+    ) {
+      uint64_t n = ++repetitions;
+      if (n < limit) {
+        impl->log(msg);
+      } else if (n == limit) {
+        spdlog::details::log_msg ellipsis(msg.logger_name, msg.level);
+        ellipsis.thread_id = msg.thread_id;
+        ellipsis.raw << "...";
+        ellipsis.formatted << "...";
+        ellipsis.time = msg.time;
+        impl->log(ellipsis);
+      } 
+    } else {
+      repetitions = 0;
+    }
+
+    last_exists = true;
+    last_level = msg.level;
+    last_logger_name = msg.logger_name;
+    last_thread_id = msg.thread_id;
+    strcpy(last_msg_buffer,msg.raw.c_str())
+  }
+
+  // template <typename T...> typedef squelched_sink<std::mutex, T...> squelched_sink_mt;
+  // template <typename T...> typedef squelched_sink<spdlog::details::null_mutex, T...> squelched_sink_st;
+
+  /*
+  const std::string *logger_name;
+  level::level_enum level;
+  log_clock::time_point time;
+  size_t thread_id;
+  fmt::MemoryWriter raw;
+  fmt::MemoryWriter formatted;
+  */
+
+  virtual void flush() {
+    impl->flush();
+  }
+
+  bool last_exists;
+  spdlog::level::level_enum last_level;
+  std::string * last_logger_name;
+  spdlog::log_clock::time_point last_time;
+  size_t last_thread_id;
+  char last_msg_buffer[2048];
+  uint64_t repetitions, limit;
+  std::shared_ptr<base> impl;
+};
+
 struct shell : noncopyable {
   shell() {}
   virtual ~shell() {}

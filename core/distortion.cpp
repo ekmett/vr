@@ -153,7 +153,7 @@ openvr_distortion::openvr_distortion(const ::window & window, openvr_tracker & t
     }
   }
 
-  indexSize = indices.size();
+  indexSize = int(indices.size());
 
   glGenVertexArrays(1, &vertexArray);
   glBindVertexArray(vertexArray);
@@ -217,13 +217,15 @@ void openvr_distortion::render() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    //tracker.log->info("distortion: drawing {} triangles, offset {}", indexSize / 2, i*indexSize);
-    glDrawElements(GL_TRIANGLES, indexSize / 2, GL_UNSIGNED_SHORT, (const void *)(i*indexSize));
+#pragma warning (push)
+#pragma warning (disable : 4312)
+    glDrawElements(GL_TRIANGLES, indexSize / 2, GL_UNSIGNED_SHORT, reinterpret_cast<const void *>(i*indexSize));
+#pragma warning (pop)
   }
 
   glBindVertexArray(0);
   glUseProgram(0);
-  /*
+  
   for (int i = 0; i < 2; ++i) {
     Texture_t t { reinterpret_cast<void*>(resolutionTextureId[i]), API_OpenGL, ColorSpace_Gamma };    
     auto err = VRCompositor()->Submit(eye(i), &t);
@@ -231,8 +233,7 @@ void openvr_distortion::render() {
       tracker.log->warn("compositor error: {}", err);      
     }
   }
-  */
-
+  
   // send one at a time as we finish above?  
 }
 

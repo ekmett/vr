@@ -21,6 +21,8 @@ struct app : noncopyable {
   void render(); // render a frame
   virtual ~app() {}
 
+  signal<void()> on_quit;
+
 private:
   sdl_window & window;
   openvr_tracker & tracker;

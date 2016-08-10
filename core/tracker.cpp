@@ -192,22 +192,25 @@ bool openvr_tracker::poll() {
     bool handling = true;
     switch (event.eventType) {
     case EVREventType::VREvent_ProcessQuit:
-    case EVREventType::VREvent_Quit: 
+    case EVREventType::VREvent_Quit:
+      on_quit();
       return true;
 
+    case EVREventType::VREvent_IpdChanged: on_ipd_changed(); break;
     case EVREventType::VREvent_InputFocusChanged: break;
-    case EVREventType::VREvent_InputFocusCaptured: focus_lost = true; break;
-    case EVREventType::VREvent_InputFocusReleased: focus_lost = false; break;
+    case EVREventType::VREvent_InputFocusCaptured: focus_lost = true; on_focus_captured(); break;
+    case EVREventType::VREvent_InputFocusReleased: focus_lost = false; on_focus_released(); break;
 
-    case EVREventType::VREvent_DashboardActivated: dashboard_active = true; break;
-    case EVREventType::VREvent_DashboardDeactivated: dashboard_active = true; break;
-    case EVREventType::VREvent_Compositor_ChaperoneBoundsHidden: chaperone_bounds_visible = false; break;
-    case EVREventType::VREvent_Compositor_ChaperoneBoundsShown: chaperone_bounds_visible = true; break;
+    case EVREventType::VREvent_DashboardActivated: dashboard_active = true; on_dashboard_activated(); break;
+    case EVREventType::VREvent_DashboardDeactivated: dashboard_active = false; on_dashboard_deactivated(); break;
+    case EVREventType::VREvent_Compositor_ChaperoneBoundsHidden: chaperone_bounds_visible = false; on_chaperone_bounds_hidden(); break;
+    case EVREventType::VREvent_Compositor_ChaperoneBoundsShown: chaperone_bounds_visible = true; on_chaperone_bounds_shown(); break;
 
     case EVREventType::VREvent_ChaperoneUniverseHasChanged:
       // we receive one of these on app start
       log->info("changed chaperone universe from {} to {}", event.data.chaperone.m_nPreviousUniverse, event.data.chaperone.m_nCurrentUniverse);
       recalculate_chaperone_data();
+      on_chaperone_universe_changed(event.data.chaperone.m_nPreviousUniverse, event.data.chaperone.m_nCurrentUniverse);
       break;
 
     default:

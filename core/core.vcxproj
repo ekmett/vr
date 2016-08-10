@@ -77,20 +77,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(WinXX)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(WinXX)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);$(IncludePath)</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(WinXX)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);$(IncludePath)</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(WinXX)\</OutDir>
   </PropertyGroup>
@@ -98,9 +98,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_DEPRECATE;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DisableSpecificWarnings>4503;4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX)</AdditionalLibraryDirectories>
@@ -128,9 +129,10 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_DEPRECATE;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DisableSpecificWarnings>4503;4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX)</AdditionalLibraryDirectories>
@@ -160,9 +162,10 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_DEPRECATE;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>4503;4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -193,9 +196,10 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_DEPRECATE;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>4503;4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -236,6 +240,7 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
     <ClInclude Include="distortion.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="proxy.h" />
+    <ClInclude Include="signal.h" />
     <ClInclude Include="tracker.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="model.h" />

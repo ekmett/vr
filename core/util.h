@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <openvr.h>
+#include <Windows.h>
 
 const char * show_debug_source(GLenum source);
 const char * show_debug_message_type(GLenum type);
@@ -39,6 +40,17 @@ static inline const char * label_eye(int i) {
   case 1: return "right";
   default: return "unknown";
   }
+}
+
+static inline std::wstring from_utf8(const char * s) {
+  std::wstring ret;
+  int slen = (int)strlen(s);
+  int dlen = MultiByteToWideChar(CP_UTF8, 0, s, slen, NULL, 0);
+  if (dlen > 0) {
+    ret.resize(dlen);
+    MultiByteToWideChar(CP_UTF8, 0, s, slen, const_cast<wchar_t*>(ret.c_str()), dlen);
+  }
+  return ret;
 }
 
 #define die(...) die_helper(__FUNCTION__, __VA_ARGS__)
