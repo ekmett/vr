@@ -3,6 +3,7 @@
 #include <string>
 #include <openvr.h>
 
+#include "log.h"
 #include "noncopyable.h"
 
 struct tracker : noncopyable {
@@ -10,12 +11,26 @@ struct tracker : noncopyable {
 };
 
 struct openvr_tracker : tracker {
-  openvr_tracker();
+  openvr_tracker(std::shared_ptr<spdlog::logger> & vr_log);
   virtual ~openvr_tracker();
+  
+  bool poll();
 
+  bool focus_lost;
+  bool dashboard_active;
+  bool chaperone_bounds_visible;
+
+  std::string device_string(vr::TrackedDeviceIndex_t device, vr::TrackedDeviceProperty prop, vr::TrackedPropertyError *error = nullptr);
+  std::string model_name(int i);
+  std::string component_name(std::string model, int i);
   std::string driver();
   std::string serial_number();
-
+  vr::IVRSystem * operator -> () { return hmd; }
+//private:
+  void recalculate_chaperone_data();
   vr::IVRSystem * hmd;
   vr::IVRRenderModels * renderModels;
+  vr::IVRCompositor * compositor;
+  vr::IVRChaperone * chaperone;
+  std::shared_ptr<spdlog::logger> log;
 };

@@ -12,10 +12,10 @@ static inline level::level_enum gl_log_severity(GLenum severity) {
 }
 
 static void APIENTRY callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, const void* userParam) {
-  ((logger*)userParam)->log(gl_log_severity(severity), "{} {}: {} ({})", util::source(source), util::message_type(type), message, id);
+  ((logger*)userParam)->log(gl_log_severity(severity), "{} {}: {} ({})", show_debug_source(source), show_debug_message_type(type), message, id);
 }
 
-gl_logger::gl_logger(std::shared_ptr<spdlog::logger> logger) {
+gl_logger::gl_logger(std::shared_ptr<spdlog::logger> & logger): logger(logger) {
   // initialize callback 
   glDebugMessageCallback((GLDEBUGPROC)callback, (void*)logger._Get());
   glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);

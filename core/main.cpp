@@ -1,26 +1,43 @@
 #include <string>
+#include <stdexcept>
 #include "window.h"
 #include "tracker.h"
 #include "app.h"
-#include "filename.h"
 #include "log.h"
-
-#define SPDLOG_WCHAR_FILENAMES
-#include <spdlog/spdlog.h>
 
 using namespace std;
 using namespace spdlog;
 
+
+
 int main(int argc, char *argv[]) {
-  openvr_tracker tracker;
-  sdl_window window(string("core - ") + tracker.driver() + " - " + tracker.serial_number(), true);
-  
-  // ensure our app_data directory exists.
-  windows_shell shell;
-  filename_t home = shell.app_data() + L"\\digitigrade";
-  _wmkdir(home.c_str());
-  gl_logger logger(home + L"\\gl.log");
- 
-  app world(window, tracker);
-  return 0;
+  spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v [thread %t]");
+  auto vr_log = spdlog::create<default_sink>("vr");
+  auto gl_log = spdlog::create<default_sink>("gl");
+  auto sdl_log = spdlog::create<default_sink>("sdl");
+
+#ifndef _DEBUG
+  try {
+#endif
+
+    openvr_tracker tracker(vr_log);
+
+#ifdef _DEBUG
+    sdl_window window(sdl_log, string("core - ") + tracker.driver() + " - " + tracker.serial_number(), true);
+
+    gl_logger logger(gl_log); // start logging to the msvc console.
+#else
+    sdl_window window(sdl_log, "core");
+#endif
+
+    app world(window, tracker);
+    world.run();
+
+    return 0;
+#ifndef _DEBUG
+  } catch (std::runtime_error & e) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "fatal error", e.what(), NULL);
+    return 1;
+  }
+#endif
 }

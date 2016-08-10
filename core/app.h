@@ -18,13 +18,14 @@ struct app : noncopyable {
     , distortion(window, tracker) {}
 
   void run();
+  void render(); // render a frame
   virtual ~app() {}
 
 private:
   sdl_window & window;
   openvr_tracker & tracker;
   openvr_distortion distortion;
-  renderer renderer;
-  controller controller;
+  rendermodel_shader rendermodel_shader;
+  controller_shader controller_shader;
 };
 

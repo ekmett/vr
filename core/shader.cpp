@@ -9,16 +9,16 @@
 
 using namespace glm;
 using namespace vr;
-using namespace util;
+
 
 shader::shader(const char * name, const char * vertexShader, const char * fragmentShader) 
 : programId(glCreateProgram()) {
-  util::objectLabelf(GL_PROGRAM, programId, "%s program", name);
+  objectLabelf(GL_PROGRAM, programId, "%s program", name);
   GLuint v = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(v, 1, &vertexShader, NULL);
   glCompileShader(v);
 
-  util::objectLabelf(GL_SHADER, v, "%s vertex shader", name);
+  objectLabelf(GL_SHADER, v, "%s vertex shader", name);
 
   GLint vShaderCompiled = GL_FALSE;
   glGetShaderiv(v, GL_COMPILE_STATUS, &vShaderCompiled);
@@ -26,7 +26,7 @@ shader::shader(const char * name, const char * vertexShader, const char * fragme
   if (vShaderCompiled != GL_TRUE) {
     glDeleteProgram(programId);
     glDeleteShader(v);
-    die(__FUNCTION__, "%s - Unable to compile vertex shader %d!\n", name, v);
+    die("%s - Unable to compile vertex shader %d!\n", name, v);
   }
   glAttachShader(programId, v);
   glDeleteShader(v); // the program hangs onto this once it's attached
@@ -52,7 +52,7 @@ shader::shader(const char * name, const char * vertexShader, const char * fragme
   glGetProgramiv(programId, GL_LINK_STATUS, &programSuccess);
   if (programSuccess != GL_TRUE) {
     glDeleteProgram(programId);
-    die(__FUNCTION__,"%s - Error linking program %d!\n", name, programId);
+    die("%s - Error linking program %d!\n", name, programId);
   }
 
   glUseProgram(programId);
@@ -63,8 +63,7 @@ shader::~shader() {
   glDeleteProgram(programId);
 }
 
-
-renderer::renderer() : shader("model",
+rendermodel_shader::rendermodel_shader() : shader("model",
     R"(#version 410
 		   uniform mat4 matrix;
 		   layout(location = 0) in vec4 position;
@@ -83,7 +82,7 @@ renderer::renderer() : shader("model",
 		     outputColor = texture( diffuse, v2TexCoord);
 		   })") {}
 
-controller::controller() : shader("controller",
+controller_shader::controller_shader() : shader("controller",
     R"(#version 410    
        uniform mat4 matrix;
        layout(location = 0) in vec4 position;

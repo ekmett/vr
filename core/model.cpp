@@ -3,7 +3,6 @@
 
 using namespace vr;
 using namespace std;
-using namespace util;
 
 model::model(string & name, RenderModel_t & vrModel, RenderModel_TextureMap_t & diffuse)
 : vertexCount(vrModel.unTriangleCount * 3) {

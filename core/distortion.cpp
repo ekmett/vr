@@ -9,8 +9,9 @@
 
 using namespace vr;
 using namespace glm;
-using namespace util;
 using namespace std;
+
+static const int msaa_quality = 4;
 
 openvr_distortion::openvr_distortion(const ::window & window, openvr_tracker & tracker, float nearZ, float farZ)
 : window(window)
@@ -50,15 +51,16 @@ openvr_distortion::openvr_distortion(const ::window & window, openvr_tracker & t
      })") {
 
   // how big does the hmd want the render target to be, anyways?
-  uint32_t renderWidth, renderHeight;
-  tracker.hmd->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
+  
+  tracker->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
 
   // allocate eyes  
   for (int i = 0;i<2;++i) {
     auto e = eye(i);
-    projection[i] = hmd_mat4(tracker.hmd->GetProjectionMatrix(e, nearZ, farZ, API_OpenGL));
-    pose[i] = hmd_mat3x4(tracker.hmd->GetEyeToHeadTransform(e));
+    projection[i] = hmd_mat4(tracker->GetProjectionMatrix(e, nearZ, farZ, API_OpenGL));
+    pose[i] = hmd_mat3x4(tracker->GetEyeToHeadTransform(e));
   }
+
 
   glGenFramebuffers(2, renderFramebufferId);
   glGenRenderbuffers(2, depthBufferId);
@@ -73,11 +75,11 @@ openvr_distortion::openvr_distortion(const ::window & window, openvr_tracker & t
     objectLabelf(GL_FRAMEBUFFER, renderFramebufferId[i], "%s eye render fbo", l);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBufferId[i]);
     objectLabelf(GL_RENDERBUFFER, depthBufferId[i], "%s eye depth", l);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, renderWidth, renderHeight);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa_quality, GL_DEPTH_COMPONENT, renderWidth, renderHeight);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufferId[i]);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, renderTextureId[i]);
     objectLabelf(GL_TEXTURE, renderTextureId[i], "%s eye render", l);
-    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, renderWidth, renderHeight, true);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, msaa_quality, GL_RGBA8, renderWidth, renderHeight, true);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, renderTextureId[i], 0);
     glBindFramebuffer(GL_FRAMEBUFFER, resolutionFramebufferId[i]);
     objectLabelf(GL_FRAMEBUFFER, resolutionFramebufferId[i], "%s eye resolution fbo", l);
@@ -92,7 +94,7 @@ openvr_distortion::openvr_distortion(const ::window & window, openvr_tracker & t
   // check FBO status
   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   if (status != GL_FRAMEBUFFER_COMPLETE)
-    die(__FUNCTION__, "Unable to construct your eyes");
+    die("Unable to construct your eyes");
 
   // let it go
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -119,7 +121,7 @@ openvr_distortion::openvr_distortion(const ::window & window, openvr_tracker & t
         u = x*w; v = 1 - y*h;
         vert.p = vec2(Xoffset + u, -1 + 2 * y*h);
 
-        vr::DistortionCoordinates_t dc0 = tracker.hmd->ComputeDistortion(vr::Eye_Left, u, v);
+        vr::DistortionCoordinates_t dc0 = tracker->ComputeDistortion(vr::Eye_Left, u, v);
 
         vert.r = vec2(dc0.rfRed[0], 1 - dc0.rfRed[1]);
         vert.g = vec2(dc0.rfGreen[0], 1 - dc0.rfGreen[1]);
@@ -151,7 +153,7 @@ openvr_distortion::openvr_distortion(const ::window & window, openvr_tracker & t
     }
   }
 
-  // indexSize = indices.size();
+  indexSize = indices.size();
 
   glGenVertexArrays(1, &vertexArray);
   glBindVertexArray(vertexArray);
@@ -215,14 +217,30 @@ void openvr_distortion::render() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    //tracker.log->info("distortion: drawing {} triangles, offset {}", indexSize / 2, i*indexSize);
     glDrawElements(GL_TRIANGLES, indexSize / 2, GL_UNSIGNED_SHORT, (const void *)(i*indexSize));
   }
 
   glBindVertexArray(0);
   glUseProgram(0);
+  /*
+  for (int i = 0; i < 2; ++i) {
+    Texture_t t { reinterpret_cast<void*>(resolutionTextureId[i]), API_OpenGL, ColorSpace_Gamma };    
+    auto err = VRCompositor()->Submit(eye(i), &t);
+    if (err != VRCompositorError_None) {
+      tracker.log->warn("compositor error: {}", err);      
+    }
+  }
+  */
+
+  // send one at a time as we finish above?  
 }
 
 void openvr_distortion::recalculate_ipd() {
-  for (int i = 0;i < 2;++i)
-    pose[i] = hmd_mat3x4(tracker.hmd->GetEyeToHeadTransform(eye(i)));
+  for (int i=0;i<2;++i)
+    pose[i] = hmd_mat3x4(tracker->GetEyeToHeadTransform(eye(i)));  
+}
+
+float openvr_distortion::ipd() {
+  return length(pose[0][3] - pose[1][3]); // magnitude of the difference between the translation components of the eye-to-head matrices.
 }

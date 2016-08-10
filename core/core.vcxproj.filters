@@ -72,13 +72,13 @@
     <ClInclude Include="tracker.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="filename.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="log.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="distortion.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="proxy.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

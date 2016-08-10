@@ -14,10 +14,10 @@ struct shader : noncopyable {
 };
 
 
-struct renderer : shader {
-  renderer();
+struct rendermodel_shader : shader {
+  rendermodel_shader();
 };
 
-struct controller : shader {
-  controller();
+struct controller_shader : shader {
+  controller_shader();
 };
