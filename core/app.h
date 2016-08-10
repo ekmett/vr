@@ -7,27 +7,24 @@
 #include <GL/glu.h>
 #include "noncopyable.h"
 #include <glm/glm.hpp>
-
-struct eyes {
-  GLuint depthBufferId[2];
-  GLuint renderTextureId[2];
-  GLuint renderFramebufferId[2];
-  GLuint resolveTextureId[2];
-  GLuint resolveFramebufferId[2];
-  glm::mat4 projection[2];
-  glm::mat4 pose[2];
-  float nearZ, farZ;
-};
+#include "window.h"
+#include "tracker.h"
+#include "distortion.h"
 
 struct app : noncopyable {
-  app(int argc, char ** argv);
+  app(sdl_window & window, openvr_tracker & tracker)
+    : window(window)
+    , tracker(tracker)
+    , distortion(window, tracker) {}
+
   void run();
-  virtual ~app();
+  virtual ~app() {}
 
 private:
-  int windowWidth, windowHeight;
-  vr::IVRSystem * hmd;
-  vr::IVRRenderModels * renderModels;
-  SDL_Window * window;
-  eyes eyes; // left and right
+  sdl_window & window;
+  openvr_tracker & tracker;
+  openvr_distortion distortion;
+  renderer renderer;
+  controller controller;
 };
+

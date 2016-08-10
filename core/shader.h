@@ -12,3 +12,12 @@ struct shader : noncopyable {
   virtual ~shader();
   GLuint programId; // program id
 };
+
+
+struct renderer : shader {
+  renderer();
+};
+
+struct controller : shader {
+  controller();
+};

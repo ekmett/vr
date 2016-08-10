@@ -1,9 +1,14 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string>
+#include <vector>
+#include <openvr.h>
 #include "util.h"
 #include "shader.h"
+#include <glm/glm.hpp>
 
+using namespace glm;
+using namespace vr;
 using namespace util;
 
 shader::shader(const char * name, const char * vertexShader, const char * fragmentShader) 
@@ -35,7 +40,7 @@ shader::shader(const char * name, const char * vertexShader, const char * fragme
   if (fShaderCompiled != GL_TRUE) {
     glDeleteProgram(programId);
     glDeleteShader(f);
-    die(__FUNCTION__, "%s - Unable to compile fragment shader %d!\n", name, f);
+    die("%s - Unable to compile fragment shader %d!\n", name, f);
   }
 
   glAttachShader(programId, f);
@@ -57,3 +62,40 @@ shader::shader(const char * name, const char * vertexShader, const char * fragme
 shader::~shader() {
   glDeleteProgram(programId);
 }
+
+
+renderer::renderer() : shader("model",
+    R"(#version 410
+		   uniform mat4 matrix;
+		   layout(location = 0) in vec4 position;
+		   layout(location = 1) in vec3 v3NormalIn;
+		   layout(location = 2) in vec2 v2TexCoordsIn;
+		   out vec2 v2TexCoord;
+		   void main() {
+		     v2TexCoord = v2TexCoordsIn;
+		     gl_Position = matrix * vec4(position.xyz, 1);
+		   })",
+    R"(#version 410 core
+		   uniform sampler2D diffuse;
+		   in vec2 v2TexCoord;
+		   out vec4 outputColor;
+		   void main() {
+		     outputColor = texture( diffuse, v2TexCoord);
+		   })") {}
+
+controller::controller() : shader("controller",
+    R"(#version 410    
+       uniform mat4 matrix;
+       layout(location = 0) in vec4 position;
+       layout(location = 1) in vec3 v3ColorIn;
+       out vec4 v4Color;
+       void main() {
+         v4Color.xyz = v3ColorIn; v4Color.a = 1.0;
+         gl_Position = matrix * position;
+       })",
+    R"(#version 410
+       in vec4 v4Color;
+       out vec4 outputColor;
+       void main() {
+         outputColor = v4Color;
+       })") {}

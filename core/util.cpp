@@ -2,6 +2,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string>
+#include <openvr.h>
+#include <windows.h>
+#include <debugapi.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "util.h"
 
 namespace util {
@@ -43,15 +48,18 @@ namespace util {
     glObjectLabel(id, name, static_cast<GLsizei>(strnlen_s(buffer, 2048)), buffer);
   }
 
-  void die(const char * title, const char *fmt, ...) {
+  void die_helper(const char * title, const char *fmt, ...) {
     va_list args;
     char buffer[2048];
 
     va_start(args, fmt);
     vsprintf_s(buffer, fmt, args);
     va_end(args);
-
+    buffer[2047] = 0;
+    OutputDebugStringA(buffer);
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, buffer, NULL);
     exit(1);
   }
+
+  
 }
