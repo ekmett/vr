@@ -8,13 +8,11 @@
 using namespace std;
 using namespace spdlog;
 
-
-
 int main(int argc, char *argv[]) {
   spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v [thread %t]");
-  auto vr_log = spdlog::create<squelched_sink<std::mutex, default_sink>>("vr", 4);
-  auto gl_log = spdlog::create<default_sink>("gl");
-  auto sdl_log = spdlog::create<default_sink>("sdl");
+  auto vr_log = spdlog::create<squelched_sink<std::mutex, default_sink>>("vr",3);
+  auto gl_log = spdlog::create<squelched_sink<std::mutex, default_sink>>("gl",3);
+  auto sdl_log = spdlog::create<squelched_sink<std::mutex, default_sink>>("sdl",3);
 
 #ifndef _DEBUG
   try {
