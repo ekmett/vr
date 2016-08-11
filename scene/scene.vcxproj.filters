@@ -47,5 +47,8 @@
     <ClInclude Include="pathtools.h">
       <Filter>Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\core\window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,54 +1,57 @@
 #pragma once
 
-// proxy<owner,T> is a form of T which can be modified only by owner.
+namespace core {
 
-template <typename owner, typename T> struct proxy {
-public:
-  proxy() : x() {}
-  
-  // copy
-  template <typename other> proxy(const proxy<other, T> & o) : x(o.x) {}
-  proxy(const T & o) : x(o.x) {}
+  // proxy<owner,T> is a form of T which can be modified only by owner.
 
-  // move
-  proxy(T && o) noexcept : x(std::move(o.x)) {}
-  proxy(proxy<owner, T> && o) noexcept : x(std::move(o.x)) {}
+  template <typename owner, typename T> struct proxy {
+  public:
+    proxy() : x() {}
 
-  operator const T&() const { return data; }
+    // copy
+    template <typename other> proxy(const proxy<other, T> & o) : x(o.x) {}
+    proxy(const T & o) : x(o.x) {}
 
-  // TODO: add the rest
-  template<typename U> inline bool operator==(const U& y) const { return x == y; }
-  template<typename U> inline U operator+ (const U& y) const { return x + y; }
-  template<typename U> inline U operator- (const U& y) const { return x - y; }
-  template<typename U> inline U operator* (const U& y) const { return x * y; }
-  template<typename U> inline U operator/ (const U& y) const { return x / y; }
-  template<typename U> inline U operator<<(const U& y) const { return x << y; }
-  template<typename U> inline U operator >> (const U& y) const { return x >> y; }
-  template<typename U> inline U operator^ (const U& y) const { return x ^ y; }
-  template<typename U> inline U operator| (const U& y) const { return x | y; }
-  template<typename U> inline U operator& (const U& y) const { return x & y; }
-  template<typename U> inline U operator&&(const U& y) const { return x &&y; }
-  template<typename U> inline U operator||(const U& y) const { return x || y; }
-  template<typename U> inline U operator~() const { return ~x; }
+    // move
+    proxy(T && o) noexcept : x(std::move(o.x)) {}
+    proxy(proxy<owner, T> && o) noexcept : x(std::move(o.x)) {}
 
-private:
-  template<typename U> inline U operator= (const U& y) { return x = y; }
-  template<typename U> inline U operator+=(const U& y) { return x += y; }
-  template<typename U> inline U operator-=(const U& y) { return x -= y; }
-  template<typename U> inline U operator*=(const U& y) { return x *= y; }
-  template<typename U> inline U operator/=(const U& y) { return x /= y; }
-  template<typename U> inline U operator&=(const U& y) { return x &= y; }
-  template<typename U> inline U operator|=(const U& y) { return x |= y; }
+    operator const T&() const { return data; }
 
-  T & operator++() { return ++x; }
-  T operator++(int) {
-    T y(x);
-    ++x;
-    return y;    
-  }
+    // TODO: add the rest
+    template<typename U> inline bool operator==(const U& y) const { return x == y; }
+    template<typename U> inline U operator+ (const U& y) const { return x + y; }
+    template<typename U> inline U operator- (const U& y) const { return x - y; }
+    template<typename U> inline U operator* (const U& y) const { return x * y; }
+    template<typename U> inline U operator/ (const U& y) const { return x / y; }
+    template<typename U> inline U operator<<(const U& y) const { return x << y; }
+    template<typename U> inline U operator >> (const U& y) const { return x >> y; }
+    template<typename U> inline U operator^ (const U& y) const { return x ^ y; }
+    template<typename U> inline U operator| (const U& y) const { return x | y; }
+    template<typename U> inline U operator& (const U& y) const { return x & y; }
+    template<typename U> inline U operator&&(const U& y) const { return x &&y; }
+    template<typename U> inline U operator||(const U& y) const { return x || y; }
+    template<typename U> inline U operator~() const { return ~x; }
 
-  T x;
-  T & operator=(const T& arg) { x = y; return x; }
+  private:
+    template<typename U> inline U operator= (const U& y) { return x = y; }
+    template<typename U> inline U operator+=(const U& y) { return x += y; }
+    template<typename U> inline U operator-=(const U& y) { return x -= y; }
+    template<typename U> inline U operator*=(const U& y) { return x *= y; }
+    template<typename U> inline U operator/=(const U& y) { return x /= y; }
+    template<typename U> inline U operator&=(const U& y) { return x &= y; }
+    template<typename U> inline U operator|=(const U& y) { return x |= y; }
 
-  friend class owner;
-};
+    T & operator++() { return ++x; }
+    T operator++(int) {
+      T y(x);
+      ++x;
+      return y;
+    }
+
+    T x;
+    T & operator=(const T& arg) { x = y; return x; }
+
+    friend class owner;
+  };
+}

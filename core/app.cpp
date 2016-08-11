@@ -2,34 +2,48 @@
 #include "app.h"
 #include "util.h"
 
-void app::render() {
-  distortion.stereo([&](vr::EVREye eye) {
-    /*
-    bool input_captured = tracker.hmd->IsInputFocusCapturedByAnotherProcess();
-    if (!input_captured) {
-      // draw the controller axis lines
-      glUseProgram(controller_shader.programId);
-      glUniformMatrix4fv(controllerMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix(eye).get());
-      glBindVertexArray(controllerVAO);
-      glDrawArrays(GL_LINES, 0, controllerVertexCount);
-      glBindVertexArray(0);
-    }*/
+namespace core {
+  void app::render() {
+    distortion.stereo([&](vr::EVREye eye) {
+      /*
+      bool input_captured = tracker.hmd->IsInputFocusCapturedByAnotherProcess();
+      if (!input_captured) {
+        // draw the controller axis lines
+        glUseProgram(controller_shader.programId);
+        glUniformMatrix4fv(controllerMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix(eye).get());
+        glBindVertexArray(controllerVAO);
+        glDrawArrays(GL_LINES, 0, controllerVertexCount);
+        glBindVertexArray(0);
+      }*/
 
-  });
+    });
 
-  SDL_GL_SwapWindow(window.window);
-  glClearColor(0.f, 1.f, 0.f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    SDL_GL_SwapWindow(window.window);
+    glClearColor(0.f, 1.f, 0.f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-}
+  }
 
-void app::run() {
-  tracker.hmd->CaptureInputFocus();
-  bool bQuit = false;
+  void app::run() {
+    bool scan_models = true;
 
-  while (!(window.poll() || tracker.poll())) {
-    render();
-    // do stuff
-  }  
-  tracker.hmd->ReleaseInputFocus();
+    // hook events on the tracker side to modify this here in this scope, todo: exponential back-off?
+    if (!tracker.hmd->CaptureInputFocus())
+      die("Unable to capture input focus");
+
+    log->info("captured focus");
+
+    bool bQuit = false;
+
+    while (!(window.poll() || tracker.poll())) {
+      render();
+      if (scan_models) {
+        log->info("scanning for models");
+        scan_models = rendermodels.scan();
+      }
+      // do stuff
+    }
+    tracker.hmd->ReleaseInputFocus();
+    log->info("released focus");
+  }
 }

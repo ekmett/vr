@@ -6,4 +6,6 @@
 #include <boost/signals2.hpp>
 #pragma warning(pop)
 
-using namespace boost::signals2;
+namespace core {
+  using namespace boost::signals2;
+}

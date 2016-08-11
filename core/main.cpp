@@ -5,14 +5,17 @@
 #include "app.h"
 #include "log.h"
 
+using namespace core;
 using namespace std;
 using namespace spdlog;
 
 int main(int argc, char *argv[]) {
-  spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v [thread %t]");
-  auto vr_log = spdlog::create<squelched_sink<std::mutex, default_sink>>("vr",3);
-  auto gl_log = spdlog::create<squelched_sink<std::mutex, default_sink>>("gl",3);
-  auto sdl_log = spdlog::create<squelched_sink<std::mutex, default_sink>>("sdl",3);
+  spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
+  
+  auto vr_log = spdlog::create<squelched_sink_mt<default_sink>>("vr",3);
+  auto gl_log = spdlog::create<squelched_sink_mt<default_sink>>("gl", 3);
+  auto sdl_log = spdlog::create<squelched_sink_mt<default_sink>>("sdl", 3);
+  auto app_log = spdlog::create<default_sink>("app");
 
 #ifndef _DEBUG
   try {
@@ -28,7 +31,7 @@ int main(int argc, char *argv[]) {
     sdl_window window(sdl_log, "core");
 #endif
 
-    app world(window, tracker);
+    app world(app_log, window, tracker);
     world.run();
 
     return 0;

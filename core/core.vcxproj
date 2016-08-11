@@ -231,7 +231,7 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
     <ClCompile Include="tracker.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="model.cpp" />
+    <ClCompile Include="rendermodel.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
@@ -239,11 +239,12 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
     <ClInclude Include="app.h" />
     <ClInclude Include="distortion.h" />
     <ClInclude Include="log.h" />
+    <ClInclude Include="memory.h" />
     <ClInclude Include="proxy.h" />
     <ClInclude Include="signal.h" />
     <ClInclude Include="tracker.h" />
     <ClInclude Include="util.h" />
-    <ClInclude Include="model.h" />
+    <ClInclude Include="rendermodel.h" />
     <ClInclude Include="noncopyable.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shader.h" />

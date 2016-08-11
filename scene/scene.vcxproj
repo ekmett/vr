@@ -97,6 +97,7 @@
     <ClCompile Include="scene_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\core\window.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="Matrices.h" />
     <ClInclude Include="pathtools.h" />
