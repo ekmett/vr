@@ -220,6 +220,8 @@ namespace core {
         case VREvent_Scroll: on_scroll(event.data.mouse); break;
         case VREvent_TouchPadMove: on_touchpad_move(event.data.mouse); break;
 
+        case VREvent_TrackedDeviceActivated: on_tracked_device_activated(); break;
+        case VREvent_TrackedDeviceDeactivated: on_tracked_device_deactivated(); break;
 
         // dashboard activity
         case VREvent_DashboardActivated: dashboard_active = true; on_dashboard_activated(); break;
@@ -245,7 +247,11 @@ namespace core {
           break;
       } 
       if (!handling) log->info("unhandled event: {}", show_event_type((EVREventType)event.eventType));
+    }
 
+    // Process SteamVR controller state
+    for (int i = 0; i < vr::k_unMaxTrackedDeviceCount; i++) {
+      hmd->GetControllerState(i, &controller_state[i]);
     }
     return false;
   }

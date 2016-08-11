@@ -21,6 +21,9 @@ namespace core {
     SDL_GL_SwapWindow(window.window);
     glClearColor(0.f, 1.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
+    // start more stuff in the background while we wait for this:
+    vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0); // without doing this the compositor doesn't believe we know what we're doing.
 
   }
 

@@ -50,7 +50,7 @@ namespace core {
       map<vr::TextureID_t, shared_ptr<texture>> textures;
       shared_ptr<rendermodel> tracked_rendermodels[vr::k_unMaxTrackedDeviceCount];
       shader shader;
-      scoped_connection invalidate_models;
+      scoped_connection invalidate_models_on_model_skin_settings_have_changed, poll_on_tracked_device_activated;
     };
 
     rendermodel(const string & name, vr::RenderModel_t & vrModel, bool missing_components = false);

@@ -39,7 +39,7 @@ namespace core {
     // chaperone
     signal<void(vr::VREvent_Chaperone_t &)> on_chaperone_universe_changed;
     signal<void()> on_chaperone_data_has_changed, on_chaperone_settings_have_changed, on_chaperone_temp_data_has_changed;
-
+    signal<void()> on_tracked_device_activated, on_tracked_device_deactivated;
     // process
     signal<void(vr::VREvent_Process_t &)> on_scene_focus_lost, on_scene_focus_gained, 
         on_scene_application_changed, on_scene_focus_changed, on_input_focus_changed, on_input_focus_captured, on_input_focus_released, on_scene_application_secondary_rendering_started;
@@ -66,5 +66,6 @@ namespace core {
     vr::IVRCompositor * compositor;
     vr::IVRChaperone * chaperone;
     std::shared_ptr<spdlog::logger> log;
+    vr::VRControllerState_t controller_state[vr::k_unMaxTrackedDeviceCount];
   };
 }

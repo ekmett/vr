@@ -20,17 +20,9 @@ int main(int argc, char *argv[]) {
 #ifndef _DEBUG
   try {
 #endif
-
+    sdl_window window(sdl_log, "core", true);
     openvr_tracker tracker(vr_log);
-
-#ifdef _DEBUG
-    sdl_window window(sdl_log, string("core - ") + tracker.driver() + " - " + tracker.serial_number(), true);
-
     gl_logger logger(gl_log); // start logging to the msvc console.
-#else
-    sdl_window window(sdl_log, "core");
-#endif
-
     app world(app_log, window, tracker);
     world.run();
 

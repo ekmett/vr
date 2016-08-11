@@ -85,7 +85,8 @@ namespace core {
   rendermodel::manager::manager(openvr_tracker & tracker)
     : tracker(tracker)
     , known_ready(false)
-    , invalidate_models(tracker.on_model_skin_settings_have_changed.connect([&] { invalidate(); }))
+    , invalidate_models_on_model_skin_settings_have_changed(tracker.on_model_skin_settings_have_changed.connect([&] { invalidate(); }))    
+    , poll_on_tracked_device_activated(tracker.on_tracked_device_activated.connect([&] { known_ready = false; poll(); }))
     , shader("model",
       R"(#version 410
 		   uniform mat4 matrix;
