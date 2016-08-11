@@ -226,7 +226,7 @@ namespace core {
     glViewport(0, 0, window.width, window.height);
 
     glBindVertexArray(vertexArray);
-    glUseProgram(programId);
+    glUseProgram(shader.programId);
 
     for (int i = 0; i < 2; ++i) {
       glBindTexture(GL_TEXTURE_2D, resolutionTextureId[i]);
@@ -247,7 +247,7 @@ namespace core {
       Texture_t t{ reinterpret_cast<void*>(resolutionTextureId[i]), API_OpenGL, ColorSpace_Gamma };
       auto err = VRCompositor()->Submit(eye(i), &t);
       if (err != VRCompositorError_None) {
-        tracker.log->warn("openvr compositor error: {} ({})", show_vr_compositor_error(err), err);
+        // tracker.log->warn("openvr compositor error: {} ({})", show_vr_compositor_error(err), err);
       }
     }
     // send one at a time as we finish above?  

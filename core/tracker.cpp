@@ -134,25 +134,20 @@ namespace core {
   }
 
   string openvr_tracker::component_name(string model, int i) {
-    // return buffered([&](auto x, auto y) { return renderModels->GetComponentName(model.c_str(), i, x, y); });
     return buffered(mem_fn(&IVRRenderModels::GetComponentName), renderModels, model.c_str(), i);
+  }
+
+  string openvr_tracker::component_model(string model, string cname) {
+    return buffered(mem_fn(&IVRRenderModels::GetComponentRenderModelName), renderModels, model.c_str(), cname.c_str());
   }
 
   string openvr_tracker::device_string(TrackedDeviceIndex_t device, TrackedDeviceProperty prop, TrackedPropertyError *error) {
     return buffered_with_error(mem_fn(&IVRSystem::GetStringTrackedDeviceProperty), error, hmd, device, prop);
   }
 
+  
   string openvr_tracker::model_name(int i) {
     return buffered(mem_fn(&IVRRenderModels::GetRenderModelName), renderModels, i);
-    /*
-    uint32_t len = renderModels->GetRenderModelName(i, nullptr, 0);
-    if (len == 0) return "";
-    char *buffer = new char[len];
-    len = renderModels->GetRenderModelName(i, buffer, len);
-    string result = buffer;
-    delete[] buffer;
-    return result;
-    */
   }
 
   string openvr_tracker::driver() {
@@ -192,32 +187,63 @@ namespace core {
     while (hmd->PollNextEvent(&event, sizeof(event))) {
       bool handling = true;
       switch (event.eventType) {
-      case EVREventType::VREvent_ProcessQuit:
-      case EVREventType::VREvent_Quit:
-        on_quit();
-        return true;
 
-      case EVREventType::VREvent_IpdChanged: on_ipd_changed(); break;
-      case EVREventType::VREvent_InputFocusChanged: break;
-      case EVREventType::VREvent_InputFocusCaptured: focus_lost = true; on_focus_captured(); break;
-      case EVREventType::VREvent_InputFocusReleased: focus_lost = false; on_focus_released(); break;
+        case VREvent_ModelSkinSettingsHaveChanged: on_model_skin_settings_have_changed(); break;
+        case VREvent_IpdChanged: on_ipd_changed(); break; // so we can fiddle with the eye pose
 
-      case EVREventType::VREvent_DashboardActivated: dashboard_active = true; on_dashboard_activated(); break;
-      case EVREventType::VREvent_DashboardDeactivated: dashboard_active = false; on_dashboard_deactivated(); break;
-      case EVREventType::VREvent_Compositor_ChaperoneBoundsHidden: chaperone_bounds_visible = false; on_chaperone_bounds_hidden(); break;
-      case EVREventType::VREvent_Compositor_ChaperoneBoundsShown: chaperone_bounds_visible = true; on_chaperone_bounds_shown(); break;
 
-      case EVREventType::VREvent_ChaperoneUniverseHasChanged:
-        // we receive one of these on app start
-        log->info("changed chaperone universe from {} to {}", event.data.chaperone.m_nPreviousUniverse, event.data.chaperone.m_nCurrentUniverse);
-        recalculate_chaperone_data();
-        on_chaperone_universe_changed(event.data.chaperone.m_nPreviousUniverse, event.data.chaperone.m_nCurrentUniverse);
-        break;
+        case VREvent_ProcessQuit:
+        case VREvent_Quit: on_quit(); return true;
 
-      default:
-        handling = false;
-        break;
-      }
+        // process management
+        case VREvent_SceneApplicationSecondaryRenderingStarted: on_scene_application_secondary_rendering_started(event.data.process); break;
+        case VREvent_InputFocusChanged: on_scene_application_changed(event.data.process); break;
+        case VREvent_SceneApplicationChanged: on_scene_application_changed(event.data.process); break;
+        case VREvent_SceneFocusChanged: on_scene_focus_changed(event.data.process); break;
+        case VREvent_SceneFocusLost: on_scene_focus_lost(event.data.process); break;
+        case VREvent_SceneFocusGained: on_scene_focus_gained(event.data.process); break;
+        case VREvent_InputFocusCaptured: focus_lost = true; on_input_focus_captured(event.data.process); break;
+        case VREvent_InputFocusReleased: focus_lost = false; on_input_focus_released(event.data.process); break;
+
+        // models
+        case VREvent_HideRenderModels: on_hide_render_models(); break;
+        case VREvent_ShowRenderModels: on_show_render_models(); break;
+
+        // mouse
+        case VREvent_ButtonPress: on_button_press(event.data.controller); break;
+        case VREvent_ButtonUnpress: on_button_unpress(event.data.controller); break;
+        case VREvent_ButtonTouch: on_button_touch(event.data.controller); break;
+        case VREvent_ButtonUntouch: on_button_untouch(event.data.controller); break;
+        case VREvent_MouseButtonUp: on_mouse_button_up(event.data.mouse); break;
+        case VREvent_MouseButtonDown: on_mouse_button_down(event.data.mouse); break;
+        case VREvent_MouseMove: on_mouse_move(event.data.mouse); break;
+        case VREvent_Scroll: on_scroll(event.data.mouse); break;
+        case VREvent_TouchPadMove: on_touchpad_move(event.data.mouse); break;
+
+
+        // dashboard activity
+        case VREvent_DashboardActivated: dashboard_active = true; on_dashboard_activated(); break;
+        case VREvent_DashboardDeactivated: dashboard_active = false; on_dashboard_deactivated(); break;
+        case VREvent_DashboardThumbSelected: on_dashboard_thumb_selected(event.data.overlay.overlayHandle); break;
+        case VREvent_DashboardRequested: on_dashboard_requested(event.data.overlay.overlayHandle); break;
+
+        // chaperone data
+        case VREvent_Compositor_ChaperoneBoundsHidden: chaperone_bounds_visible = false; on_chaperone_bounds_hidden(); break;
+        case VREvent_Compositor_ChaperoneBoundsShown: chaperone_bounds_visible = true; on_chaperone_bounds_shown(); break;
+        case VREvent_ChaperoneTempDataHasChanged: on_chaperone_temp_data_has_changed(); break;
+        case VREvent_ChaperoneDataHasChanged: on_chaperone_data_has_changed(); break;
+        case VREvent_ChaperoneSettingsHaveChanged: on_chaperone_settings_have_changed(); break;
+        case VREvent_ChaperoneUniverseHasChanged:
+          // we receive one of these on app start
+          log->info("changed chaperone universe from {} to {}", event.data.chaperone.m_nPreviousUniverse, event.data.chaperone.m_nCurrentUniverse);
+          recalculate_chaperone_data();
+          on_chaperone_universe_changed(event.data.chaperone);
+          break;
+
+        default:
+          handling = false;
+          break;
+      } 
       if (!handling) log->info("unhandled event: {}", show_event_type((EVREventType)event.eventType));
 
     }

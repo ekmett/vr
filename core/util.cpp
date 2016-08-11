@@ -9,10 +9,28 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "util.h"
+#include "log.h"
 
 using namespace vr;
 
 namespace core {
+
+  const char * show_object_label_type(GLenum t) {
+    switch (t) {
+      case GL_BUFFER: return "buffer";
+      case GL_SHADER: return "shader";
+      case GL_PROGRAM: return "program";
+      case GL_VERTEX_ARRAY: return "vao";
+      case GL_QUERY: return "query";
+      case GL_PROGRAM_PIPELINE: return "program pipeline";
+      case GL_TRANSFORM_FEEDBACK: return "transform feedback";
+      case GL_SAMPLER: return "sampler";
+      case GL_TEXTURE: return "texture";
+      case GL_RENDERBUFFER: return "renderbuffer";
+      case GL_FRAMEBUFFER: return "framebuffer";
+      default: return "unknown";
+    }
+  }
 
   const char * show_debug_source(GLenum s) {
     switch (s) {
@@ -185,6 +203,10 @@ namespace core {
 
     buffer[2047] = 0;
     glObjectLabel(id, name, static_cast<GLsizei>(strnlen_s(buffer, 2048)), buffer);
+    auto gl_log = spdlog::get("gl");
+    if (gl_log) {
+      gl_log->info("labeled {} #{}: {}", show_object_label_type(id), name, buffer);
+    }
   }
 
   void die_helper(const char * title, const char *fmt, ...) {

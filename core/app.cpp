@@ -25,8 +25,7 @@ namespace core {
   }
 
   void app::run() {
-    bool scan_models = true;
-
+    
     // hook events on the tracker side to modify this here in this scope, todo: exponential back-off?
     if (!tracker.hmd->CaptureInputFocus())
       die("Unable to capture input focus");
@@ -36,12 +35,8 @@ namespace core {
     bool bQuit = false;
 
     while (!(window.poll() || tracker.poll())) {
+      rendermodels.poll();
       render();
-      if (scan_models) {
-        log->info("scanning for models");
-        scan_models = rendermodels.scan();
-      }
-      // do stuff
     }
     tracker.hmd->ReleaseInputFocus();
     log->info("released focus");

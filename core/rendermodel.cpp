@@ -7,19 +7,19 @@ using namespace vr;
 using namespace std;
 
 namespace core {
-
-  rendermodel::rendermodel(const string & name, RenderModel_t & model)
+  rendermodel::rendermodel(const string & name, RenderModel_t & model, bool missing_components)
     : vertexCount(model.unTriangleCount * 3)
     , diffuse(nullptr)
-    , vr_texture_id(model.diffuseTextureId) {
+    , vr_texture_id(model.diffuseTextureId)
+    , missing_components(missing_components) {
     glGenVertexArrays(1, &vertArray);
     glBindVertexArray(vertArray);
     objectLabelf(GL_VERTEX_ARRAY, vertArray, "%s vertex array", name.c_str());
 
     glGenBuffers(1, &vertBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vr::RenderModel_Vertex_t) * model.unVertexCount, model.rVertexData, GL_STATIC_DRAW);
     objectLabelf(GL_BUFFER, vertBuffer, "%s vertex buffer", name.c_str());
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vr::RenderModel_Vertex_t) * model.unVertexCount, model.rVertexData, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vr::RenderModel_Vertex_t), (void *)offsetof(vr::RenderModel_Vertex_t, vPosition));
@@ -30,8 +30,8 @@ namespace core {
 
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * model.unTriangleCount * 3, model.rIndexData, GL_STATIC_DRAW);
     objectLabelf(GL_BUFFER, indexBuffer, "%s index buffer", name.c_str());
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * model.unTriangleCount * 3, model.rIndexData, GL_STATIC_DRAW);
 
     glBindVertexArray(0);
   }
@@ -84,6 +84,8 @@ namespace core {
 
   rendermodel::manager::manager(openvr_tracker & tracker)
     : tracker(tracker)
+    , known_ready(false)
+    , invalidate_models(tracker.on_model_skin_settings_have_changed.connect([&] { invalidate(); }))
     , shader("model",
       R"(#version 410
 		   uniform mat4 matrix;
@@ -106,72 +108,122 @@ namespace core {
   }
 
   rendermodel::manager::~manager() {}
-
-  bool rendermodel::manager::scan() {
-    bool ok = true;
-    auto vrrm = vr::VRRenderModels();
-
-    // scan for unknown render models
-    for (int i = 0;i < vr::k_unMaxTrackedDeviceCount;++i) {
-      // invalid device?
-      if (tracker.hmd->GetTrackedDeviceClass(i) == vr::TrackedDeviceClass_Invalid) continue;
-
-      string name = tracker.model_name(i);
-      auto iter(models.lower_bound(name));
-
-      // do we already have a model?
-      if (iter != models.end() && name >= iter->first) {
-        tracked_rendermodels[i] = iter->second;
-        continue;
-      }
-
-      vr::RenderModel_t *model;
-      auto err = vrrm->LoadRenderModel_Async(name.c_str(), &model);
-      switch (err) {
+  
+  bool rendermodel::manager::poll_texture(string name, vr::TextureID_t key, shared_ptr<texture> * result) {
+    auto vrrm = VRRenderModels();   
+    auto iter(textures.lower_bound(key));
+    if (iter != textures.end() && key >= iter->first) {
+      if (result) *result = iter->second;
+      return true;
+    }
+    vr::RenderModel_TextureMap_t * t;
+    auto err = vrrm->LoadTexture_Async(key, &t);
+    switch (err) {
       case vr::VRRenderModelError_None: {
-        auto m = make_shared<rendermodel>(name, *model);
-        models.insert(iter, make_pair(name, m));
-        tracked_rendermodels[i] = m;
-        break;
+        auto m = make_shared<rendermodel::texture>(name, *t);
+        vrrm->FreeTexture(t);
+        textures.insert(iter, make_pair(key, m));
+        if (result) *result = m;
+        return true;
       }
       case vr::VRRenderModelError_Loading:
-        ok = false;
-        continue;
+        return false;
       default:
-        tracker.log->warn("Unable to load render model {}: {}", name, vrrm->GetRenderModelErrorNameFromEnum(err));
-        continue;
-      }
+        tracker.log->warn("Unable to load texture {}: {}", key, vrrm->GetRenderModelErrorNameFromEnum(err));
+        return true;
+    }
+    return false;
+  }
+
+  bool rendermodel::manager::poll_model(string name, shared_ptr<rendermodel> * result, bool is_component) {
+    auto vrrm = VRRenderModels();
+    auto iter(models.lower_bound(name));
+
+    // do we already have a model?
+    if (iter != models.end() && name >= iter->first) {
+      if (result) *result = iter->second;
+      return true;
+    }   
+
+    vr::RenderModel_t *model;
+    auto err = vrrm->LoadRenderModel_Async(name.c_str(), &model);
+    switch (err) {
+    case vr::VRRenderModelError_None: {     
+      auto m = make_shared<rendermodel>(name, *model, !is_component && tracker.component_count(name) != 0);
+      vrrm->FreeRenderModel(model);
+      models.insert(iter, make_pair(name, m));
+      if (result) *result = m;
+      return true;
+    }
+    case vr::VRRenderModelError_Loading:
+      return false;
+    default:
+      tracker.log->warn("Unable to load render model {}: {}", name, vrrm->GetRenderModelErrorNameFromEnum(err)); // long term failure.
+      return true;
+    }
+  }
+  
+  void rendermodel::manager::invalidate() {
+    known_ready = false;
+    models.clear();
+    textures.clear();
+    poll(); 
+  }
+
+  // returns false if you should poll again as there are still parts loading
+  // returns true to indicate everything is loaded.
+  bool rendermodel::manager::poll() {
+    if (known_ready) return true; // short circuit
+    tracker.log->info("polling for render models");
+
+    bool result = true;
+    auto vrrm = vr::VRRenderModels();
+
+    /*
+    for (int i = 0, n = tracker.model_count();i < n; ++i) {
+      string name = tracker.model_name(i);
+      result = poll_model(name) && result;
+    }
+    */
+
+    // scan only active models
+    for (int i = 0;i < vr::k_unMaxTrackedDeviceCount;++i) {
+      if (!tracker.valid_device(i)) continue;
+      string name = tracker.device_string(i, vr::Prop_RenderModelName_String);
+      if (name == "") continue;
+      result = poll_model(name) && result;
     }
 
-    // scan render models for unknown textures
-    for (auto && p : models) { // in c++17 this'd be nicer.
-
-      // it already knows its texture?
-      if (p.second->diffuse) continue;
-
-      auto key = p.second->vr_texture_id;
-      // check cache
-      auto iter(textures.lower_bound(key));
-      if (iter == textures.end() || key < iter->first) {
-        vr::RenderModel_TextureMap_t * t;
-        auto err = vrrm->LoadTexture_Async(key, &t);
-        switch (err) {
-        case vr::VRRenderModelError_None:
-          textures.insert(iter, make_pair(key, make_shared<rendermodel::texture>(p.first, *t)));
-          p.second->diffuse = iter->second;
-          break;
-        case vr::VRRenderModelError_Loading:
-          ok = false; // we still need to bake more textures
-          continue;
-        default:
-          tracker.log->warn("Unable to load texture {} for render model {}: {}", key, p.first, vrrm->GetRenderModelErrorNameFromEnum(err));
-          continue;
+    // for each model
+    for (auto & p : models) {
+      // check for textures
+      if (!p.second->diffuse)
+        result = poll_texture(p.first, p.second->vr_texture_id, &p.second->diffuse) && result;
+      
+      // are we missing parts?
+      if (p.second->missing_components) {
+        bool components_found = true;
+        int N = tracker.component_count(p.first);
+        for (int j = 0;j < N;++j) {
+          // check for the component as already added to this model first.
+          auto & parts = p.second->components;
+          string cname = tracker.component_name(p.first, j);
+          if (cname == "") continue;
+          string cmodel = tracker.component_model(p.first, cname);
+          if (cmodel == "") continue;
+          auto iter(parts.lower_bound(cmodel));
+          if (iter != parts.end() && cmodel >= iter->first) continue; // already in there
+          shared_ptr<rendermodel> part;
+          bool part_found = poll_model(cmodel, &part, true);
+          components_found = components_found && part_found;
+          if (part_found && part != nullptr)
+            parts.insert(iter, make_pair(cmodel, part));
         }
-      } else {
-        p.second->diffuse = iter->second;
-        // found it!
+        p.second->missing_components = !components_found;
+        result = components_found && result;
       }
     }
-    return ok;
+    known_ready = result;
+    return result;
   }
 }
