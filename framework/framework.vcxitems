@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}</ItemsProjectGuid>
+    <ItemsRootNamespace>framework</ItemsRootNamespace>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)apply.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)error.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)fmt.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)sdl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)sdl_window.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)signal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)spdlog.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)std.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)noncopyable.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)openvr.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)utf8.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)openvr.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)sdl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)sdl_window.cpp" />
+  </ItemGroup>
+</Project>
