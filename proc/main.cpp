@@ -1,17 +1,11 @@
-#include <string>
-#include <stdexcept>
-#include <functional>
-#include <SDL.h>
-#include <GL/glew.h>
-#include <SDL_opengl.h>
-#include <gl/glu.h>
-#include <windows.h>
+#include "stdafx.h"
 #include "../framework/openvr.h"
 #include "../framework/sdl.h"
 
 using namespace framework;
 
 int main(int argc, char ** argv) {
+  spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
   openvr vr;
   sdl sdl;  
   return 0;

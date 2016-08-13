@@ -58,6 +58,7 @@ namespace core {
     inline int component_count(std::string model) { return renderModels->GetComponentCount(model.c_str()); }
     std::string driver();
     std::string serial_number();
+
     vr::IVRSystem * operator -> () { return hmd; }
     //private:
     void recalculate_chaperone_data();

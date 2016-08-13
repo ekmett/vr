@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gl.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)sdl.cpp">
+      <Filter>sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)openvr.cpp">
+      <Filter>openvr</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)sdl_gl_window.cpp">
+      <Filter>sdl</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)gl.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)sdl.h">
+      <Filter>sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)openvr.h">
+      <Filter>openvr</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)apply.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)error.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)fmt.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)spdlog.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)std.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)signal.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)noncopyable.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)utf8.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)sdl_gl_window.h">
+      <Filter>sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glew.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="openvr">
+      <UniqueIdentifier>{f632f9d6-8eb4-4f30-aad6-64303db647ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sdl">
+      <UniqueIdentifier>{4468859e-86ab-47b5-9e7e-b7744f8fd74b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{41125056-e0e7-4f79-a4ea-b7d114b98107}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gl">
+      <UniqueIdentifier>{4967983e-c37d-4448-b93e-ed71c28a6d18}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "std.h"
 #include "openvr.h"
 #include "error.h"
@@ -33,18 +34,25 @@ namespace framework {
       // Initialize OpenVR
       auto eError = VRInitError_None;
       system = VR_Init(&eError, VRApplication_Scene);
-
       if (eError != VRInitError_None)
         die("Unable to initialize OpenVR.\n{}", VR_GetVRInitErrorAsEnglishDescription(eError));
+      log("vr")->info("OpenVR initialized. hmd: {}, serial#: {}", driver(), serial_number());
     } else {
       system = VRSystem();
+      log("vr")->info("OpenVR: re-entrant initialization {}",openvr_initializations);
     }
   }
+  
 
   openvr::~openvr() {
     lock_guard<mutex> guard(openvr_init_mutex);
-    if (!--openvr_initializations) 
+    if (!--openvr_initializations) {
       VR_Shutdown();
+      log("vr")->info("OpenVR shutdown");
+    } else {
+      log("vr")->info("OpenVR: re-entrant shutdown {}", openvr_initializations+1);
+    }
+
   }
 
   string openvr::device_string(device_id index, vr::TrackedDeviceProperty prop, vr::TrackedPropertyError * error) const {

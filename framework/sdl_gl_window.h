@@ -17,6 +17,7 @@ namespace framework {
   struct sdl_gl_window : noncopyable {
     sdl_gl_window(
       string title,
+      gl::version version = { 4, 5, gl::profile::core },
       bool debug = false,
       int x = 700,
       int y = 100,
@@ -32,6 +33,6 @@ namespace framework {
     int height;
 
     std::unique_ptr<gl::debugger> debugger;
-    // framework::sdl sdl_video;
+    //sdl sdl_video;
   };
 }

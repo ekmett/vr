@@ -240,7 +240,6 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
     <ClInclude Include="distortion.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="memory.h" />
-    <ClInclude Include="proxy.h" />
     <ClInclude Include="signal.h" />
     <ClInclude Include="tracker.h" />
     <ClInclude Include="util.h" />

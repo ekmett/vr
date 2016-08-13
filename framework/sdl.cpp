@@ -1,4 +1,4 @@
-
+#include "stdafx.h"
 #include "sdl.h"
 #include "utf8.h"
 

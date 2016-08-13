@@ -1,29 +1,40 @@
+#include "stdafx.h"
 #include <stdio.h>
-#include <gl/glew.h>
 #include <SDL_opengl.h>
 #include "error.h"
-#include "sdl_window.h"
+#include "sdl_gl_window.h"
 #include "gl.h"
 
 using namespace std;
 using namespace spdlog;
+using namespace framework::gl;
 
 namespace framework {
+  static SDL_GLprofile sdl_gl_profile(profile p) {
+    switch (p) {
+      case profile::core: return SDL_GL_CONTEXT_PROFILE_CORE;
+      case profile::es: return SDL_GL_CONTEXT_PROFILE_ES;
+      case profile::compatibility: return SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
+      default: die("unknown gl::version::profile {}", p);
+    }
+  }
+
   sdl_gl_window::sdl_gl_window(
     string title, 
-    bool debug, 
-    int windowX, 
+    gl::version version,
+    bool debug,
+    int windowX,
     int windowY, 
     int width, 
     int height
   ) : width(width), 
-      height(height) //, 
-    //  sdl_video(SDL_INIT_VIDEO) 
+      height(height) 
+//      sdl_video(SDL_INIT_VIDEO) 
     {
     Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, version.major);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, version.minor);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
@@ -44,10 +55,12 @@ namespace framework {
 
     // We created or switched an OpenGL context, so initialize glew
 
+#ifdef _WIN32
     glewExperimental = GL_TRUE;
     auto nGlewError = glewInit();
     if (nGlewError != GLEW_OK)
       die("Error initializing GLEW.\n{}", glewGetErrorString(nGlewError));
+#endif
 
     glGetError(); // clear the GLEW error
         

@@ -1,5 +1,9 @@
 #pragma once
 
+#include <cstdlib>
+#include <utility>
+#include <tuple>
+
 namespace framework {
 
   // stuff that should be in std but isn't yet, When c++17 comes this will be there, but in the meantime...

@@ -65,19 +65,16 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win32.props" />
     <Import Project="..\properties\ThirdParty.props" />
-    <Import Project="C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.Cpp.unicodesupport.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win64.props" />
     <Import Project="..\properties\ThirdParty.props" />
-    <Import Project="C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.Cpp.unicodesupport.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win64.props" />
     <Import Project="..\properties\ThirdParty.props" />
-    <Import Project="C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.Cpp.unicodesupport.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -103,7 +100,8 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX)</AdditionalLibraryDirectories>
@@ -127,7 +125,8 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX)</AdditionalLibraryDirectories>
@@ -153,7 +152,8 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -181,7 +181,8 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

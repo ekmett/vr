@@ -72,9 +72,6 @@
     <ClInclude Include="distortion.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="proxy.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="signal.h">
       <Filter>Source Files</Filter>
     </ClInclude>

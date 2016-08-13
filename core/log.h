@@ -95,11 +95,4 @@ namespace core {
     }
   };
 
-  // raii, requires opengl
-  struct gl_logger : noncopyable {
-    gl_logger(shared_ptr<logger> & logger);
-    virtual ~gl_logger();
-
-    shared_ptr<logger> logger;
-  };
 }

@@ -4,7 +4,7 @@
 #include <gl/glew.h>
 #include <SDL_opengl.h>
 #include "error.h"
-#include "sdl_window.h"
+#include "sdl_gl_window.h"
 #include "signal.h"
 #include "noncopyable.h"
 

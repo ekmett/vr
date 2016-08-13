@@ -245,7 +245,7 @@ namespace core {
 
     for (int i = 0; i < 2; ++i) {
       Texture_t t{ reinterpret_cast<void*>(resolutionTextureId[i]), API_OpenGL, ColorSpace_Gamma };
-      auto err = VRCompositor()->Submit(eye(i), &t);
+      auto err = VRCompositor()->Submit(eye(i), &t,0,vr::EVRSubmitFlags::Submit_LensDistortionAlreadyApplied);
       if (err != VRCompositorError_None) {
         // tracker.log->warn("openvr compositor error: {} ({})", show_vr_compositor_error(err), err);
       }
