@@ -10,3 +10,6 @@
 [submodule "third-party/json"]
 	path = third-party/json
 	url = https://github.com/nlohmann/json.git
+[submodule "third-party/libcds"]
+	path = third-party/libcds
+	url = https://github.com/khizmax/libcds.git

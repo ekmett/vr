@@ -9,6 +9,8 @@
     <SPDLogDir>$(SolutionDir)third-party\spdlog\</SPDLogDir>
     <GLMDir>$(SolutionDir)third-party\glm-0.9.8.0\</GLMDir>
     <BoostDir>$(SolutionDir)third-party\boost_1_61_0\</BoostDir>
+    <CDSDir>$(SolutionDir)third-party\libcds</CDSDir>
+    <BOOST_PATH>$(BoostDir)</BOOST_PATH>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup>
@@ -38,6 +40,14 @@
     </BuildMacro>
     <BuildMacro Include="BoostDir">
       <Value>$(BoostDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="CDSDir">
+      <Value>$(CDSDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BOOST_PATH">
+      <Value>$(BOOST_PATH)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

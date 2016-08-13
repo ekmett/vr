@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include <gl/glew.h>
 #include "spdlog.h"
 #include "gl.h"
 

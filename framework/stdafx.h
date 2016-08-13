@@ -1,10 +1,7 @@
 #pragma once
 
-#ifdef _WIN32
-#define USE_GLEW
 // GLEW
-#include <GL/glew.h>
-#endif
+#include "glew.h"
 
 // SDL2
 #include <SDL.h>
