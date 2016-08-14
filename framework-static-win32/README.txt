@@ -1,0 +1,1 @@
+convert src/framework into a static library
