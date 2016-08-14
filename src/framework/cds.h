@@ -1,21 +1,20 @@
 #pragma once
 
-/*
-
 #include <cds/init.h>
 #include <cds/threading/model.h>
 #include <cds/gc/hp.h>
 #include <cds/os/topology.h>
-#include "noncopyable.h"
-#include "spdlog.h"
+#include "framework/noncopyable.h"
+#include "framework/spdlog.h"
 
 namespace framework {
   template <typename Collector = cds::gc::hp::GarbageCollector> struct cds_main_thread_attachment : noncopyable {
     cds_main_thread_attachment() {
       cds::Initialize();      
       Collector::Construct();
-      cds::threading::Manager::attachThread();      
-      // log("cds")->info("cds initialized: main thread on processor {} of {}", topology.current_processor(), topology.processor_count());
+      cds::threading::Manager::attachThread();
+      cds::OS::topology sys_topology;
+      log("cds")->info("cds initialized: main thread on processor {} of {}", sys_topology.current_processor(), sys_topology.processor_count());
     }
     ~cds_main_thread_attachment() {
       cds::threading::Manager::detachThread();
@@ -30,7 +29,7 @@ namespace framework {
     cds_thread_attachment() { cds::threading::Manager::attachThread(); }
     ~cds_thread_attachment() { cds::threading::Manager::detachThread(); }
   };
-
+  /*
   
 
   int main(int argc, char **argv) {
@@ -43,7 +42,6 @@ namespace framework {
     ... do stuff ...
   }
 
-  
+  */
 }
 
-*/

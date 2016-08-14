@@ -76,44 +76,39 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LinkStatus>true</LinkStatus>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc$(PlatformToolset).dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -122,21 +117,20 @@ XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LinkStatus>true</LinkStatus>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc$(PlatformToolset).dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -147,7 +141,7 @@ XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -156,15 +150,13 @@ XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LinkStatus>true</LinkStatus>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc$(PlatformToolset).dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -175,7 +167,7 @@ XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -184,15 +176,13 @@ XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LinkStatus>true</LinkStatus>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc$(PlatformToolset).dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -200,6 +190,9 @@ XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\cds.vcxproj">
+      <Project>{408fe9bc-44f0-4e6a-89fa-d6f952584239}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\framework-static-win32\framework-static-win32.vcxproj">
       <Project>{a9326043-2d69-4511-8564-7a8f93e4e0bb}</Project>
     </ProjectReference>

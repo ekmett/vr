@@ -18,7 +18,7 @@
       <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;glu32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);$(CDSDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

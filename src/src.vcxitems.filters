@@ -72,6 +72,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp">
       <Filter>framework</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\spdlog.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="$(MSBuildThisFileDirectory)README.txt" />

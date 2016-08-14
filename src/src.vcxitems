@@ -39,6 +39,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_system.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_gl_window.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_system.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\spdlog.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
