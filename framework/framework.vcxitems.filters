@@ -2,80 +2,43 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)gl.cpp">
-      <Filter>gl</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)sdl.cpp">
-      <Filter>sdl</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)sdl_gl_window.cpp">
-      <Filter>sdl</Filter>
+      <Filter>impl</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)openvr_system.cpp">
-      <Filter>openvr</Filter>
+      <Filter>impl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)sdl_gl_window.cpp">
+      <Filter>impl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)sdl_system.cpp">
+      <Filter>impl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)stdafx.cpp">
+      <Filter>impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)gl.h">
-      <Filter>gl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)sdl.h">
-      <Filter>sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)apply.h">
-      <Filter>gl\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)error.h">
-      <Filter>gl\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)fmt.h">
-      <Filter>gl\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)spdlog.h">
-      <Filter>gl\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)std.h">
-      <Filter>gl\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)signal.h">
-      <Filter>gl\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)noncopyable.h">
-      <Filter>gl\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)utf8.h">
-      <Filter>gl\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)glm.h">
-      <Filter>gl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)sdl_gl_window.h">
-      <Filter>sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)glew.h">
-      <Filter>gl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)openvr_gl_model.h">
-      <Filter>openvr</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)openvr_system.h">
-      <Filter>openvr</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)openvr_models.h">
-      <Filter>openvr</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)apply.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cds.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)error.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)fmt.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glew.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)noncopyable.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)openvr_system.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)sdl_gl_window.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)sdl_system.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)signal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)spdlog.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)std.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)stdafx.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)utf8.h" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="openvr">
-      <UniqueIdentifier>{f632f9d6-8eb4-4f30-aad6-64303db647ad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="sdl">
-      <UniqueIdentifier>{4468859e-86ab-47b5-9e7e-b7744f8fd74b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gl">
-      <UniqueIdentifier>{4967983e-c37d-4448-b93e-ed71c28a6d18}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gl\common">
-      <UniqueIdentifier>{41125056-e0e7-4f79-a4ea-b7d114b98107}</UniqueIdentifier>
+    <Filter Include="impl">
+      <UniqueIdentifier>{b224d3e9-b752-4997-b701-57205db61b4a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

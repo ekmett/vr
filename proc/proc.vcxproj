@@ -98,14 +98,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);$(CDSDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;SDL2main.lib;glu32.lib;opengl32.lib;libvcruntimed.lib;libucrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX);$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;SDL2main.lib;glu32.lib;opengl32.lib;libcds-$(amdXX)-vc$(PlatformToolset).lib;libvcruntimed.lib;libucrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <SubSystem>Windows</SubSystem>
@@ -114,7 +114,8 @@
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
+XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc$(PlatformToolset).dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -123,14 +124,14 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);$(CDSDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;SDL2main.lib;glu32.lib;opengl32.lib;libvcruntimed.lib;libucrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX);$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;SDL2main.lib;glu32.lib;opengl32.lib;libcds-$(amdXX)-vc$(PlatformToolset).lib;libvcruntimed.lib;libucrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <SubSystem>Windows</SubSystem>
@@ -139,7 +140,8 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
+XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc$(PlatformToolset).dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -150,7 +152,7 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);$(CDSDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -158,8 +160,8 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;SDL2main.lib;glu32.lib;opengl32.lib;libvcruntime.lib;libucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX);$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;SDL2main.lib;glu32.lib;opengl32.lib;libcds-$(amdXX)-vc$(PlatformToolset).lib;libvcruntime.lib;libucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <SubSystem>Windows</SubSystem>
@@ -168,7 +170,8 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
+XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc$(PlatformToolset).dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -179,7 +182,7 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);$(CDSDir);$(CDSDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableSpecificWarnings>4996;4503</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -187,8 +190,8 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;SDL2main.lib;glu32.lib;opengl32.lib;libvcruntime.lib;libucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX);$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;SDL2main.lib;glu32.lib;opengl32.lib;libcds-$(amdXX)-vc$(PlatformToolset).lib;libvcruntime.lib;libucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <SubSystem>Windows</SubSystem>
@@ -197,15 +200,16 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
+XCOPY "$(CDSDir)bin\vc.$(PlatformToolset)\$(Platform)-release\libcds-$(amdXX)-vc$(PlatformToolset).dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <ClCompile Include="main.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

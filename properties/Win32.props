@@ -4,6 +4,7 @@
   <PropertyGroup Label="UserMacros">
     <WinXX>Win32</WinXX>
     <xXX>x86</xXX>
+    <amdXX>x86</amdXX>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -14,6 +15,10 @@
     </BuildMacro>
     <BuildMacro Include="xXX">
       <Value>$(xXX)</Value>
+    </BuildMacro>
+    <BuildMacro Include="amdXX">
+      <Value>$(amdXX)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>
 </Project>
