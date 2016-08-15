@@ -25,7 +25,7 @@ namespace proc {
   static const double task_delta = 0.0002;
 
   struct worker {
-    template <typename SeedSeq> worker(pool &p, int i, SeedSeq & seed) : rng(seed), q(std::move(q)), i(i), p(p) {}
+    template <typename SeedSeq> worker(pool &p, int i, SeedSeq & seed) : rng(seed), i(i), p(p) {}
     std::mt19937 rng;
     std::deque<task> q; // local jobs
     pool & p; // owning pool
