@@ -1,24 +1,15 @@
-#include "framework.h"
+#include "stdafx.h"
+#include "app.h"
 
-#include <SDL.h>
-using namespace framework;
+using namespace proc;
 
 int SDL_main(int argc, char ** argv) {
   spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
   cds_main_thread_attachment<> main_thread;
-  
-  openvr::system vr;
 
-  sdl::subsystem video;
-  sdl::gl_window window("proc", { 4, 5, gl::profile::core });
+  app main;
+  main.run();
 
-  while (!vr.poll() && !video.poll()) {
-
-
-
-  }
-
-  spdlog::details::registry::instance().drop_all();
- 
+  spdlog::details::registry::instance().drop_all(); // clean up. ideally i'd tell them all to flush in case there is a dangling reference to them
   return 0;
 }

@@ -10,19 +10,27 @@ namespace framework {
     namespace detail {
       template<typename... Ts, typename f, typename err> static inline string buffered_with_error(f fun, err *e, Ts... args) {
         string result;
-        uint32_t len = fun(args..., nullptr, 0, e);
-        if (len == 0) return result;
-        result.resize(len);
-        len = fun(args..., const_cast<char*>(result.c_str()), len, e);
+        uint32_t newlen = fun(args..., nullptr, 0, e), len=0;
+        do {
+          len = newlen;
+          if (len <= 1) return "";
+          result.resize(len);
+          uint32_t newlen = fun(args..., const_cast<char*>(result.c_str()), len, e);
+        } while (len != newlen);
+        result.resize(newlen - 1); // we don't own the \0 at the end of a string.
         return result;
       }
 
       template<typename... Ts, typename f> static inline string buffered(f fun, Ts... args) {
-        string result;
-        uint32_t len = fun(args..., (char *) nullptr, uint32_t(0));
-        if (len == 0) return result;
-        result.resize(len);
-        len = fun(args..., const_cast<char*>(result.c_str()), len);
+        string result;        
+        uint32_t newlen = fun(args..., nullptr, 0, e), len=0;
+        do {
+          len = newlen;
+          if (len <= 1) return "";
+          result.resize(len);
+          uint32_t newlen = fun(args..., const_cast<char*>(result.c_str()), len);
+        } while (len != newlen);
+        result.resize(newlen - 1); // we don't own the \0 at the end of a string.
         return result;
       }
     }
@@ -38,10 +46,10 @@ namespace framework {
         handle = VR_Init(&eError, VRApplication_Scene);
         if (eError != VRInitError_None)
           die("Unable to initialize OpenVR.\n{}", VR_GetVRInitErrorAsEnglishDescription(eError));
-        log("vr")->info("OpenVR initialized. hmd: {}, serial#: {}", driver(), serial_number());
+        log("vr")->info("initialized. driver: {} ({}) serial#: {}", driver(), driver_version(), serial_number());
       } else {
         handle = VRSystem();
-        log("vr")->info("OpenVR: re-entrant initialization {}", openvr_initializations);
+        log("vr")->info("re-entrant initialization {}", openvr_initializations);
       }
     }
 
@@ -60,9 +68,9 @@ namespace framework {
       lock_guard<mutex> guard(openvr_init_mutex);
       if (!--openvr_initializations) {
         VR_Shutdown();
-        log("vr")->info("OpenVR shutdown");
+        log("vr")->info("shutdown");
       } else {
-        log("vr")->info("OpenVR: re-entrant shutdown {}", openvr_initializations + 1);
+        log("vr")->info("re-entrant shutdown {}", openvr_initializations + 1);
       }
 
     }
@@ -125,7 +133,7 @@ namespace framework {
       return false;
     }
 
-    const char * system::show_tracked_device_class(TrackedDeviceClass c) {
+    const char * system::show_tracked_device_class(TrackedDeviceClass c) const noexcept {
       switch (c) {
         case TrackedDeviceClass_Controller: return "controller";
         case TrackedDeviceClass_HMD: return "HMD";
@@ -136,7 +144,23 @@ namespace framework {
       }
     }
 
-    const char * system::show_event_type(int e) {
+    const char * system::show_compositor_error(EVRCompositorError e) const noexcept {
+      switch (e) {
+        case VRCompositorError_None: return "none";
+        case VRCompositorError_DoNotHaveFocus: return "do not have focus";
+        case VRCompositorError_IncompatibleVersion: return "incompatible version";
+        case VRCompositorError_IndexOutOfRange: return "index out of range";
+        case VRCompositorError_InvalidTexture: return "invalid texture";
+        case VRCompositorError_IsNotSceneApplication: return "is not scene application";
+        case VRCompositorError_RequestFailed: return "request failed";
+        case VRCompositorError_SharedTexturesNotSupported: return "shared textures not supported";
+        case VRCompositorError_TextureIsOnWrongDevice: return "texture is on wrong device";
+        case VRCompositorError_TextureUsesUnsupportedFormat: return "texture uses unsupported format";
+        default: return "unknown";
+      }
+    }
+
+    const char * system::show_event_type(int e) const noexcept {
       switch (e) {
         case VREvent_None: return "None";
         case VREvent_TrackedDeviceActivated: return "TrackedDeviceActivated";

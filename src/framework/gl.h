@@ -13,14 +13,14 @@ namespace framework {
       profile profile;
     };
 
-    const char * show_object_label_type(GLenum t);
-    const char * show_debug_source(GLenum s);
-    const char * show_debug_message_type(GLenum t);
+    const char * show_object_label_type(GLenum t) noexcept;
+    const char * show_debug_source(GLenum s) noexcept;
+    const char * show_debug_message_type(GLenum t) noexcept;
 
     // raii, requires opengl
     struct debugger : noncopyable {
-      debugger();
-      virtual ~debugger();
+      debugger() noexcept;
+      virtual ~debugger() noexcept;
     };
   }
 }

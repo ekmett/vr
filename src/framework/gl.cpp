@@ -4,7 +4,7 @@
 
 namespace framework {
   namespace gl {
-    static inline spdlog::level::level_enum log_severity(GLenum severity) {
+    static inline spdlog::level::level_enum log_severity(GLenum severity) noexcept {
       using namespace spdlog::level;
       switch (severity) {
         case GL_DEBUG_SEVERITY_HIGH: return critical;
@@ -17,20 +17,20 @@ namespace framework {
       log("gl")->log(log_severity(severity), "{} {}: {} ({})", show_debug_source(source), show_debug_message_type(type), message, id);
     }
 
-    debugger::debugger() {
+    debugger::debugger() noexcept {
       glDebugMessageCallback((GLDEBUGPROC)gl_debugging_callback, nullptr);
       glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
       glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
       glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_MARKER, 0, GL_DEBUG_SEVERITY_LOW, 5, "start");
     }
 
-    debugger::~debugger() {
+    debugger::~debugger() noexcept {
       glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_MARKER, 0, GL_DEBUG_SEVERITY_LOW, 4, "stop");
       glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE);
       glDebugMessageCallback(nullptr, nullptr);
     }
 
-    const char * show_object_label_type(GLenum t) {
+    const char * show_object_label_type(GLenum t) noexcept {
       switch (t) {
         case GL_BUFFER: return "buffer";
         case GL_SHADER: return "shader";
@@ -47,7 +47,7 @@ namespace framework {
       }
     }
 
-    const char * show_debug_source(GLenum s) {
+    const char * show_debug_source(GLenum s) noexcept {
       switch (s) {
         case GL_DEBUG_SOURCE_API: return "API";
         case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "window system";
@@ -59,7 +59,7 @@ namespace framework {
       }
     }
 
-    const char * gl::show_debug_message_type(GLenum t) {
+    const char * gl::show_debug_message_type(GLenum t) noexcept {
       switch (t) {
         case GL_DEBUG_TYPE_ERROR: return "error";
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "deprecated behavior";

@@ -1,9 +1,10 @@
 #include "stdafx.h"
+
 #include <stdio.h>
 #include <SDL_opengl.h>
-#include "error.h"
-#include "sdl_gl_window.h"
-#include "gl.h"
+#include "framework/error.h"
+#include "framework/sdl_window.h"
+#include "framework/gl.h"
 
 using namespace std;
 using namespace spdlog;
@@ -20,7 +21,7 @@ namespace framework {
       }
     }
 
-    gl_window::gl_window(
+    window::window(
       string title,
       gl::version version,
       bool debug,
@@ -28,7 +29,7 @@ namespace framework {
       int windowY,
       int width,
       int height
-    ) : width(width), height(height) { // , video_system(SDL_INIT_VIDEO) {
+    ) : width(width), height(height) {
       Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, version.major);
@@ -42,17 +43,16 @@ namespace framework {
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
       // create the sdl window
-      window = SDL_CreateWindow(title.c_str(), windowX, windowY, width, height, windowFlags);
-      if (window == nullptr)
+      sdl_window = SDL_CreateWindow(title.c_str(), windowX, windowY, width, height, windowFlags);
+      if (sdl_window == nullptr)
         die("Window could not be created.\n{}", SDL_GetError());
 
       // create the gl context
-      context = SDL_GL_CreateContext(window);
+      context = SDL_GL_CreateContext(sdl_window);
       if (context == nullptr)
         die("OpenGL context could not be created.\n{}", SDL_GetError());
 
       // We created or switched an OpenGL context, so initialize glew
-
 #ifdef _WIN32
       glewExperimental = GL_TRUE;
       auto nGlewError = glewInit();
@@ -61,6 +61,8 @@ namespace framework {
 #endif
 
       glGetError(); // clear the GLEW error
+
+      log("gl")->info("context created");
 
       if (SDL_GL_SetSwapInterval(0) < 0)
         die("Unable to set VSync.\n{}", SDL_GetError());
@@ -72,10 +74,10 @@ namespace framework {
       //SDL_ShowCursor(SDL_DISABLE);
     }
 
-    gl_window::~gl_window() {
+    window::~window() {
       //SDL_StopTextInput();
       //SDL_ShowCursor(SDL_ENABLE);
-      SDL_DestroyWindow(window);
+      SDL_DestroyWindow(sdl_window);
       SDL_Quit();
     }
   }

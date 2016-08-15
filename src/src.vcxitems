@@ -17,27 +17,36 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\apply.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\cache_isolated.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\cds.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\circular_array.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\fmt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glew.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glm.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\grammar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\spdlog.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\error.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl_system.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl_gl_window.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl_window.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\signal.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\noncopyable.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_system.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\std.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stdafx.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\utf8.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\chase_lev_deque.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\worker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gl.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_system.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_gl_window.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_window.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_system.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spdlog.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp" />

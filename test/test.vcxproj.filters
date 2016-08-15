@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="boilerplate">
+      <UniqueIdentifier>{5dfb965e-e33a-4924-982a-050622e6e791}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>boilerplate</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>boilerplate</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>boilerplate</Filter>
+    </ClCompile>
+    <ClCompile Include="test_cds_hp.cpp" />
+  </ItemGroup>
+</Project>

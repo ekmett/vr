@@ -3,7 +3,6 @@
 
 #include "framework/sdl.h"
 #include "error.h"
-#include "sdl_gl_window.h"
 #include "signal.h"
 #include "noncopyable.h"
 
@@ -14,9 +13,9 @@ using namespace spdlog;
 namespace framework {
   namespace sdl {
     // re-entrant access to SDL
-    struct subsystem : noncopyable {
-      subsystem(uint32_t flags = SDL_INIT_VIDEO);
-      virtual ~subsystem();
+    struct system : noncopyable {
+      system(uint32_t flags = SDL_INIT_VIDEO);
+      virtual ~system();
 
       const uint32_t flags;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <openvr.h>
+#include <concrt.h>
 
 #ifdef _WIN32
 #pragma comment(lib, "openvr_api")
@@ -41,7 +42,7 @@ namespace framework {
       system();
       system(const system &); // bumps initialization count
       system(system && that) { std::move(that.handle); }
-      system& operator=(const system &) { return *this; } // oddly constant assignment!
+      system& operator=(const system &) noexcept { return *this; } // oddly constant assignment!
       system& operator=(system &&); // decrements initialization count
 
       virtual ~system();
@@ -53,6 +54,7 @@ namespace framework {
       string device_string(device_id index, vr::TrackedDeviceProperty prop, vr::TrackedPropertyError * error = nullptr) const;
 
       inline string driver() const;
+      inline string driver_version() const;
       inline string serial_number() const;
 
       vr::IVRSystem * handle;
@@ -68,8 +70,9 @@ namespace framework {
         on_scene_application_changed, on_scene_focus_changed, on_input_focus_changed, on_input_focus_captured, on_input_focus_released, on_scene_application_secondary_rendering_started;
 
       // static utilities
-      static const char * show_tracked_device_class(vr::TrackedDeviceClass c);
-      static const char * show_event_type(int e);
+      const char * show_tracked_device_class(vr::TrackedDeviceClass c) const noexcept;
+      const char * show_event_type(int e) const noexcept;
+      const char * show_compositor_error(vr::EVRCompositorError e) const noexcept;
     };
 
 
@@ -85,8 +88,11 @@ namespace framework {
       return device_string(hmd, vr::Prop_TrackingSystemName_String);
     }
 
+    inline string system::driver_version() const {
+      return device_string(hmd, vr::Prop_DriverVersion_String);
+    }
     inline string system::serial_number() const {
-      return device_string(hmd, vr::Prop_TrackingSystemName_String);
+      return device_string(hmd, vr::Prop_SerialNumber_String);
     }
   }
 }

@@ -18,7 +18,7 @@ namespace framework {
     // these initialization options all require event handling, and hence trigger filter installation.
     static const int event_mask = SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER;
 
-    subsystem::subsystem(uint32_t flags) : flags(flags) {
+    system::system(uint32_t flags) : flags(flags) {
       if (SDL_InitSubSystem(flags) < 0)
         die("Unable to initialize SDL.\n{}", SDL_GetError());
 
@@ -33,7 +33,7 @@ namespace framework {
       }
     }
 
-    subsystem::~subsystem() {
+    system::~system() {
       // atomically kill the event filter
       SDL_QuitSubSystem(flags);
 
@@ -46,42 +46,42 @@ namespace framework {
       }
     }
 
-    signal<void()> subsystem::on_quit, subsystem::on_app_terminating;
-    signal<void(filename_t)> subsystem::on_drop_file;
+    signal<void()> system::on_quit, system::on_app_terminating;
+    signal<void(filename_t)> system::on_drop_file;
 
     // window events
-    signal<void(uint32_t)> subsystem::on_window_close, subsystem::on_window_shown, subsystem::on_window_hidden, subsystem::on_window_exposed,
-      subsystem::on_window_minimized, subsystem::on_window_maximized, subsystem::on_window_restored,
-      subsystem::on_window_enter, subsystem::on_window_leave, subsystem::on_window_focus_gained, subsystem::on_window_focus_lost;
-    signal<void(uint32_t, int, int)> subsystem::on_window_resize, subsystem::on_window_size_changed, subsystem::on_window_moved;
+    signal<void(uint32_t)> system::on_window_close, system::on_window_shown, system::on_window_hidden, system::on_window_exposed,
+      system::on_window_minimized, system::on_window_maximized, system::on_window_restored,
+      system::on_window_enter, system::on_window_leave, system::on_window_focus_gained, system::on_window_focus_lost;
+    signal<void(uint32_t, int, int)> system::on_window_resize, system::on_window_size_changed, system::on_window_moved;
 
     // keyboard events
-    signal<void(SDL_KeyboardEvent &)> subsystem::on_key_down, subsystem::on_key_up;
+    signal<void(SDL_KeyboardEvent &)> system::on_key_down, system::on_key_up;
 
     // mouse events
-    signal<void(SDL_MouseMotionEvent &)> subsystem::on_mouse_motion;
-    signal<void(SDL_MouseButtonEvent &)> subsystem::on_mouse_button_down, subsystem::on_mouse_button_up;
-    signal<void(SDL_MouseWheelEvent &)> subsystem::on_mouse_wheel;
+    signal<void(SDL_MouseMotionEvent &)> system::on_mouse_motion;
+    signal<void(SDL_MouseButtonEvent &)> system::on_mouse_button_down, system::on_mouse_button_up;
+    signal<void(SDL_MouseWheelEvent &)> system::on_mouse_wheel;
 
     // joystick events
-    signal<void(SDL_JoyButtonEvent &)> subsystem::on_joy_button_down, subsystem::on_joy_button_up;
-    signal<void(SDL_JoyAxisEvent &)> subsystem::on_joy_axis_motion;
-    signal<void(SDL_JoyBallEvent &)> subsystem::on_joy_ball_motion;
-    signal<void(SDL_JoyHatEvent &)> subsystem::on_joy_hat_motion;
-    signal<void(uint32_t)> subsystem::on_joy_device_added, subsystem::on_joy_device_removed;
-    signal<void(SDL_ControllerAxisEvent &)> subsystem::on_controller_axis_motion;
-    signal<void(SDL_ControllerButtonEvent &)> subsystem::on_controller_button_down, subsystem::on_controller_button_up;
-    signal<void(SDL_ControllerDeviceEvent &)> subsystem::on_controller_device_added, subsystem::on_controller_device_removed, subsystem::on_controller_device_remapped;
+    signal<void(SDL_JoyButtonEvent &)> system::on_joy_button_down, system::on_joy_button_up;
+    signal<void(SDL_JoyAxisEvent &)> system::on_joy_axis_motion;
+    signal<void(SDL_JoyBallEvent &)> system::on_joy_ball_motion;
+    signal<void(SDL_JoyHatEvent &)> system::on_joy_hat_motion;
+    signal<void(uint32_t)> system::on_joy_device_added, system::on_joy_device_removed;
+    signal<void(SDL_ControllerAxisEvent &)> system::on_controller_axis_motion;
+    signal<void(SDL_ControllerButtonEvent &)> system::on_controller_button_down, system::on_controller_button_up;
+    signal<void(SDL_ControllerDeviceEvent &)> system::on_controller_device_added, system::on_controller_device_removed, system::on_controller_device_remapped;
     // text editing
-    signal<void(SDL_TextEditingEvent &)> subsystem::on_text_editing;
-    signal<void(SDL_TextInputEvent &)> subsystem::on_text_input;
+    signal<void(SDL_TextEditingEvent &)> system::on_text_editing;
+    signal<void(SDL_TextInputEvent &)> system::on_text_input;
 
     // audio devices
-    signal<void(SDL_AudioDeviceEvent &)> subsystem::on_audio_device_added, subsystem::on_audio_device_removed;
-    signal<void(SDL_Event &)> subsystem::on_event;
+    signal<void(SDL_AudioDeviceEvent &)> system::on_audio_device_added, system::on_audio_device_removed;
+    signal<void(SDL_Event &)> system::on_event;
 
     static int sdl_event_filter(void * userdata, SDL_Event * e) {
-      if (!e || !subsystem::on_event.empty()) return 1;
+      if (!e || !system::on_event.empty()) return 1;
       switch (e->type) {
         // explicitly hooked
         case SDL_QUIT:
@@ -92,60 +92,60 @@ namespace framework {
         // check if we're listening:
         case SDL_WINDOWEVENT: {
           switch (e->window.event) {
-            case SDL_WINDOWEVENT_SHOWN: return !subsystem::on_window_shown.empty();
-            case SDL_WINDOWEVENT_HIDDEN: return !subsystem::on_window_hidden.empty();
-            case SDL_WINDOWEVENT_CLOSE: return !subsystem::on_window_close.empty();
-            case SDL_WINDOWEVENT_EXPOSED: return !subsystem::on_window_exposed.empty();
-            case SDL_WINDOWEVENT_MINIMIZED: return !subsystem::on_window_minimized.empty();
-            case SDL_WINDOWEVENT_MAXIMIZED: return !subsystem::on_window_maximized.empty();
-            case SDL_WINDOWEVENT_RESTORED: return !subsystem::on_window_restored.empty();
-            case SDL_WINDOWEVENT_ENTER: return !subsystem::on_window_enter.empty();
-            case SDL_WINDOWEVENT_LEAVE: return !subsystem::on_window_leave.empty();
-            case SDL_WINDOWEVENT_FOCUS_GAINED: return !subsystem::on_window_focus_gained.empty();
-            case SDL_WINDOWEVENT_FOCUS_LOST: return !subsystem::on_window_focus_lost.empty();
-            case SDL_WINDOWEVENT_SIZE_CHANGED: return !subsystem::on_window_size_changed.empty();
-            case SDL_WINDOWEVENT_RESIZED: return !subsystem::on_window_resize.empty();
+            case SDL_WINDOWEVENT_SHOWN: return !system::on_window_shown.empty();
+            case SDL_WINDOWEVENT_HIDDEN: return !system::on_window_hidden.empty();
+            case SDL_WINDOWEVENT_CLOSE: return !system::on_window_close.empty();
+            case SDL_WINDOWEVENT_EXPOSED: return !system::on_window_exposed.empty();
+            case SDL_WINDOWEVENT_MINIMIZED: return !system::on_window_minimized.empty();
+            case SDL_WINDOWEVENT_MAXIMIZED: return !system::on_window_maximized.empty();
+            case SDL_WINDOWEVENT_RESTORED: return !system::on_window_restored.empty();
+            case SDL_WINDOWEVENT_ENTER: return !system::on_window_enter.empty();
+            case SDL_WINDOWEVENT_LEAVE: return !system::on_window_leave.empty();
+            case SDL_WINDOWEVENT_FOCUS_GAINED: return !system::on_window_focus_gained.empty();
+            case SDL_WINDOWEVENT_FOCUS_LOST: return !system::on_window_focus_lost.empty();
+            case SDL_WINDOWEVENT_SIZE_CHANGED: return !system::on_window_size_changed.empty();
+            case SDL_WINDOWEVENT_RESIZED: return !system::on_window_resize.empty();
             default: return 1;
           }
-        case SDL_KEYUP: return !subsystem::on_key_up.empty();
-        case SDL_MOUSEBUTTONDOWN: return !subsystem::on_mouse_button_down.empty();
-        case SDL_MOUSEBUTTONUP: return !subsystem::on_mouse_button_up.empty();
-        case SDL_MOUSEMOTION: return !subsystem::on_mouse_motion.empty();
-        case SDL_MOUSEWHEEL: return !subsystem::on_mouse_wheel.empty();
+        case SDL_KEYUP: return !system::on_key_up.empty();
+        case SDL_MOUSEBUTTONDOWN: return !system::on_mouse_button_down.empty();
+        case SDL_MOUSEBUTTONUP: return !system::on_mouse_button_up.empty();
+        case SDL_MOUSEMOTION: return !system::on_mouse_motion.empty();
+        case SDL_MOUSEWHEEL: return !system::on_mouse_wheel.empty();
 
           // joysticks
-        case SDL_JOYBUTTONUP: return !subsystem::on_joy_button_up.empty();
-        case SDL_JOYBUTTONDOWN: return !subsystem::on_joy_button_down.empty();
-        case SDL_JOYAXISMOTION: return !subsystem::on_joy_axis_motion.empty();
-        case SDL_JOYBALLMOTION: return !subsystem::on_joy_ball_motion.empty();
-        case SDL_JOYDEVICEADDED: return !subsystem::on_joy_device_added.empty();
-        case SDL_JOYDEVICEREMOVED: return !subsystem::on_joy_device_removed.empty();
-        case SDL_JOYHATMOTION: return !subsystem::on_joy_hat_motion.empty();
-        case SDL_CONTROLLERAXISMOTION: return !subsystem::on_controller_axis_motion.empty();
-        case SDL_CONTROLLERBUTTONDOWN: return !subsystem::on_controller_button_down.empty();
-        case SDL_CONTROLLERBUTTONUP: return !subsystem::on_controller_button_up.empty();
-        case SDL_CONTROLLERDEVICEADDED: return !subsystem::on_controller_device_added.empty();
-        case SDL_CONTROLLERDEVICEREMOVED: return !subsystem::on_controller_device_removed.empty();
-        case SDL_CONTROLLERDEVICEREMAPPED: return !subsystem::on_controller_device_remapped.empty();
+        case SDL_JOYBUTTONUP: return !system::on_joy_button_up.empty();
+        case SDL_JOYBUTTONDOWN: return !system::on_joy_button_down.empty();
+        case SDL_JOYAXISMOTION: return !system::on_joy_axis_motion.empty();
+        case SDL_JOYBALLMOTION: return !system::on_joy_ball_motion.empty();
+        case SDL_JOYDEVICEADDED: return !system::on_joy_device_added.empty();
+        case SDL_JOYDEVICEREMOVED: return !system::on_joy_device_removed.empty();
+        case SDL_JOYHATMOTION: return !system::on_joy_hat_motion.empty();
+        case SDL_CONTROLLERAXISMOTION: return !system::on_controller_axis_motion.empty();
+        case SDL_CONTROLLERBUTTONDOWN: return !system::on_controller_button_down.empty();
+        case SDL_CONTROLLERBUTTONUP: return !system::on_controller_button_up.empty();
+        case SDL_CONTROLLERDEVICEADDED: return !system::on_controller_device_added.empty();
+        case SDL_CONTROLLERDEVICEREMOVED: return !system::on_controller_device_removed.empty();
+        case SDL_CONTROLLERDEVICEREMAPPED: return !system::on_controller_device_remapped.empty();
 
           // text
-        case SDL_TEXTEDITING: return !subsystem::on_text_editing.empty();
-        case SDL_TEXTINPUT: return !subsystem::on_text_input.empty();
+        case SDL_TEXTEDITING: return !system::on_text_editing.empty();
+        case SDL_TEXTINPUT: return !system::on_text_input.empty();
 
           // audio devices
-        case SDL_AUDIODEVICEADDED: return !subsystem::on_audio_device_added.empty();
-        case SDL_AUDIODEVICEREMOVED: return !subsystem::on_audio_device_removed.empty();
+        case SDL_AUDIODEVICEADDED: return !system::on_audio_device_added.empty();
+        case SDL_AUDIODEVICEREMOVED: return !system::on_audio_device_removed.empty();
 
           // don't know, don't care, maybe should log
         default:
-          log("sdl")->warn("Filtering unhandled event: {} ({})", subsystem::show_event(e->type), e->type);
+          log("sdl")->warn("Filtering unhandled event: {} ({})", system::show_event(e->type), e->type);
           return 0;
         }
       }
     }
 
     // code changes here must percolate up into sdl_event_filter!
-    bool subsystem::poll() {
+    bool system::poll() {
       SDL_Event sdlEvent;
       while (SDL_PollEvent(&sdlEvent) != 0) {
         switch (sdlEvent.type) {
@@ -224,7 +224,7 @@ namespace framework {
     }
 
 
-    const char * subsystem::show_event(uint32_t e) {
+    const char * system::show_event(uint32_t e) {
       switch (e) {
         case SDL_QUIT: return "QUIT";
         case SDL_APP_TERMINATING: return "APP_TERMINATING";

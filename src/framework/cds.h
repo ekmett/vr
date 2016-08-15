@@ -29,19 +29,5 @@ namespace framework {
     cds_thread_attachment() { cds::threading::Manager::attachThread(); }
     ~cds_thread_attachment() { cds::threading::Manager::detachThread(); }
   };
-  /*
-  
-
-  int main(int argc, char **argv) {
-    cds_main_thread_attachment<> main_thread_attachment;
-    ... spin up another thread to run worker ...
-  }
-
-  int worker() {
-    cds_thread_attachment worker_thread_attachment;
-    ... do stuff ...
-  }
-
-  */
 }
 

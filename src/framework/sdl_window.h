@@ -13,28 +13,26 @@
 namespace framework {
   namespace sdl {
     // raii opengl support provider
-    struct gl_window : noncopyable {
+    struct window : public system {
       
-      gl_window(
+      window(
         string title,
         gl::version version = { 4, 5, gl::profile::core },
         bool debug = false,
-        int x = 700,
-        int y = 100,
-        int width = 1280,
-        int height = 768
+        int x = 800,
+        int y = 50,
+        int width = 160,
+        int height = 100
       );
 
-      virtual ~gl_window();
+      virtual ~window();
 
-     //  inline bool poll() { return video_system.poll(); }
-
-      SDL_Window * window;
+      SDL_Window * sdl_window;
       SDL_GLContext context;
       int width; // must be maintained
       int height;
 
-      std::unique_ptr<gl::debugger> debugger;
+      unique_ptr<gl::debugger> debugger;
     };
   }
 }
