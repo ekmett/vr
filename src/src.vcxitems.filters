@@ -74,7 +74,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\grammar.h">
       <Filter>framework</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)serialization.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h">
       <Filter>framework\serialization</Filter>
     </ClInclude>
   </ItemGroup>

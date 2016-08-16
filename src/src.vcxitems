@@ -28,6 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\grammar.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\spdlog.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\error.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gl.h" />
@@ -41,7 +42,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\utf8.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\chase_lev_deque.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\worker.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)serialization.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp" />
