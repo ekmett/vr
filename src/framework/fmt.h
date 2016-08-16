@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <chrono>
 #include <ratio>
@@ -41,6 +41,39 @@ namespace framework {
       }
       return "non-SI ratio";
     }
+    static inline const char * show_engineering_prefix(intmax_t N, intmax_t D) noexcept {
+      if (N == 1) {
+        switch (D) {
+          // case 1000000000000000000000000LL: return "y";
+          // case 1000000000000000000000LL: return "z";
+          case 1000000000000000000: return "a";
+          case 1000000000000000: return "f";
+          case 1000000000000: return "p";
+          case 1000000000: return "n";
+          case 1000000: return "u"; // "μ";
+          case 1000: return "m";
+          case 100: return "c";
+          case 10: return "d";
+          case 1: return "";
+        }
+      }
+      if (D == 1) {
+        switch (N) {
+          case 10: return "da";
+          case 100: return "h";
+          case 1000: return "k";
+          case 1000000: return "M";
+          case 1000000000: return "G";
+          case 1000000000000: return "T";
+          case 1000000000000000: return "P";
+          case 1000000000000000000: return "E";
+            // case 1000000000000000000000: return "Z";
+            // case 1000000000000000000000000: return "Y";
+        }
+      }
+      return "non-SI ratio";
+    }
+
   }
 }
 
@@ -51,11 +84,13 @@ namespace std {
   }
 
   namespace chrono {
-    template<typename OStream, typename T> OStream& operator<<(OStream& os, const std::chrono::duration<T> &c) {
-      return os << c.count() << " " << framework::plural(c.count(), "second", "seconds");
-    }
+    /*
     template<typename OStream, typename T, intmax_t N, intmax_t D> OStream& operator<<(OStream& os, const std::chrono::duration<T, std::ratio<N,D>> &c) {
       return os << c.count() << " " << framework::detail::show_std_ratio(N,D) << framework::plural(c.count(), "second", "seconds");
+    }
+    */
+    template<typename OStream, typename T, intmax_t N, intmax_t D> OStream& operator<<(OStream& os, const std::chrono::duration<T, std::ratio<N, D>> &c) {
+      return os << c.count() << " " << framework::detail::show_engineering_prefix(N, D) << "s";
     }
   }
 }  

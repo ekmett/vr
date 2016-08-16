@@ -22,6 +22,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\cache_isolated.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\cds.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\circular_array.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\composition.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\fmt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glew.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glm.h" />

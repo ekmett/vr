@@ -14,24 +14,18 @@ namespace proc {
     auto compositor = vr::VRCompositor();
 
     for (;;) {
+      if (vr.poll() || window.poll()) break; // local book-keeping
+      compositor->WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, 0);
+      auto ttp = vr.time_to_photons();
+      log("app")->info("time to photons: {}", duration<float, std::milli>(ttp));
       // TODO: create a task_group for the current frame here
 
-      if (vr.poll() || window.poll()) break;
 
-      // send everything to the hmd
+      glFinish();
+      // present eyes here...
       compositor->PostPresentHandoff();
-      // post present handoff -- this is an expensive fence
-
-      // do any local remaining work for this frame
-
-      // task_group.wait();
-
-      // for somebody asking for the default figure out the time from now to photons.
-
-      auto ttp = vr.time_to_photons();
-      log("app")->info("time to photons: {}", ttp);
-
-      // WaitGetPoses
+      // task_group.wait(); 
+      // check for epoch change
     }
   }
 }

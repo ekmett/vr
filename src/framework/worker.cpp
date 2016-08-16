@@ -3,7 +3,8 @@
 #include "framework/error.h"
 #include "framework/cds.h"
 #include "framework/grammar.h"
-#include "worker.h"
+#include "framework/worker.h"
+#include <chrono>
 
 using namespace std;
 using namespace std::chrono;
@@ -15,7 +16,7 @@ namespace framework {
     cds_thread_attachment attach_thread;
 
     uniform_int_distribution<int> random_peer(0, p.N - 2);
-    exponential_distribution<double> random_delay_ns(100000); // 0.1ms expected task size
+    exponential_distribution<double> random_delay_us(100.0); // 0.1ms expected task size
     string name = fmt::format("worker {}", i);
     shared_ptr<logger> diary = log(name.c_str());
     auto d = high_resolution_clock::now();
@@ -65,8 +66,8 @@ namespace framework {
 
           // don't resample time and round down to err on the side of too much sharing.
           d = then - chrono::floor<high_resolution_clock::duration>(
-            duration<double, nano>(random_delay_ns(rng))
-            );
+            duration<double, micro>(random_delay_us(rng))
+          );
         }
       }
       try {

@@ -53,7 +53,7 @@ namespace framework {
         display_frequency = handle->GetFloatTrackedDeviceProperty(hmd, vr::Prop_DisplayFrequency_Float);
         frame_duration = duration<float> (1.f / display_frequency);
         vsync_to_photons = duration<float>(handle->GetFloatTrackedDeviceProperty(hmd, vr::Prop_SecondsFromVsyncToPhotons_Float));
-        log("vr")->info("display frequency: {}, time from vsync to photons: {}", display_frequency, vsync_to_photons);
+        log("vr")->info("display frequency: {}, time from vsync to photons: {}", display_frequency, duration<float,std::milli>(vsync_to_photons));
       } else {
         handle = VRSystem();
         log("vr")->info("re-entrant initialization {}", openvr_initializations);
