@@ -9,8 +9,10 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
+#ifdef HAVE_OPENVR
 // OpenVR
 #include <openvr.h>
+#endif
 
 // spdlog and fmtlib
 #include "framework/fmt.h"

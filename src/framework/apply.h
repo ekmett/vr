@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef _WIN32
+
+// not portable
+
 #include <cstdlib>
 #include <utility>
 #include <tuple>
@@ -19,3 +23,5 @@ namespace framework {
   }
 
 }
+
+#endif

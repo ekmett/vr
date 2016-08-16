@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(_APPLE)
+#if defined(__APPLE__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
 #else
