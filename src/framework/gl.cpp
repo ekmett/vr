@@ -1,6 +1,4 @@
-#ifdef FRAMEWORK_USE_STDAFX
 #include "framework/stdafx.h"
-#endif
 #include "framework/spdlog.h"
 #include "framework/gl.h"
 

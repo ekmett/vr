@@ -1,6 +1,9 @@
 #pragma once
 
+#include <framework/config.h>
+
 // common headers used to build a pch for the framework sub-project
+#ifdef FRAMEWORK_USE_STDAFX
 
 // GLEW
 #include "framework/glew.h"
@@ -28,3 +31,5 @@
 #include "framework/utf8.h"
 #include "framework/signal.h"
 #include "framework/noncopyable.h"
+
+#endif

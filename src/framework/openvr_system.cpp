@@ -1,8 +1,4 @@
-#include "framework/config.h"
-#ifdef FRAMEWORK_USE_STDAFX
 #include "framework/stdafx.h"
-#endif
-
 #include "framework/std.h"
 #include "framework/openvr_system.h"
 #include "framework/error.h"

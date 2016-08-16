@@ -1,8 +1,4 @@
-#include "framework/config.h"
-#ifdef FRAMEWORK_USE_STDAFX
 #include "framework/stdafx.h"
-#endif
-
 #include "framework/cds.h"
 #include "framework/error.h"
 #include "framework/cds.h"
