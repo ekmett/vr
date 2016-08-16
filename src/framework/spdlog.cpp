@@ -9,7 +9,10 @@ namespace framework {
   namespace logging {
     shared_ptr<logger> default_factory(const char * name) {
       std::lock_guard<std::mutex> guard(factory_mutex);
-      return create<default_sink>(name);
+      // double check lock
+      auto result = spdlog::get(name);
+      if (!result) result = create<default_sink>(name);
+      return result;
     }
    
     shared_ptr<logger>(*factory)(const char * name) = default_factory;

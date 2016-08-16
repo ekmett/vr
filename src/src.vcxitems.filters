@@ -74,6 +74,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\grammar.h">
       <Filter>framework</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)serialization.h">
+      <Filter>framework\serialization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="framework">
@@ -99,6 +102,9 @@
     </Filter>
     <Filter Include="framework\work-in-progress">
       <UniqueIdentifier>{156ceea3-ba8b-4462-a937-4565aea8bd8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="framework\serialization">
+      <UniqueIdentifier>{e3f7ff7b-e90b-426b-8c49-cce573c626c3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
