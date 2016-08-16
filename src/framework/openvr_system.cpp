@@ -2,6 +2,7 @@
 #include "framework/std.h"
 #include "framework/openvr_system.h"
 #include "framework/error.h"
+#include <chrono>
 
 using namespace vr;
 
@@ -47,21 +48,16 @@ namespace framework {
         if (eError != VRInitError_None)
           die("Unable to initialize OpenVR.\n{}", VR_GetVRInitErrorAsEnglishDescription(eError));
         log("vr")->info("initialized. driver: {} ({}) serial#: {}", driver(), driver_version(), serial_number());
+
+        // cache some information about the display
+        display_frequency = handle->GetFloatTrackedDeviceProperty(hmd, vr::Prop_DisplayFrequency_Float);
+        frame_duration = duration<float> (1.f / display_frequency);
+        vsync_to_photons = duration<float>(handle->GetFloatTrackedDeviceProperty(hmd, vr::Prop_SecondsFromVsyncToPhotons_Float));
+        log("vr")->info("display frequency: {}, time from vsync to photons: {}", display_frequency, vsync_to_photons);
       } else {
         handle = VRSystem();
         log("vr")->info("re-entrant initialization {}", openvr_initializations);
       }
-    }
-
-    system::system(const system &) {
-      lock_guard<mutex> guard(openvr_init_mutex);
-      ++openvr_initializations;
-    }
-
-    system & system::operator=(system && that) {
-      lock_guard<mutex> guard(openvr_init_mutex);
-      --openvr_initializations;
-      return *this;
     }
 
     system::~system() {

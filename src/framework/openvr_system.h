@@ -1,6 +1,7 @@
 #pragma once
 
 #include <openvr.h>
+#include <chrono>
 
 #ifdef _WIN32
 #pragma comment(lib, "openvr_api")
@@ -11,6 +12,8 @@
 #include "framework/spdlog.h"
 #include "framework/signal.h"
 #include "framework/noncopyable.h"
+
+
 
 namespace framework {
 
@@ -36,14 +39,10 @@ namespace framework {
     }
 
 
-    // construction is safely multi-threadedly re-entrant
-    struct system {
-      system();
-      system(const system &); // bumps initialization count
-      system(system && that) { std::move(that.handle); }
-      system& operator=(const system &) noexcept { return *this; } // oddly constant assignment!
-      system& operator=(system &&); // decrements initialization count
 
+    // construction is safely multi-threadedly re-entrant
+    struct system : noncopyable {
+      system();
       virtual ~system();
 
       bool poll() const;
@@ -57,6 +56,21 @@ namespace framework {
       inline string serial_number() const;
 
       vr::IVRSystem * handle;
+
+      // cached information
+      float display_frequency;
+      duration<float> frame_duration;
+      duration<float> vsync_to_photons;
+
+      inline duration<float> time_since_last_vsync() {
+        float t;
+        handle->GetTimeSinceLastVsync(&t, NULL);
+        return duration<float>(t);
+      }
+
+      inline duration<float> time_to_photons() {
+        return frame_duration - time_since_last_vsync() + vsync_to_photons;
+      }
 
       // static signals
       static signal<void(vr::VREvent_t &)> on_event;

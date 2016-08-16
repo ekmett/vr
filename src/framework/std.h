@@ -18,5 +18,6 @@ namespace framework {
   using std::set;
   using std::mem_fn;
   using std::mutex;
-  using std::lock_guard;
+  using std::lock_guard;  
+  using std::chrono::duration;
 }

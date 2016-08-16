@@ -10,3 +10,4 @@
 #include "framework/utf8.h"
 #include "framework/cds.h"
 #include "framework/cache_isolated.h"
+#include "framework/worker.h"

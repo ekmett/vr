@@ -8,9 +8,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stdafx.h">
       <Filter>framework</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h">
-      <Filter>framework</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.h">
       <Filter>framework\concurrency</Filter>
     </ClInclude>
@@ -76,6 +73,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h">
       <Filter>framework\work-in-progress</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h">
+      <Filter>framework\concurrency</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
