@@ -65,17 +65,17 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_system.h">
       <Filter>framework\vr</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\worker.h">
-      <Filter>framework\work-in-progress</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\cache_isolated.h">
       <Filter>framework\concurrency</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\grammar.h">
       <Filter>framework</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\worker.h">
+      <Filter>framework\concurrency</Filter>
+    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h">
-      <Filter>framework\serialization</Filter>
+      <Filter>framework\work-in-progress</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
