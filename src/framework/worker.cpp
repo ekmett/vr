@@ -1,4 +1,8 @@
-#include "stdafx.h"
+#include "framework/config.h"
+#ifdef FRAMEWORK_USE_STDAFX
+#include "framework/stdafx.h"
+#endif
+
 #include "framework/cds.h"
 #include "framework/error.h"
 #include "framework/cds.h"
@@ -9,8 +13,8 @@ using namespace std;
 using namespace std::chrono;
 using namespace framework;
 
-namespace proc {
- 
+namespace framework {
+
   void worker::main() {
     cds_thread_attachment attach_thread;
 
@@ -19,7 +23,7 @@ namespace proc {
     string name = fmt::format("worker {}", i);
     shared_ptr<logger> diary = log(name.c_str());
     auto d = high_resolution_clock::now();
-    diary->info("starting: {} {} in queue", q.size(), plural(q.size(),"item","items"));
+    diary->info("starting: {} {} in queue", q.size(), plural(q.size(), "item", "items"));
     for (;;) {
       task t;
       if (p.shutdown.load(std::memory_order_relaxed)) {
@@ -57,7 +61,7 @@ namespace proc {
           task * expected = nullptr;
           // weak should be fine, we're already in an outer loop, we'll come back
           // on excessively weak architectures, this might mean that the effective delay is much higher though
-          if ( p.s[j].data.load(memory_order_relaxed) == nullptr
+          if (p.s[j].data.load(memory_order_relaxed) == nullptr
             && p.s[j].data.compare_exchange_weak(expected, &q.front(), memory_order_seq_cst)) {
             q.pop_front(); // we gave the front of the deque away
             diary->info("sent work to {}", j);
@@ -66,7 +70,7 @@ namespace proc {
           // don't resample time and round down to err on the side of too much sharing.
           d = then - chrono::floor<high_resolution_clock::duration>(
             duration<double, nano>(random_delay_ns(rng))
-          );
+            );
         }
       }
       try {
@@ -90,5 +94,5 @@ namespace proc {
       thread.join();
   }
 
-  detail::dummy_task detail::the_dummy_task;
+  detail::dummy_task detail::dummy_task::instance;
 }

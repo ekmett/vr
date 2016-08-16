@@ -1,7 +1,6 @@
 #pragma once
 
 #include <openvr.h>
-#include <concrt.h>
 
 #ifdef _WIN32
 #pragma comment(lib, "openvr_api")

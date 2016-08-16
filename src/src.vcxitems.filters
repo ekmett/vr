@@ -129,6 +129,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_system.cpp">
       <Filter>framework\vr</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\worker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="$(MSBuildThisFileDirectory)README.txt" />

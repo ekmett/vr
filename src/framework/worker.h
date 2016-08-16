@@ -1,69 +1,91 @@
 #pragma once
-/*
+
+#include <deque>
+#include <atomic>
+#include <functional>
+
+#include <chrono>
+#include <random>
+#include <math.h>
+
 #include "framework/cds.h"
-#include "framework/chase_lev_deque.h"
+#include "framework/cache_isolated.h"
 
+// Implementation based on the steal-one sender-initiated variant of 
+// [Scheduling Parallel Programs by Work Stealing with Private Deques](http://www.chargueraud.org/research/2013/ppopp/full.pdf)
+// by Acar, Charguéraud, and Rainey
 namespace framework {
-  static const int max_workers = 16;
-  static const int epochs = 3;
 
-  typedef uint16_t worker_id;
-  typedef worker * pworker;
-
-  struct task {
-    virtual void work(worker & me) = 0;
-  };
-
+  struct pool;
   struct worker;
 
-  typedef std::function<void(worker&)> * task;
+  using task = std::function<void(worker&)>;
 
-  struct task {
-    
-  };
+  static const size_t max_workers = 16;
+  static const double task_delta = 0.0002;
 
   struct worker {
-    worker_id id, N;
-    chase_lev_deque<task*> work[epochs];
-    worker ** peers; // shuffled as we steal work from the peers for fairness, we don't own our peers, just the storage for the array.
-    //static concurrent_list idlers; // 
-    // template <typename Guard> friend struct pool<Guard>;
-    static std::atomic<int> epoch;
-    static thread_local worker * self;
+    template <typename SeedSeq> worker(pool &p, int i, SeedSeq & seed) : rng(seed), i(i), p(p) {}
+    std::mt19937 rng;
+    std::deque<task> q; // local jobs
+    pool & p; // owning pool
+    int i; // worker id
+    void main();
   };
 
-  template <typename Guard>
   struct pool {
-    pool(size_t N = min(max(cds::OS::topology::processor_count() - 2, 1), 16)) // a number between 1 and 16, minus one for our gl thread and one for openvr/os.
-      : N(N) {
-      workers = new worker[N];
-      workers.reserve(
-      for (int i = 0;i < N;++i) {
-        workers[i].id = i;
-        workers[i].N = N;
-        workers[i].peers = new worker*[N - 1];
-        for (int j = 0;j<N-1;++k) {
-          workers[i].peers[j] = workers[j];
-        }
-      }
-      worker * last;
-      for (int i = 0;i<N-1;++i) {
-        workers[i].peers[i] = last;
-        threads.push_back(std::thread(schedule(workers[i])); // this should be worked on a given processor for better affinity.
-      }
-      threads.push_back(std::thread(schedule(workers[N - 1]));
-      make_unique<thread[]>(n)
-      std::thread(
+    // in between the time we start and the time we stop tasks are running. 
+    // This provides no mechanism to detect their state, however.
+    template <typename ... Ts> pool(int N, std::mt19937 r, Ts && ... args); // give us a list of starting tasks
+    virtual ~pool();
+
+    int N;
+    framework::cache_isolated<std::atomic<task*>> s[max_workers]; // messaging primitives
+    std::vector<std::thread> threads;
+    std::atomic<bool> shutdown;
+    std::vector<worker> workers;
+
+    void run(task) {} // enqueue a task
+
+    template <typename ... T, typename F> void run(F && f, T && ... args) {
+      run(std::function(std::forward(f), std::forward(args)...));
     }
 
-    size_t size() const { return N }
+    void run(int, task) {} // enqueue a task with affinity    
 
-    const size_t N;
-    worker * workers;
-    std::vector<thread> threads;
+    template <typename ... T, typename F>
+    void run(int i, F && f, T && ... args) {
+      run(i, std::function(std::forward(f), std::forward(args)...));
+    }
+  };
 
-    struct managed_thread {
+  namespace detail {
+    struct dummy_task : task {
+      static dummy_task instance;    
+    };
+  };
+
+  template <typename ... Ts> pool::pool(int N, std::mt19937 rng, Ts && ... args) : N(N) {
+
+    for (int i = 0;i < N;++i)
+      s[i].data.store(&detail::dummy_task::instance, memory_order_relaxed);
+
+    shutdown.store(false, memory_order_relaxed);
+
+    for (int i = 0;i < N;++i)
+      workers.push_back(worker(*this, i, seed_seq{ rng(), rng(), rng(), rng() }));
+
+    {
+      int i = 0;
+      // pre-load our starting tasks
+      for (auto && task : { std::function<void(worker&)>(args) ... }) {
+        workers[i++].q.push_front(task); // distribute tasks round-robin to start before the threads kick in
+        i %= N;
+      }
+    }
+
+    for (int i = 0; i < N;++i) {
+      threads.push_back(std::thread([&w(workers[i])] { w.main(); }));
     }
   }
 }
-*/

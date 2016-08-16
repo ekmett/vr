@@ -11,15 +11,8 @@ namespace framework {
     cache_isolated(T && data) : data(std::forward(data)) {}
     template <typename ... T> cache_isolated(T&&...args) : data(std::forward(args)...) {}
 
-    cache_isolated & operator = (cache_isolated that) {
-      this.data = that.data;
-    }
     cache_isolated & operator = (cache_isolated & that) {
       data = that.data;
-      return this;
-    }
-    cache_isolated & operator = (cache_isolated && that) {
-      data.move(that.data);
       return this;
     }
 

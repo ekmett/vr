@@ -6,8 +6,7 @@
 namespace proc {
 
   using namespace framework;
-  using namespace concurrency;
-
+  
   struct app {
     app() : window("proc", { 4, 5, gl::profile::core }) {}
     ~app() {}

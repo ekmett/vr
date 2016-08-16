@@ -1,7 +1,11 @@
-#include "stdafx.h"
-#include "std.h"
-#include "openvr_system.h"
-#include "error.h"
+#include "framework/config.h"
+#ifdef FRAMEWORK_USE_STDAFX
+#include "framework/stdafx.h"
+#endif
+
+#include "framework/std.h"
+#include "framework/openvr_system.h"
+#include "framework/error.h"
 
 using namespace vr;
 

@@ -1,6 +1,8 @@
-#include "stdafx.h"
-#include "spdlog.h"
-#include "gl.h"
+#ifdef FRAMEWORK_USE_STDAFX
+#include "framework/stdafx.h"
+#endif
+#include "framework/spdlog.h"
+#include "framework/gl.h"
 
 namespace framework {
   namespace gl {

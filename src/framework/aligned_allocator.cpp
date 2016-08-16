@@ -1,4 +1,7 @@
-#include "stdafx.h"
+#include "framework/config.h"
+#ifdef FRAMEWORK_USE_STDAFX
+#include "framework/stdafx.h"
+#endif
 #include "aligned_allocator.h"
 
 namespace framework {

@@ -1,7 +1,10 @@
-#include "stdafx.h"
+#include "framework/config.h"
+#ifdef FRAMEWORK_USE_STDAFX
+#include "framework/stdafx.h"
+#endif
 
+#include "framework/glew.h"
 #include <stdio.h>
-#include <SDL_opengl.h>
 #include "framework/error.h"
 #include "framework/sdl_window.h"
 #include "framework/gl.h"

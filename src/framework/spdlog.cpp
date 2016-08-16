@@ -1,4 +1,8 @@
+#include "framework/config.h"
+#ifdef FRAMEWORK_USE_STDAFX
 #include "framework/stdafx.h"
+#endif
+
 #include "framework/spdlog.h"
 
 using namespace std;

@@ -7,6 +7,7 @@
 #include <set> // set
 #include <functional> // mem_fn
 #include <mutex>
+#include <cassert>
 
 namespace framework {
   using std::atomic;

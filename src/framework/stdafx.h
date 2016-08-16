@@ -6,6 +6,7 @@
 #include "framework/glew.h"
 
 // SDL2
+#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_opengl.h>
 

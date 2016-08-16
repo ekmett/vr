@@ -1,6 +1,9 @@
-#include "stdafx.h"
-#include "sdl_system.h"
-#include "utf8.h"
+#include "framework/config.h"
+#ifdef FRAMEWORK_USE_STDAFX
+#include "framework/stdafx.h"
+#endif
+#include "framework/sdl_system.h"
+#include "framework/utf8.h"
 
 namespace framework {
   namespace sdl {

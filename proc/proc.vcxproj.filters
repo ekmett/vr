@@ -6,14 +6,12 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>boilerplate</Filter>
     </ClCompile>
-    <ClCompile Include="worker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app.h" />
     <ClInclude Include="stdafx.h">
       <Filter>boilerplate</Filter>
     </ClInclude>
-    <ClInclude Include="worker.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="boilerplate">

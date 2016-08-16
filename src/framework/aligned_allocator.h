@@ -1,5 +1,7 @@
 #pragma once
 
+#include "framework/std.h"
+
 // this can be useful for cache alignment
 
 namespace framework {

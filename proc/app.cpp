@@ -2,7 +2,7 @@
 #include <random>
 #include <functional>
 #include "app.h"
-#include "worker.h"
+#include "framework/worker.h"
 
 namespace proc {
   void app::run() {   
