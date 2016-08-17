@@ -8,7 +8,6 @@
 #include <random>
 #include <math.h>
 
-#include "framework/cds.h"
 #include "framework/cache_isolated.h"
 
 // Implementation based on the steal-one sender-initiated variant of 
