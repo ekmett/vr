@@ -13,3 +13,6 @@
 [submodule "third-party/libcds"]
 	path = third-party/libcds
 	url = https://github.com/khizmax/libcds.git
+[submodule "third-party/ck"]
+	path = third-party/ck
+	url = https://github.com/concurrencykit/ck.git

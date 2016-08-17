@@ -1,7 +1,9 @@
 #pragma once
 
+#include "framework/config.h"
 #include <cassert>
-#include "framework/std.h";
+#include "framework/std.h"
+#include "framework/cache_isolated.h"
 
 // Epoch-based reclamation
 
@@ -10,106 +12,98 @@
 // by Keir Fraser 
 // (Found in Section 5.2.3)
 
+// Current implementation lifted almost entirely from Samy Al Bahra's excellent
+// ConcurrencyKit. Bugs mine.
+
+// work-in-progress
+
 namespace framework {
 
-  struct collector;
+  static const int epoch_length = 4;
 
-  struct retired_ptr {
-    retired_ptr(void * item, void(*finalizer)(void *)) : item(item), finalizer(finalizer) {}
-    ~retired_ptr() {
-      finalizer(item);
-    }
-    void * item;
-    void(* finalizer) (void *);
-    unique_ptr<retired_ptr> next;
+  struct epoch_section {
+    uint32_t bucket;
   };
 
-  enum struct Epoch : int {
-    min = 0,
-    max = 2,
-    inactive = 3,
-    detached = 4
+  // things that inherit from this can be collected
+  struct epoch_entry {
+    virtual ~epoch_entry() {}
+    // TODO: private w/ friends
+    epoch_entry * next_epoch_entry;
   };
 
-  struct collector_local {
-    collector_local(collector & global) noexcept
-    : epoch(Epoch::inactive),
-      next(nullptr),
-      global(global) {}
+  struct epoch_manager;
 
-    void detach() noexcept {
-      epoch.store(Epoch::detached, std::memory_order_release);
-    }
-
-    // I'd use operator++(int) but msvc seems to have an issue.
-    Epoch succ(Epoch e) {
-      return Epoch((int(e) + 1) % 3);
-    }
-
-    friend collector;
-    atomic<Epoch> epoch; // 0,1,2 for current epoch, 3 if inactive.
-    atomic<collector_local*> next;
-    atomic<retired_ptr*> limbo[3];
-    collector & global;
-    
-
-    void retire(void * v, void(*f)(void*)) {
-      retired_ptr * it = new retired_ptr{ v, f };
-      // thread it onto the right limbo list.
-    }
-   
-    void access_lock() noexcept {
-      assert(epoch.load(std::memory_order_relaxed) >= Epoch::inactive); // we better not already be running
-      epoch.store(global.epoch.load(std::memory_order_relaxed), std::memory_order_relaxed);
-      atomic_thread_fence(std::memory_order_acquire);      
-    }
-
-    void access_unlock() noexcept {
-      assert(epoch.load(std::memory_order_relaxed) < Epoch::inactive);
-      atomic_thread_fence(std::memory_order_release);
-      epoch.store(Epoch::inactive, std::memory_order_relaxed);
-    }
-
-    void collect(Epoch gc) {
-
-
-    }
-
-    bool sync() {
-      atomic<collector_local*>* last = &global.local;
-      Epoch now = global.epoch.load(std::memory_order_relaxed);
-      collector_local * t = global.local.load(std::memory_order_relaxed);
-      while (t) {
-        Epoch then = t->epoch.load(std::memory_order_relaxed);
-        collector_local * n = t->next.load(std::memory_order_relaxed);
-        if (then <= Epoch::max && then != now) {
-          collect(succ(global.epoch.load(std::memory_order_relaxed)));
-          return false;
-        }
-        if (then == Epoch::detached && last->compare_exchange_strong(t, n, std::memory_order_relaxed)) {
-          retire(t, operator delete);          
-        }
-        last = &t->next;
-        t = n;
-      }
-      global.epoch.store(succ(now), std::memory_order_relaxed);
-      collect(succ(global.epoch.load(std::memory_order_relaxed)));
-      return true;
-    }
+  struct epoch_ref {
+    uint32_t epoch;
+    uint32_t count;
   };
 
-  struct collector {
-    atomic<Epoch> epoch; // 0, 1 or 2.
-    atomic<collector_local*> local;
-
-    collector_local * attach() {
-      collector_local * it = new collector_local();
-      collector_local * head;
-      do {
-        head = local;        
-        it->next = head;
-      } while (!local.compare_exchange_weak(head, it));
-      return it;
+  struct epoch_record {
+    epoch_manager & global;
+    atomic<uint32_t> epoch; 
+    uint32_t state;
+    atomic<uint32_t> active;
+    cache_isolated<epoch_ref[2]> bucket;
+    uint32_t pending_count, peak, dispatch;
+    epoch_entry * pending[epoch_length];   
+    void remove() {
     }
+    bool poll() {
+      return false;
+    }
+    void synchronize() {}
+    void barrier() {}
+    void reclaim() {}
+
+    void begin(epoch_section * s = nullptr);
+    void end(epoch_section * s = nullptr);
+
+    void retire(epoch_entry & entry);
+  private:
+    void add_ref(epoch_section & s) {}
+    void del_ref(epoch_section & s) {}
   };
+
+  struct epoch_manager {
+    atomic<uint32_t> epoch;
+    epoch_manager() {} // init
+    epoch_record * recycle() { return nullptr; }
+    epoch_record * add() {}
+  };
+
+  inline void epoch_record::begin(epoch_section * section) {
+    epoch_manager & e = global;
+    auto a = active.load(std::memory_order_relaxed);
+    if (a == 0) {
+#ifdef FRAMEWORK_MEMORYMODEL_TSO
+      active.exchange(1);
+      atomic_thread_fence(std::memory_order_acquire);
+#else
+      active.store(1);
+      atomic_thread_fence(std::memory_order_seq_cst);
+#endif
+      auto g_epoch = e.epoch.load(std::memory_order_acquire);
+      epoch.store(g_epoch, std::memory_order_release);
+    } else {
+      active.store(a + 1, std::memory_order_relaxed);
+    }
+    if (section) add_ref(*section);
+  }
+
+  inline void epoch_record::end(epoch_section * section) {
+    atomic_thread_fence(std::memory_order_release);
+    active.fetch_add(1, std::memory_order_relaxed);
+    if (section) del_ref(*section);
+  }
+
+  inline void epoch_record::retire(epoch_entry & entry) {
+    epoch_manager & g = global;
+    auto e = g.epoch.load(std::memory_order_relaxed);
+    int offset = e & 3;
+    ++pending_count;
+    epoch_entry * & p = pending[offset];
+    entry.next_epoch_entry = pending[offfset];
+    pending[offset] = &entry;
+  }
 };
