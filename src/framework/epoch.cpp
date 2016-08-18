@@ -1,6 +1,8 @@
 #include "framework/stdafx.h"
 #include "framework/epoch.h"
 
+#if 0
+
 namespace framework {
   epoch_record::epoch_record(epoch_manager & global) 
   : global(global) 
@@ -19,3 +21,5 @@ namespace framework {
     } while (!global.records.compare_exchange_weak(next, this, std::memory_order_relaxed));
   }
 }
+
+#endif

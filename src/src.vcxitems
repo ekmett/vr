@@ -23,13 +23,17 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\cds.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\circular_array.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\composition.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\epoch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\fmt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glew.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glm.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\grammar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_display.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\shader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\spdlog.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\error.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gl.h" />
@@ -46,10 +50,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\epoch.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_display.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_system.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_window.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_system.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spdlog.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

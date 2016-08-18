@@ -30,6 +30,22 @@ namespace framework {
       glDebugMessageCallback(nullptr, nullptr);
     }
 
+    void objectLabel(GLenum id, GLuint name, const char *fmt, ...) {
+      va_list args;
+      char buffer[2048];
+
+      va_start(args, fmt);
+      vsprintf_s(buffer, fmt, args);
+      va_end(args);
+
+      buffer[2047] = 0;
+      glObjectLabel(id, name, static_cast<GLsizei>(strnlen_s(buffer, 2048)), buffer);
+      auto gl_log = spdlog::get("gl");
+      if (gl_log) {
+      }
+    }
+
+
     const char * show_object_label_type(GLenum t) noexcept {
       switch (t) {
         case GL_BUFFER: return "buffer";

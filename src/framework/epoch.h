@@ -5,6 +5,8 @@
 #include "framework/std.h"
 #include "framework/cache_isolated.h"
 
+#if 0
+
 // Epoch-based reclamation
 
 // Based on
@@ -168,3 +170,5 @@ namespace framework {
 
 
 };
+
+#endif

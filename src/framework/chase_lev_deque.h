@@ -1,5 +1,7 @@
 #pragma once
 
+#if 0 // unused
+
 #include "std.h"
 #include "aligned_allocator.h"
 #include "circular_array.h"
@@ -103,3 +105,5 @@ namespace framework {
   }
 
 }
+
+#endif

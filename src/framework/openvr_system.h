@@ -1,44 +1,15 @@
 #pragma once
 
-#include <openvr.h>
-#include <chrono>
-
-#ifdef _WIN32
-#pragma comment(lib, "openvr_api")
-#endif
-
 #include "framework/glm.h"
+#include "framework/noncopyable.h"
+#include "framework/openvr.h"
 #include "framework/std.h"
 #include "framework/spdlog.h"
 #include "framework/signal.h"
-#include "framework/noncopyable.h"
-
-
 
 namespace framework {
 
   namespace openvr {
-    typedef uint64_t process_id;
-
-    enum device_id : uint32_t {
-      hmd = vr::k_unTrackedDeviceIndex_Hmd,
-      max = vr::k_unMaxTrackedDeviceCount
-    };
-
-    static inline glm::mat4 hmd_mat4(const vr::HmdMatrix44_t & m) {
-      return glm::make_mat4((float*)&m.m);
-    }
-
-    static inline glm::mat4 hmd_mat3x4(const vr::HmdMatrix34_t & m) {
-      return glm::mat4(
-        m.m[0][0], m.m[1][0], m.m[2][0], 0.0,
-        m.m[0][1], m.m[1][1], m.m[2][1], 0.0,
-        m.m[0][2], m.m[1][2], m.m[2][2], 0.0,
-        m.m[0][3], m.m[1][3], m.m[2][3], 1.0f
-      );
-    }
-
-
 
     // construction is safely multi-threadedly re-entrant
     struct system : noncopyable {
@@ -82,10 +53,6 @@ namespace framework {
       static signal<void(vr::VREvent_Process_t &)> on_scene_focus_lost, on_scene_focus_gained,
         on_scene_application_changed, on_scene_focus_changed, on_input_focus_changed, on_input_focus_captured, on_input_focus_released, on_scene_application_secondary_rendering_started;
 
-      // static utilities
-      const char * show_tracked_device_class(vr::TrackedDeviceClass c) const noexcept;
-      const char * show_event_type(int e) const noexcept;
-      const char * show_compositor_error(vr::EVRCompositorError e) const noexcept;
     };
 
 

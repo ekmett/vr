@@ -6,6 +6,7 @@
 #include "framework/gl.h"
 #include "framework/sdl_system.h"
 #include "framework/openvr_system.h"
+#include "framework/openvr_display.h"
 #include "framework/sdl_window.h"
 #include "framework/utf8.h"
 #include "framework/cds.h"

@@ -8,15 +8,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stdafx.h">
       <Filter>framework</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.h">
-      <Filter>framework\concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\circular_array.h">
-      <Filter>framework\concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\chase_lev_deque.h">
-      <Filter>framework\concurrency</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\fmt.h">
       <Filter>framework\logging</Filter>
     </ClInclude>
@@ -34,9 +25,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl_system.h">
       <Filter>framework\sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\cds.h">
-      <Filter>framework\concurrency</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\noncopyable.h">
       <Filter>framework\util</Filter>
@@ -62,9 +50,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_system.h">
       <Filter>framework\vr</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\cache_isolated.h">
-      <Filter>framework\concurrency</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\grammar.h">
       <Filter>framework</Filter>
     </ClInclude>
@@ -74,12 +59,37 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h">
       <Filter>framework\work-in-progress</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h">
-      <Filter>framework\concurrency</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\composition.h">
       <Filter>framework</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.h">
+      <Filter>framework\concurrency\old</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\cache_isolated.h">
+      <Filter>framework\concurrency\old</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\chase_lev_deque.h">
+      <Filter>framework\concurrency\old</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\circular_array.h">
+      <Filter>framework\concurrency\old</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\cds.h">
+      <Filter>framework\concurrency\old</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h">
+      <Filter>framework\concurrency\old</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\epoch.h">
+      <Filter>framework\concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\shader.h">
+      <Filter>framework\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_display.h">
+      <Filter>framework\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="framework">
@@ -109,13 +119,13 @@
     <Filter Include="framework\serialization">
       <UniqueIdentifier>{e3f7ff7b-e90b-426b-8c49-cce573c626c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="framework\concurrency\old">
+      <UniqueIdentifier>{b664f966-d3d5-405a-9ec4-127f231e3c40}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp">
       <Filter>framework</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp">
-      <Filter>framework\concurrency</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spdlog.cpp">
       <Filter>framework\logging</Filter>
@@ -135,6 +145,17 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\worker.cpp">
       <Filter>framework\concurrency</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp">
+      <Filter>framework\concurrency\old</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\epoch.cpp">
+      <Filter>framework\concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp">
+      <Filter>framework\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_display.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="$(MSBuildThisFileDirectory)README.txt" />

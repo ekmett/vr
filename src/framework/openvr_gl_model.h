@@ -1,5 +1,8 @@
 #pragma once
-/*
+
+
+#if 0 //wip
+
 namespace framework {
 
   using std::string;
@@ -66,4 +69,5 @@ namespace framework {
     map<string, shared_ptr<rendermodel>> components; // component parts, if any -- kinda hackish as real components don't have components right now.
   };
 }
-*/
+
+#endif

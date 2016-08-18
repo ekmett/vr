@@ -6,7 +6,6 @@
 
 namespace proc {
   void app::run() {   
-
     pool workers(4, rng,
       [&](worker& me) { log("app")->info("worker {}: task 1", me.i); },
       [&](worker& me) { log("app")->info("worker {}: task 2", me.i); },
@@ -28,9 +27,11 @@ namespace proc {
       log("app")->info("time to photons: {}", duration<float, std::milli>(ttp));
       // TODO: create a task_group for the current frame here
 
-      // draw stuff
-
       // present it...
+      display.stereo([&] (auto eye) {
+        // do nothing
+
+      });
       glFinish();
       compositor->PostPresentHandoff();
       // task_group.wait(); 
