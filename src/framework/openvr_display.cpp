@@ -202,42 +202,6 @@ namespace framework {
     }
 
     void display::submit(bool distort_locally) {
-      if (distort_locally) {
-        glDisable(GL_DEPTH_TEST);
-        // glViewport(0, 0, window.width, window.height);
-
-        glBindVertexArray(vertexArray);
-        glUseProgram(shader.programId);
-
-        for (int i = 0; i < 2; ++i) {
-          glBindTexture(GL_TEXTURE_2D, resolutionTextureId[i]);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-#ifdef _WIN32
-#pragma warning (push)
-#pragma warning (disable : 4312)
-#endif
-          glDrawElements(GL_TRIANGLES, indexSize / 2, GL_UNSIGNED_SHORT, reinterpret_cast<const void *>(i*indexSize));
-#ifdef _WIN32
-#pragma warning (pop)
-#endif
-        }
-        glBindVertexArray(0);
-        glUseProgram(0);
-      }
-
-      GLuint * textures = distort_locally ? resolutionTextureId : renderTextureId;
-
-      for (int i = 0; i < 2; ++i) {
-        Texture_t t{ reinterpret_cast<void*>(textures[i]), API_OpenGL, ColorSpace_Gamma };
-        auto err = VRCompositor()->Submit(eye(i), &t, 0, distort_locally ? EVRSubmitFlags::Submit_LensDistortionAlreadyApplied : EVRSubmitFlags::Submit_Default);
-        if (err != VRCompositorError_None)
-          log("display")->warn("compositor error: {} ({})", show_compositor_error(err), err);        
-      }
-
-      // send one at a time as we finish above?  
     }
 
     void display::recalculate_pose() noexcept {
