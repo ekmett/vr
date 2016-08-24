@@ -1,6 +1,9 @@
 #include "framework/stdafx.h"
-#include "framework/std.h"
 #include "framework/openvr_system.h"
+
+#ifdef FRAMEWORK_SUPPORTS_OPENVR
+
+#include "framework/std.h"
 #include "framework/error.h"
 #include <chrono>
 
@@ -158,3 +161,5 @@ namespace framework {
 
   }
 }
+
+#endif

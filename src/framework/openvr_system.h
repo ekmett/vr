@@ -1,5 +1,9 @@
 #pragma once
 
+#include "framework/config.h"
+
+#ifdef FRAMEWORK_SUPPORTS_OPENVR
+
 #include "framework/glm.h"
 #include "framework/noncopyable.h"
 #include "framework/openvr.h"
@@ -76,3 +80,5 @@ namespace framework {
     }
   }
 }
+
+#endif

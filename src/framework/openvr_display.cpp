@@ -1,5 +1,8 @@
 #include "framework/stdafx.h"
 #include "framework/openvr_display.h"
+
+#if defined(FRAMEWORK_SUPPORTS_OPENVR) && defined(FRAMEWORK_SUPPORTS_OPENGL)
+
 #include "framework/gl.h"
 #include "framework/std.h"
 
@@ -17,37 +20,37 @@ namespace framework {
       , ipd_connection(vr.on_ipd_changed.connect([this] { recalculate_pose(); }))
       , shader("distortion",
         R"(#version 410 core
-     layout(location = 0) in vec4 position;
-     layout(location = 1) in vec2 v2UVredIn;
-     layout(location = 2) in vec2 v2UVGreenIn;
-     layout(location = 3) in vec2 v2UVblueIn;
-     noperspective  out vec2 v2UVred;
-     noperspective  out vec2 v2UVgreen;
-     noperspective  out vec2 v2UVblue;
-     void main() {
-     	 v2UVred = v2UVredIn;
-     	 v2UVgreen = v2UVGreenIn;
-     	 v2UVblue = v2UVblueIn;
-     	 gl_Position = position;
-     })",
+           layout(location = 0) in vec4 position;
+           layout(location = 1) in vec2 v2UVredIn;
+           layout(location = 2) in vec2 v2UVGreenIn;
+           layout(location = 3) in vec2 v2UVblueIn;
+           noperspective out vec2 v2UVred;
+           noperspective out vec2 v2UVgreen;
+           noperspective out vec2 v2UVblue;
+           void main() {
+     	       v2UVred = v2UVredIn;
+     	       v2UVgreen = v2UVGreenIn;
+     	       v2UVblue = v2UVblueIn;
+     	       gl_Position = position;
+           })",
         R"(#version 410 core
-     uniform sampler2D mytexture;
-     noperspective in vec2 v2UVred;
-     noperspective in vec2 v2UVgreen;
-     noperspective in vec2 v2UVblue;
-     out vec4 outputColor;
+           uniform sampler2D mytexture;
+           noperspective in vec2 v2UVred;
+           noperspective in vec2 v2UVgreen;
+           noperspective in vec2 v2UVblue;
+           out vec4 outputColor;
 
-     void main() {
-       float fBoundsCheck = ( (dot( vec2( lessThan( v2UVgreen.xy, vec2(0.05, 0.05)) ), vec2(1.0, 1.0))+dot( vec2( greaterThan( v2UVgreen.xy, vec2( 0.95, 0.95)) ), vec2(1.0, 1.0))) );
-       if( fBoundsCheck > 1.0 ) {
-       	 outputColor = vec4( 0, 0, 0, 1.0 );
-       } else {
-         float red = texture(mytexture, v2UVred).x;
-         float green = texture(mytexture, v2UVgreen).y;
-         float blue = texture(mytexture, v2UVblue).z;
-         outputColor = vec4( red, green, blue, 1.0  ); 
-       }
-     })") {
+           void main() {
+             float fBoundsCheck = ( (dot( vec2( lessThan( v2UVgreen.xy, vec2(0.05, 0.05)) ), vec2(1.0, 1.0))+dot( vec2( greaterThan( v2UVgreen.xy, vec2( 0.95, 0.95)) ), vec2(1.0, 1.0))) );
+             if( fBoundsCheck > 1.0 ) {
+       	       outputColor = vec4( 0, 0, 0, 1.0 );
+             } else {
+               float red = texture(mytexture, v2UVred).x;
+               float green = texture(mytexture, v2UVgreen).y;
+               float blue = texture(mytexture, v2UVblue).z;
+               outputColor = vec4( red, green, blue, 1.0  ); 
+             }
+           })") {
 
       // how big does the hmd want the render target to be, anyways?
 
@@ -214,3 +217,5 @@ namespace framework {
     }
   }
 }
+
+#endif

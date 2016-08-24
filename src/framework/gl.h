@@ -1,5 +1,9 @@
 #pragma once
 
+#include "framework/config.h"
+
+#ifdef FRAMEWORK_SUPPORTS_OPENGL
+
 #include "framework/glew.h"
 #include "framework/noncopyable.h"
 
@@ -35,3 +39,5 @@ namespace framework {
     }
   }
 }
+
+#endif

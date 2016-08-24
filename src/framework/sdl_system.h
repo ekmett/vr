@@ -2,10 +2,12 @@
 #include <stdio.h>
 
 #include "framework/sdl.h"
+
+#ifdef FRAMEWORK_SUPPORTS_SDL2
+
 #include "error.h"
 #include "signal.h"
 #include "noncopyable.h"
-
 
 using namespace std;
 using namespace spdlog;
@@ -59,3 +61,5 @@ namespace framework {
     };
   }
 }
+
+#endif

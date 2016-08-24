@@ -1,6 +1,8 @@
 #include "framework/stdafx.h"
 #include "framework/openvr.h"
 
+#ifdef FRAMEWORK_SUPPORTS_OPENVR
+
 namespace framework {
   namespace openvr {
 
@@ -138,3 +140,5 @@ namespace framework {
     }
   }
 }
+
+#endif

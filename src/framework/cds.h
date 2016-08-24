@@ -1,5 +1,9 @@
 #pragma once
 
+#include "framework/config.h"
+
+#ifdef FRAMEWORK_SUPPORTS_CDS
+
 #include <cds/init.h>
 #include <cds/threading/model.h>
 #include <cds/gc/hp.h>
@@ -31,3 +35,4 @@ namespace framework {
   };
 }
 
+#endif

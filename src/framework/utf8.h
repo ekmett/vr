@@ -1,6 +1,8 @@
 #pragma once
 
 #include "framework/std.h"
+
+// TODO: portability
 #ifdef _WIN32
 #include <Windows.h>
 #endif

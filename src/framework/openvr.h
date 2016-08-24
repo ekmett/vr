@@ -1,5 +1,9 @@
 #pragma once
 
+#include "framework/config.h"
+
+#ifdef FRAMEWORK_SUPPORTS_OPENVR
+
 #include <openvr.h>
 
 #ifdef _WIN32
@@ -51,3 +55,5 @@ namespace framework {
     }
   }
 }
+
+#endif

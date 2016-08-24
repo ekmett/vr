@@ -28,6 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glew.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glm.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\grammar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\oculus.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_display.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h" />

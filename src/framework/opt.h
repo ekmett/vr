@@ -1,5 +1,9 @@
 #pragma once
 
+#include "framework/config.h"
+
+#ifdef FRAMEWORK_SUPPORTS_CDS
+
 #include <cds/opt/options.h>
 
 namespace framework {
@@ -7,3 +11,5 @@ namespace framework {
     using namespace cds::opt;
   }
 }
+
+#endif

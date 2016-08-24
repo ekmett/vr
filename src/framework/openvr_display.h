@@ -1,5 +1,9 @@
 #pragma once
 
+#include "framework/config.h"
+
+#if defined(FRAMEWORK_SUPPORTS_OPENVR) && defined(FRAMEWORK_SUPPORTS_OPENGL)
+
 #include "framework/openvr_system.h"
 #include "framework/gl.h"
 #include "framework/shader.h"
@@ -89,4 +93,6 @@ namespace framework {
       }
     }
   }
-} // core
+}
+
+#endif

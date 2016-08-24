@@ -12,7 +12,9 @@ using namespace framework;
 namespace framework {
 
   void worker::main() {
+#ifdef FRAMEWORK_SUPPORTS_CDS
     cds_thread_attachment attach_thread;
+#endif
 
     uniform_int_distribution<int> random_peer(0, p.N - 2);
     exponential_distribution<double> random_delay_us(100.0); // 0.1ms expected task size

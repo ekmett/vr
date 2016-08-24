@@ -1,8 +1,11 @@
 #pragma once
 
+#include "framework/sdl.h"
+
+#if defined(FRAMEWORK_SUPPORTS_SDL2) && defined(FRAMEWORK_SUPPORTS_OPENGL)
+
 #include <memory> // shared_ptr
 #include <string> // string
-#include "framework/sdl.h"
 #include "framework/sdl_system.h"
 #include "framework/noncopyable.h"
 #include "framework/std.h"
@@ -36,3 +39,5 @@ namespace framework {
     };
   }
 }
+
+#endif

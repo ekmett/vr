@@ -9,16 +9,17 @@
     <SPDLogDir>$(SolutionDir)third-party\spdlog\</SPDLogDir>
     <GLMDir>$(SolutionDir)third-party\glm-0.9.8.0\</GLMDir>
     <BoostDir>$(SolutionDir)third-party\boost_1_61_0\</BoostDir>
-    <CDSDir>$(SolutionDir)third-party\libcds</CDSDir>
+    <CDSDir>$(SolutionDir)third-party\libcds\</CDSDir>
     <BOOST_PATH>$(BoostDir)</BOOST_PATH>
+    <OculusSDKDir>$(SolutionDir)third-party\ovr_sdk_win_1.6.0_public\OculusSDK\</OculusSDKDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform);$(OpenVRDir)lib\$(WinXX);$(SDL2Dir)lib\$(xXX)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;glu32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform)\;$(OpenVRDir)lib\$(WinXX)\;$(SDL2Dir)lib\$(xXX)\;$(OculusSDKDir)\LibOVR\Lib\Windows\$(Platform)\$(Configuration)\VS2015\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;glu32.lib;opengl32.lib;LibOVR.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers;$(GLEWDir)include;$(SDL2Dir)include;$(SPDLogDir)include;$(GLMDir);$(BoostDir);$(CDSDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenVRDir)headers\;$(GLEWDir)include\;$(SDL2Dir)include\;$(SPDLogDir)include\;$(GLMDir);$(BoostDir);$(CDSDir);$(OculusSDKDir)LibOVR\;$(OculusSDKDir)LibOVR\Src\Util\;$(OculusSDKDir)LibOVR\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -56,6 +57,10 @@
     </BuildMacro>
     <BuildMacro Include="BOOST_PATH">
       <Value>$(BOOST_PATH)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="OculusSDKDir">
+      <Value>$(OculusSDKDir)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

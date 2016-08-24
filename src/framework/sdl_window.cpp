@@ -1,10 +1,12 @@
 #include "framework/stdafx.h"
+#include "framework/sdl_window.h"
+
+#if defined(FRAMEWORK_SUPPORTS_SDL2) && defined(FRAMEWORK_SUPPORTS_OPENGL)
 
 #include "framework/glew.h"
-#include <stdio.h>
 #include "framework/error.h"
-#include "framework/sdl_window.h"
 #include "framework/gl.h"
+#include <stdio.h>
 
 using namespace std;
 using namespace spdlog;
@@ -82,3 +84,5 @@ namespace framework {
     }
   }
 }
+
+#endif
