@@ -2,20 +2,47 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="app.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="stdafx.cpp">
       <Filter>boilerplate</Filter>
     </ClCompile>
+    <ClCompile Include="..\third-party\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third-party\imgui\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third-party\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="app.h" />
     <ClInclude Include="stdafx.h">
       <Filter>boilerplate</Filter>
     </ClInclude>
+    <ClInclude Include="..\third-party\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\stb_rect_pack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\stb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\stb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="boilerplate">
       <UniqueIdentifier>{3cdaa1f2-5169-48dd-b3a9-7c74f81c41e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{c2cd084c-ca84-4939-a864-514315ef7518}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
