@@ -6,6 +6,7 @@
 #include "framework/signal.h"
 #include "imgui.h"
 #include "imgui_impl.h"
+#include "imgui_table.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace framework;
@@ -50,7 +51,7 @@ static float reverseZ_contents[16] = { // transposed of course
 static mat4 reverseZ = glm::make_mat4(reverseZ_contents);
 #endif
 
-app::app() : window("proc", { 4, 5, gl::profile::core }, false, 100, 100, 800, 600), vr(), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f) {
+app::app() : window("proc", { 4, 5, gl::profile::core }, false), vr(), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f) {
 
 
   // load matrices.
@@ -115,6 +116,7 @@ app::~app() {
 void app::run() {
   while (!vr.poll() && !window.poll()) {
     // clear the display window
+    ImGui_ImplSdlGL3_NewFrame(window.sdl_window);
     glClearColor(0.15f, 0.15f, 0.15f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_MULTISAMPLE);
@@ -143,19 +145,12 @@ void app::run() {
     }
     compositor.PostPresentHandoff();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  
+    //ImGui::ShowTestWindow();
 
-    ImGui_ImplSdlGL3_NewFrame(window.sdl_window);
-   
-    if (ImGui::Button("Hello")) {
-      OutputDebugStringA("Hello\n");
-    }
 
     ImGui::Render();
 
-
-    // set glViewport
-    // draw anything else we need on the main SDL window, imgui elements, etc.
-    
     SDL_GL_SwapWindow(window.sdl_window);
   }
 }

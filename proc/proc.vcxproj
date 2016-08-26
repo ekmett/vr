@@ -218,6 +218,7 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     <ClInclude Include="..\third-party\imgui\stb_textedit.h" />
     <ClInclude Include="..\third-party\imgui\stb_truetype.h" />
     <ClInclude Include="imgui_impl.h" />
+    <ClInclude Include="imgui_table.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

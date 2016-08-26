@@ -22,10 +22,10 @@ namespace framework {
         string title,
         gl::version version = { 4, 5, gl::profile::core },
         bool debug = false,
-        int x = 800,
+        int x = 300,
         int y = 50,
-        int width = 160,
-        int height = 100
+        int width = 2160,
+        int height = 1200
       );
 
       virtual ~window();
