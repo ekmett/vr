@@ -38,7 +38,6 @@ struct app {
   mat4 eyeProjectionMatrix[2];
   mat4 eyePoseMatrix[2];
   float nearClip, farClip;
-  connection imgui_sdl_event_connection;
 };
 
 #ifdef USE_REVERSED_Z
@@ -100,13 +99,14 @@ app::app() : window("proc", { 4, 5, gl::profile::core }, false), vr(), composito
     die("Unable to allocate frame buffer");
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  ImGui_ImplSdlGL3_Init(window.sdl_window);
-  imgui_sdl_event_connection = window.on_event.connect([](SDL_Event & event) { ImGui_ImplSdlGL3_ProcessEvent(&event); });
-
+  ImGui_ImplSdlGL3_Init(window);
+  // imgui_sdl_event_connection = window.on_event.connect([](SDL_Event & event) { ImGui_ImplSdlGL3_ProcessEvent(&event); });
+  SDL_StartTextInput();
 }
 
 app::~app() {
-  ImGui_ImplSdlGL3_Shutdown();
+  SDL_StopTextInput();
+  ImGui_ImplSdlGL3_Shutdown(window);
 
   glDeleteFramebuffers(2, display.fbo);
   glDeleteRenderbuffers(1, &display.depth);
@@ -116,7 +116,7 @@ app::~app() {
 void app::run() {
   while (!vr.poll() && !window.poll()) {
     // clear the display window
-    ImGui_ImplSdlGL3_NewFrame(window.sdl_window);
+    ImGui_ImplSdlGL3_NewFrame(window);
     glClearColor(0.15f, 0.15f, 0.15f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_MULTISAMPLE);
@@ -146,8 +146,7 @@ void app::run() {
     compositor.PostPresentHandoff();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-    //ImGui::ShowTestWindow();
-
+    ImGui::ShowTestWindow();
 
     ImGui::Render();
 

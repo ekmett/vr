@@ -1,8 +1,10 @@
 #include "framework/config.h"
-#include "framework/sdl.h"
+#include "framework/sdl_window.h"
 #include <SDL_syswm.h>
 #include "imgui_impl.h"
 #include "imgui.h"
+
+using namespace framework;
 
 // Data
 static double       g_Time = 0.0f;
@@ -112,46 +114,40 @@ static void ImGui_ImplSdlGL3_SetClipboardText(const char* text) {
   SDL_SetClipboardText(text);
 }
 
-
-bool ImGui_ImplSdlGL3_ProcessEvent(SDL_Event* event) {
-  ImGuiIO& io = ImGui::GetIO();
-  switch (event->type) {
-    case SDL_MOUSEWHEEL:
-    {
-      if (event->wheel.y > 0)
-        g_MouseWheel = 1;
-      if (event->wheel.y < 0)
-        g_MouseWheel = -1;
-      return true;
-    }
-    case SDL_MOUSEBUTTONDOWN:
-    {
-      if (event->button.button == SDL_BUTTON_LEFT) g_MousePressed[0] = true;
-      if (event->button.button == SDL_BUTTON_RIGHT) g_MousePressed[1] = true;
-      if (event->button.button == SDL_BUTTON_MIDDLE) g_MousePressed[2] = true;
-      return true;
-    }
-    case SDL_TEXTINPUT:
-    {
-      io.AddInputCharactersUTF8(event->text.text);
-      return true;
-    }
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
-    {
-      int key = event->key.keysym.sym & ~SDLK_SCANCODE_MASK;
-      io.KeysDown[key] = (event->type == SDL_KEYDOWN);
-      io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-      io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-      io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-      io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
-      return true;
-    }
+static void mouse_button_down(SDL_MouseButtonEvent & e) {
+  switch (e.button) {
+    case SDL_BUTTON_LEFT: g_MousePressed[0] = true;
+    case SDL_BUTTON_RIGHT: g_MousePressed[1] = true;
+    case SDL_BUTTON_MIDDLE: g_MousePressed[2] = true;
   }
-  return false;
 }
 
+static void mouse_wheel(SDL_MouseWheelEvent & e) {
+  if (e.y > 0) g_MouseWheel = 1;
+  if (e.y < 0) g_MouseWheel = -1;
+}
 
+static void text_input(SDL_TextInputEvent & e) {
+  ImGui::GetIO().AddInputCharactersUTF8(e.text);
+}
+
+static void key(bool down, SDL_KeyboardEvent & e) {
+  ImGuiIO & io = ImGui::GetIO();
+  int key = e.keysym.sym & ~SDLK_SCANCODE_MASK;
+  io.KeysDown[key] = down;
+  io.KeyShift = (SDL_GetModState() & KMOD_SHIFT) != 0;
+  io.KeyCtrl  = (SDL_GetModState() & KMOD_CTRL) != 0;
+  io.KeyAlt   = (SDL_GetModState() & KMOD_ALT) != 0;
+  io.KeySuper = (SDL_GetModState() & KMOD_GUI) != 0;
+}
+
+static void key_down(SDL_KeyboardEvent & e) {
+  key(true, e);
+}
+
+static void key_up(SDL_KeyboardEvent & e) {
+  key(false, e);
+}
 
 void ImGui_ImplSdlGL3_CreateFontsTexture() {
   // Build texture atlas
@@ -281,7 +277,7 @@ void    ImGui_ImplSdlGL3_InvalidateDeviceObjects() {
   }
 }
 
-bool    ImGui_ImplSdlGL3_Init(SDL_Window* window) {
+bool    ImGui_ImplSdlGL3_Init(sdl::window & w) {
   ImGuiIO& io = ImGui::GetIO();
   io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
   io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
@@ -310,22 +306,34 @@ bool    ImGui_ImplSdlGL3_Init(SDL_Window* window) {
 #ifdef _WIN32
   SDL_SysWMinfo wmInfo;
   SDL_VERSION(&wmInfo.version);
-  SDL_GetWindowWMInfo(window, &wmInfo);
+  SDL_GetWindowWMInfo(w.sdl_window, &wmInfo);
   io.ImeWindowHandle = wmInfo.info.win.window;
 #else
   (void)window;
 #endif
 
+  w.on_text_input.connect(&text_input);
+  w.on_mouse_button_down.connect(&mouse_button_down);
+  w.on_mouse_wheel.connect(&mouse_wheel);
+  w.on_key_down.connect(&key_down);
+  w.on_key_up.connect(&key_up);
+
   return true;
 }
 
-void ImGui_ImplSdlGL3_Shutdown() {
+void ImGui_ImplSdlGL3_Shutdown(sdl::window & w) {
+  w.on_key_up.disconnect(&key_up);
+  w.on_key_down.disconnect(&key_down);
+  w.on_mouse_wheel.disconnect(&mouse_wheel);
+  w.on_mouse_button_down.disconnect(&mouse_button_down);
+  w.on_text_input.disconnect(&text_input);
+
   ImGui_ImplSdlGL3_InvalidateDeviceObjects();
   ImGui::Shutdown();
 }
 
 
-void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window) {
+void ImGui_ImplSdlGL3_NewFrame(sdl::window & win) {
   if (!g_FontTexture)
     ImGui_ImplSdlGL3_CreateDeviceObjects();
 
@@ -334,8 +342,8 @@ void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window) {
   // Setup display size (every frame to accommodate for window resizing)
   int w, h;
   int display_w, display_h;
-  SDL_GetWindowSize(window, &w, &h);
-  SDL_GL_GetDrawableSize(window, &display_w, &display_h);
+  SDL_GetWindowSize(win.sdl_window, &w, &h);
+  SDL_GL_GetDrawableSize(win.sdl_window, &display_w, &display_h);
   io.DisplaySize = ImVec2((float)w, (float)h);
   io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
 
@@ -349,7 +357,7 @@ void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window) {
   // (we already got mouse wheel, keyboard keys & characters from SDL_PollEvent())
   int mx, my;
   Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
-  if (SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_FOCUS)
+  if (SDL_GetWindowFlags(win.sdl_window) & SDL_WINDOW_MOUSE_FOCUS)
     io.MousePos = ImVec2((float)mx, (float)my);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
   else
     io.MousePos = ImVec2(-1, -1);
