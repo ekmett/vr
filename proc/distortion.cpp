@@ -36,7 +36,7 @@ distortion::distortion(GLushort segmentsH , GLushort segmentsV)
       void main() {
         float fBoundsCheck = ( (dot( vec2( lessThan( v2UVgreen.xy, vec2(0.05, 0.05)) ), vec2(1.0, 1.0))+dot( vec2( greaterThan( v2UVgreen.xy, vec2( 0.95, 0.95)) ), vec2(1.0, 1.0))) );
         if( fBoundsCheck > 1.0 ) {
-       	  outputColor = vec4( 0, 0, 0, 1.0 );
+       	  outputColor = vec4( 0, 1.0, 0, 1.0 );
         } else {
           float red = texture(mytexture, v2UVred).x;
           float green = texture(mytexture, v2UVgreen).y;
@@ -53,40 +53,85 @@ distortion::distortion(GLushort segmentsH , GLushort segmentsV)
     vec2 p, r, g, b;
   };
 
-  vector<vertex> verts(0);
-
+  vector<bool> good;
   for (int i = 0;i < 2;++i) {
-    float o = float(i) - 1; // -1 for left eye, 0 for right
     for (int y = 0; y < segmentsV; ++y) {
       for (int x = 0; x < segmentsH; ++x) {
-        float u = x*w, v = 1 - y*h;
-        DistortionCoordinates_t dc0 = VRSystem()->ComputeDistortion(vr::EVREye(i), u, v);
-        verts.push_back(vertex {
-          vec2(o + u, 2*y*h-1),
-          vec2(o + 0.5 * dc0.rfRed[0],   1 - dc0.rfRed[1]),
-          vec2(o + 0.5 * dc0.rfGreen[0], 1 - dc0.rfGreen[1]),
-          vec2(o + 0.5 * dc0.rfBlue[0],  1 - dc0.rfBlue[1])
-        });
+        DistortionCoordinates_t dc = VRSystem()->ComputeDistortion(vr::EVREye(i), x*w, 1-y*h);
+        good.push_back(
+          0.05 <= min(dc.rfGreen[0], dc.rfGreen[1]) && 
+          max(dc.rfGreen[0], dc.rfGreen[1]) <= 0.95
+        );
       }
     }
   }
 
-  vector<GLushort> indices;
+  vector<bool> keep = good;
+  assert(keep.size() == good.size());
 
+  // mark all the vertices we need
   for (int i = 0; i < 2; ++i) {
     GLushort offset = i*segmentsH*segmentsV;
     for (GLushort y = 0; y < segmentsV - 1; y++) {
       for (GLushort x = 0; x < segmentsH - 1; x++) {
-        GLushort a = segmentsH*y + x + offset;
-        GLushort b = segmentsH*y + x + 1 + offset;
-        GLushort c = (y + 1)*segmentsH + x + 1 + offset;
-        GLushort d = (y + 1)*segmentsH + x + offset;
-        indices.push_back(a);
-        indices.push_back(b);
-        indices.push_back(c);
-        indices.push_back(a);
-        indices.push_back(c);
-        indices.push_back(d);
+        GLushort a = segmentsH*y + x + offset, b = a + 1, c = a + segmentsH, d = c + 1;
+        if (good[a] || good[b] || good[d]) keep[a] = keep[b] = keep[d] = true; // if any corner is good the triangle is
+        if (good[a] || good[d] || good[c]) keep[a] = keep[d] = keep[c] = true; // if any corner is good the triangle is
+      }
+    }
+  }
+  
+  vector<vertex> verts;
+  vector<int> ranks;
+  {
+    int j = 0, r = 0;
+    for (int i = 0;i < 2;++i) {
+      float o = float(i) - 1; // -1 for left eye, 0 for right
+      for (int y = 0; y < segmentsV; ++y) {
+        for (int x = 0; x < segmentsH; ++x) {
+          float u = x*w, v = 1 - y*h;
+          ranks.push_back(r);
+          if (keep[j++]) {
+            DistortionCoordinates_t dc = VRSystem()->ComputeDistortion(vr::EVREye(i), u, v);
+            verts.push_back(vertex{
+              vec2(o + u, 2 * y*h - 1),
+              vec2(0.5 * (i + dc.rfRed[0]),   1 - dc.rfRed[1]),
+              vec2(0.5 * (i + dc.rfGreen[0]), 1 - dc.rfGreen[1]),
+              vec2(0.5 * (i + dc.rfBlue[0]),  1 - dc.rfBlue[1])
+            });
+            ++r;
+          }
+        }
+      }
+    }
+  }
+  
+  assert(ranks.size() == good.size());
+  for (int i = 0; i < ranks.size() - 1; ++i) {
+    assert(ranks[i] <= ranks[i + 1]);
+    assert(ranks[i + 1] <= ranks[i] + 1);
+  }
+
+  log("bug")->info("keeping {} out of {}", ranks[ranks.size() - 1], ranks.size());
+  vector<GLushort> indices;
+
+  // mark all the vertices we need
+  for (int i = 0; i < 2; ++i) {
+    GLushort offset = i*segmentsH*segmentsV;
+    for (GLushort y = 0; y < segmentsV - 1; y++) {
+      for (GLushort x = 0; x < segmentsH - 1; x++) {
+        GLushort a = segmentsH*y + x + offset, b = a + 1, c = a + segmentsH, d = c + 1;
+        GLushort ra = ranks[a], rb = ranks[b], rc = ranks[c], rd = ranks[d];
+        if (keep[a] && keep[b] && keep[d]) {
+          indices.push_back(ra);
+          indices.push_back(rb); 
+          indices.push_back(rd);
+        }
+        if (keep[a] && keep[d] && keep[c]) {
+          indices.push_back(ra);
+          indices.push_back(rd);
+          indices.push_back(rc);
+        }
       }
     }
   }
@@ -136,7 +181,9 @@ void distortion::render(GLuint resolutionTexture) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, 0);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glBindVertexArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindTexture(GL_TEXTURE_2D, 0);

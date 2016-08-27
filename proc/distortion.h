@@ -4,7 +4,7 @@
 #include "framework/shader.h"
 
 struct distortion {
-  distortion(GLushort segmentsH = 43, GLushort segmentsV = 43);
+  distortion(GLushort segmentsH = 48, GLushort segmentsV = 48);
   ~distortion();
   void render(GLuint resolutionTexture);
 private:
