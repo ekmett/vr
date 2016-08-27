@@ -38,7 +38,7 @@ namespace framework {
       unique_ptr<gl::debugger> debugger;
 
       inline int display_index() const { return SDL_GetWindowDisplayIndex(sdl_window); }
-
+      inline void swap() { SDL_GL_SwapWindow(sdl_window); }
     };
   }
 }

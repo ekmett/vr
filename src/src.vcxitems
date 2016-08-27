@@ -30,7 +30,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\grammar.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\oculus.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_display.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h" />
@@ -54,7 +53,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\epoch.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gl.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_display.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_system.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_window.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_system.cpp" />

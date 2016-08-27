@@ -65,9 +65,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\shader.h">
       <Filter>framework\gl</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_display.h">
-      <Filter>framework\openvr</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr.h">
       <Filter>framework\openvr</Filter>
     </ClInclude>
@@ -160,9 +157,6 @@
       <Filter>framework\gl</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr.cpp">
-      <Filter>framework\openvr</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_display.cpp">
       <Filter>framework\openvr</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp">

@@ -7,12 +7,13 @@
 #include "gui.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "openal.h"
+#include "distortion.h"
 
 using namespace framework;
 using namespace glm;
 
 // used reversed [1..0] floating point z rather than the classic [-1..1] mapping
-#define USE_REVERSED_Z
+// #define USE_REVERSED_Z
 
 struct app {
   app();
@@ -28,21 +29,32 @@ struct app {
   vr::TrackedDevicePose_t predicted_pose[vr::k_unMaxTrackedDeviceCount]; // poses 2 frames out
   std::mt19937 rng; // for the main thread
   vr::IVRCompositor & compositor;
+  distortion distorted;
   
-  enum display_pass { render, resolve };
   struct {
     uint32_t w, h;
-    GLuint fbo[2]; // render, resolve
+    union {
+      GLuint fbo[2];
+      struct {
+        GLuint render_fbo, resolve_fbo;
+      };
+    };
     GLuint depth;  // renderbuffer for render framebuffer
-    GLuint texture[2]; // render, resolve -- render is multisample, resolve is not
+    union {
+      GLuint texture[2];
+      struct {
+        GLuint render_texture, resolve_texture;
+      };
+    };
   } display;
+
   mat4 eyeProjectionMatrix[2];
   mat4 eyePoseMatrix[2];
   float nearClip, farClip;
 };
 
 #ifdef USE_REVERSED_Z
-static float reverseZ_contents[16] = { // transposed of course
+static float reverseZ_contents[16] = {
    1.f, 0.f, 0.f, 0.f,
    0.f, 1.f, 0.f, 0.f,
    0.f, 0.f, -1.f, 1.f,
@@ -51,7 +63,7 @@ static float reverseZ_contents[16] = { // transposed of course
 static mat4 reverseZ = glm::make_mat4(reverseZ_contents);
 #endif
 
-app::app() : window("proc", { 4, 5, gl::profile::core }, false), vr(), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window) {
+app::app() : window("proc", { 4, 5, gl::profile::core }, true), vr(), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted() {
 
   // load matrices.
   for (int i = 0;i < 2;++i) {
@@ -77,28 +89,34 @@ app::app() : window("proc", { 4, 5, gl::profile::core }, false), vr(), composito
   glDepthFunc(GL_GREATER);
   glClearDepth(0.f);
 #endif
-
+   
   // set up render fbo
-  glBindFramebuffer(GL_FRAMEBUFFER, display.fbo[render]);
+  glBindFramebuffer(GL_FRAMEBUFFER, display.render_fbo);
+  gl::label(GL_FRAMEBUFFER, display.render_fbo, "render fbo");
   glBindRenderbuffer(GL_RENDERBUFFER, display.depth);
+  gl::label(GL_RENDERBUFFER, display.depth, "render depth");
   glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT32F, display.w * 2, display.h); // ask for a floating point z buffer
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, display.depth);
-  glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, display.texture[render]);
+  glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, display.render_texture);
+  gl::label(GL_TEXTURE, display.render_texture, "render texture");
   glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, display.w * 2, display.h, true);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, display.texture[render], 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, display.render_texture, 0);
 
   // set up resolve fbo
-  glBindFramebuffer(GL_FRAMEBUFFER, display.fbo[resolve]);
-  glBindTexture(GL_TEXTURE_2D, display.texture[resolve]); 
+  glBindFramebuffer(GL_FRAMEBUFFER, display.resolve_fbo);
+  gl::label(GL_FRAMEBUFFER, display.resolve_fbo, "resolve fbo");
+  glBindTexture(GL_TEXTURE_2D, display.resolve_texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, display.w * 2, display.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, display.texture[resolve], 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, display.resolve_texture, 0);
+  gl::label(GL_TEXTURE, display.resolve_texture, "resolve texture");
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     die("Unable to allocate frame buffer");
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
   SDL_StartTextInput();
 
@@ -114,19 +132,22 @@ app::~app() {
 
 void app::run() {
   while (!vr.poll() && !window.poll()) {
-    // clear the display window
-    gui.new_frame();
-    glClearColor(0.15f, 0.15f, 0.15f, 1.f);
+    // clear the display window  
+    glClearColor(0.15f, 0.15f, 0.45f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    // start a new imgui frame
+    gui.new_frame();
+
     glEnable(GL_MULTISAMPLE);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, display.fbo[render]);
-    glViewportIndexedf(0, 0, 0, display.w, display.h); // viewport 0 left eye
-    glViewportIndexedf(1, display.w, 0, display.w, display.h); // viewport 1 right eye
-    glClearColor(0.15f, 0.15f, 0.18f, 1.0f); // nice background color, but not black
+    // switch to the hmd
+    glBindFramebuffer(GL_FRAMEBUFFER, display.render_fbo);
+    glClearColor(0.15f, 0.15f, 0.18f, 1.0f); // nice background color, not black, distinct from desktop clear
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glViewportIndexedf(0, 0, 0, display.w, display.h);         // viewport 0 left eye
+    //glViewportIndexedf(1, display.w, 0, display.w, display.h); // viewport 1 right eye
     
-
     // compute stuff that can deal with approximate pose info, such as most of the shadow maps
 
     compositor.WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, 0);
@@ -134,18 +155,30 @@ void app::run() {
     // we now know _precisely_ where we are and we're ready to draw to other things here
     // TODO: render eye-specific stuff here
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_MULTISAMPLE);
-    glBlitNamedFramebuffer(display.fbo[render], display.fbo[resolve], 0, 0, display.w * 2, display.h, 0, 0, display.w * 2, display.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    // copy the msaa render target to a lower quality 'resolve' texture for display
+    glBlitNamedFramebuffer(display.render_fbo, display.resolve_fbo, 0, 0, display.w * 2, display.h, 0, 0, display.w * 2, display.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
     {
-      vr::Texture_t eyeTexture = { reinterpret_cast<void*>(display.texture[resolve]), vr::API_OpenGL, vr::ColorSpace_Gamma };
+      vr::Texture_t eyeTexture = { reinterpret_cast<void*>(display.resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
       for (int i = 0;i < 2;++i) {
         vr::VRTextureBounds_t eyeBounds = { 0.5 * i, 0.0, 0.5 + 0.5 * i , 1.0 };
         vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds);
       }
     }
+
+    // let the compositor know we handed off a frame
     compositor.PostPresentHandoff();
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  
+
+    //{
+    //  int w, h;
+    //  SDL_GetWindowSize(window.sdl_window, &w, &h);
+    //  glViewport(0, 0, w, h); // paint over the entire sdl window
+    //}
+
+    distorted.render(display.resolve_texture);
+
     gui::Text(ICON_MD_FILE_DOWNLOAD " Download");
     gui::Text(ICON_MD_FILE_UPLOAD " Upload");
 
@@ -153,7 +186,7 @@ void app::run() {
 
     gui::Render();
 
-    SDL_GL_SwapWindow(window.sdl_window);
+    window.swap();
   }
 }
 

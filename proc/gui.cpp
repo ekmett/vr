@@ -12,7 +12,7 @@ static bool         g_MousePressed[3] = { false, false, false };
 static float        g_MouseWheel = 0.0f;
 static GLuint       g_FontTexture = 0;
 static int          g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
-static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;
+static int          g_UniformLocationTex = 0, g_UniformLocationProjMtx = 0;
 static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
 static unsigned int g_VboHandle = 0, g_VaoHandle = 0, g_ElementsHandle = 0;
 
@@ -32,7 +32,6 @@ void render_draw_lists(ImDrawData* draw_data) {
   GLint last_program; glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
   GLint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
   GLint last_active_texture; glGetIntegerv(GL_ACTIVE_TEXTURE, &last_active_texture);
-  GLint last_array_buffer; glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
   GLint last_element_array_buffer; glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
   GLint last_vertex_array; glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
   GLint last_blend_src; glGetIntegerv(GL_BLEND_SRC, &last_blend_src);
@@ -58,25 +57,26 @@ void render_draw_lists(ImDrawData* draw_data) {
   glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
   const float ortho_projection[4][4] =
   {
-    { 2.0f / io.DisplaySize.x, 0.0f,                   0.0f, 0.0f },
-    { 0.0f,                  2.0f / -io.DisplaySize.y, 0.0f, 0.0f },
-    { 0.0f,                  0.0f,                  -1.0f, 0.0f },
-    { -1.0f,                  1.0f,                   0.0f, 1.0f },
+    { 2.0f / io.DisplaySize.x, 0.0f,                     0.0f, 0.0f },
+    { 0.0f,                    2.0f / -io.DisplaySize.y, 0.0f, 0.0f },
+    { 0.0f,                    0.0f,                    -1.0f, 0.0f },
+    { -1.0f,                   1.0f,                     0.0f, 1.0f },
   };
   glUseProgram(g_ShaderHandle);
-  glUniform1i(g_AttribLocationTex, 0);
-  glUniformMatrix4fv(g_AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
+  glUniform1i(g_UniformLocationTex, 0);
+  glUniformMatrix4fv(g_UniformLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
+
+  glVertexArrayVertexBuffer(g_VaoHandle, 0, g_VboHandle, 0, sizeof(ImDrawVert));
+  
   glBindVertexArray(g_VaoHandle);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
 
   for (int n = 0; n < draw_data->CmdListsCount; n++) {
     const ImDrawList* cmd_list = draw_data->CmdLists[n];
     const ImDrawIdx* idx_buffer_offset = 0;
 
-    glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
-    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)cmd_list->VtxBuffer.size() * sizeof(ImDrawVert), (GLvoid*)&cmd_list->VtxBuffer.front(), GL_STREAM_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx), (GLvoid*)&cmd_list->IdxBuffer.front(), GL_STREAM_DRAW);
+    glNamedBufferData(g_VboHandle, (GLsizeiptr)cmd_list->VtxBuffer.size() * sizeof(ImDrawVert), cmd_list->VtxBuffer.Data, GL_STREAM_DRAW);
+    glNamedBufferData(g_ElementsHandle, (GLsizeiptr)cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx), cmd_list->IdxBuffer.Data, GL_STREAM_DRAW);
 
     for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin(); pcmd != cmd_list->CmdBuffer.end(); pcmd++) {
       if (pcmd->UserCallback) {
@@ -84,7 +84,7 @@ void render_draw_lists(ImDrawData* draw_data) {
       } else {
         glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
         glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-        glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, idx_buffer_offset);
+        glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)idx_buffer_offset);
       }
       idx_buffer_offset += pcmd->ElemCount;
     }
@@ -95,7 +95,6 @@ void render_draw_lists(ImDrawData* draw_data) {
   glActiveTexture(last_active_texture);
   glBindTexture(GL_TEXTURE_2D, last_texture);
   glBindVertexArray(last_vertex_array);
-  glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_element_array_buffer);
   glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
   glBlendFunc(last_blend_src, last_blend_dst);
@@ -157,20 +156,28 @@ void create_fonts_texture() {
   io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bits for OpenGL3 demo because it is more likely to be compatible with user's existing shader.
 
   // Upload texture to graphics system
-  GLint last_texture;
-  glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-  glGenTextures(1, &g_FontTexture);
-  glBindTexture(GL_TEXTURE_2D, g_FontTexture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  //GLint last_texture;
+  //glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+
+  glCreateTextures(GL_TEXTURE_2D, 1, &g_FontTexture);
+  gl::label(GL_TEXTURE, g_FontTexture, "gui font atlas");
+  glTextureParameteri(g_FontTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTextureParameteri(g_FontTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTextureStorage2D(g_FontTexture, 1, GL_RGBA8, width, height);
   glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  glTextureSubImage2D(g_FontTexture, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  //
+  //glGenTextures(1, &g_FontTexture);
+  //glBindTexture(GL_TEXTURE_2D, g_FontTexture);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   // Store our identifier
   io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
 
   // Restore state
-  glBindTexture(GL_TEXTURE_2D, last_texture);
+  //glBindTexture(GL_TEXTURE_2D, last_texture);
 }
 
 namespace framework {
@@ -331,12 +338,6 @@ namespace framework {
     }
     bool system::create_device_objects() {
     
-      // Backup GL state
-      GLint last_texture, last_array_buffer, last_vertex_array;
-      glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-      glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
-      glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
-
       const GLchar *vertex_shader =
         "#version 330\n"
         "uniform mat4 ProjMtx;\n"
@@ -374,34 +375,35 @@ namespace framework {
       glAttachShader(g_ShaderHandle, g_FragHandle);
       glLinkProgram(g_ShaderHandle);
 
-      g_AttribLocationTex = glGetUniformLocation(g_ShaderHandle, "Texture");
-      g_AttribLocationProjMtx = glGetUniformLocation(g_ShaderHandle, "ProjMtx");
+      g_UniformLocationTex = glGetUniformLocation(g_ShaderHandle, "Texture");
+      g_UniformLocationProjMtx = glGetUniformLocation(g_ShaderHandle, "ProjMtx");
+
       g_AttribLocationPosition = glGetAttribLocation(g_ShaderHandle, "Position");
       g_AttribLocationUV = glGetAttribLocation(g_ShaderHandle, "UV");
       g_AttribLocationColor = glGetAttribLocation(g_ShaderHandle, "Color");
 
-      glGenBuffers(1, &g_VboHandle);
-      glGenBuffers(1, &g_ElementsHandle);
+      glCreateBuffers(1, &g_VboHandle);
+      gl::label(GL_BUFFER, g_VboHandle, "gui vbo");
 
-      glGenVertexArrays(1, &g_VaoHandle);
-      glBindVertexArray(g_VaoHandle);
-      glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
-      glEnableVertexAttribArray(g_AttribLocationPosition);
-      glEnableVertexAttribArray(g_AttribLocationUV);
-      glEnableVertexAttribArray(g_AttribLocationColor);
+      glCreateBuffers(1, &g_ElementsHandle);
+      gl::label(GL_BUFFER, g_ElementsHandle, "gui elements");
 
-#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-      glVertexAttribPointer(g_AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
-      glVertexAttribPointer(g_AttribLocationUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
-      glVertexAttribPointer(g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, col));
-#undef OFFSETOF
+      glCreateVertexArrays(1, &g_VaoHandle);
+      gl::label(GL_VERTEX_ARRAY, g_VaoHandle, "gui vao");
+
+      glEnableVertexArrayAttrib(g_VaoHandle, g_AttribLocationPosition);
+      glEnableVertexArrayAttrib(g_VaoHandle, g_AttribLocationUV);
+      glEnableVertexArrayAttrib(g_VaoHandle, g_AttribLocationColor);
+
+      glVertexArrayAttribFormat(g_VaoHandle, g_AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, offsetof(ImDrawVert, pos));
+      glVertexArrayAttribFormat(g_VaoHandle, g_AttribLocationUV, 2, GL_FLOAT, GL_FALSE, offsetof(ImDrawVert, uv));
+      glVertexArrayAttribFormat(g_VaoHandle, g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof(ImDrawVert, col));
+
+      glVertexArrayAttribBinding(g_VaoHandle, g_AttribLocationPosition, 0);
+      glVertexArrayAttribBinding(g_VaoHandle, g_AttribLocationUV, 0);
+      glVertexArrayAttribBinding(g_VaoHandle, g_AttribLocationColor, 0);
 
       create_fonts_texture();
-
-      // Restore modified GL state
-      glBindTexture(GL_TEXTURE_2D, last_texture);
-      glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
-      glBindVertexArray(last_vertex_array);
 
       return true;
     }

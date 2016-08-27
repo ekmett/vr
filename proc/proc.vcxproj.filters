@@ -5,42 +5,44 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>boilerplate</Filter>
     </ClCompile>
-    <ClCompile Include="..\third-party\imgui\imgui.cpp">
-      <Filter>imgui\standard</Filter>
-    </ClCompile>
-    <ClCompile Include="..\third-party\imgui\imgui_demo.cpp">
-      <Filter>imgui\standard</Filter>
-    </ClCompile>
-    <ClCompile Include="..\third-party\imgui\imgui_draw.cpp">
-      <Filter>imgui\standard</Filter>
-    </ClCompile>
     <ClCompile Include="gui.cpp" />
     <ClCompile Include="openal.cpp" />
+    <ClCompile Include="distortion.cpp" />
+    <ClCompile Include="..\third-party\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third-party\imgui\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third-party\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>boilerplate</Filter>
     </ClInclude>
-    <ClInclude Include="imgui_table.h">
-      <Filter>imgui\extensions</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\imgui\imgui.h">
-      <Filter>imgui\standard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\imgui\imgui_internal.h">
-      <Filter>imgui\standard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\imgui\stb_rect_pack.h">
-      <Filter>imgui\standard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\imgui\stb_textedit.h">
-      <Filter>imgui\standard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\imgui\stb_truetype.h">
-      <Filter>imgui\standard</Filter>
-    </ClInclude>
     <ClInclude Include="gui.h" />
     <ClInclude Include="openal.h" />
+    <ClInclude Include="distortion.h" />
+    <ClInclude Include="imgui_table.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\stb_rect_pack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\stb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\stb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="boilerplate">
@@ -48,12 +50,6 @@
     </Filter>
     <Filter Include="imgui">
       <UniqueIdentifier>{c2cd084c-ca84-4939-a864-514315ef7518}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="imgui\extensions">
-      <UniqueIdentifier>{e6d75649-5292-417b-a6b2-68d2af6905b2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="imgui\standard">
-      <UniqueIdentifier>{3c2d62ab-5edf-4517-9e33-a4567a69a7ef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

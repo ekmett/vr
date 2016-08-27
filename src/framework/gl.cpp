@@ -13,8 +13,17 @@ namespace framework {
       }
     }
 
+    string trim(const char * message) {
+      string result = message;
+      int len = result.length();
+      if (len > 0 && result[len - 1] == '\n')
+        result.resize(len - 1);      
+      return result;
+    }
+
     static void APIENTRY gl_debugging_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, const void* userParam) {
-      log("gl")->log(log_severity(severity), "{} {}: {} ({})", show_debug_source(source), show_debug_message_type(type), message, id);
+    //  if (type != GL_DEBUG_TYPE_OTHER) 
+        log("gl")->log(log_severity(severity), "{} {}: {} ({})", show_debug_source(source), show_debug_message_type(type), trim(message), id);
     }
 
     debugger::debugger() noexcept {
