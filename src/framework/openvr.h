@@ -42,10 +42,6 @@ namespace framework {
     const char * show_event_type(int e) noexcept;
     const char * show_compositor_error(EVRCompositorError e) noexcept;
 
-    static inline EVREye eye(int i) noexcept {
-      return (i == 0) ? vr::Eye_Left : vr::Eye_Right;
-    }
-
     static inline const char * show_eye(int i) noexcept {
       switch (i) {
         case 0: return "left";
