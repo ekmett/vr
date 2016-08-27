@@ -1,5 +1,6 @@
 
 #include "framework/config.h"
+#include "framework/shader.h"
 #include "framework/sdl_window.h"
 #include <SDL_syswm.h>
 #include "gui.h"
@@ -11,14 +12,11 @@ static double       g_Time = 0.0f;
 static bool         g_MousePressed[3] = { false, false, false };
 static float        g_MouseWheel = 0.0f;
 static GLuint       g_FontTexture = 0;
-static int          g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
+static int          g_ShaderHandle = 0;
 static int          g_UniformLocationTex = 0, g_UniformLocationProjMtx = 0;
 static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
 static unsigned int g_VboHandle = 0, g_VaoHandle = 0, g_ElementsHandle = 0;
 
-// This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
-// If text or lines are blurry when integrating ImGui in your engine:
-// - in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
 void render_draw_lists(ImDrawData* draw_data) {
   // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
   ImGuiIO& io = ImGui::GetIO();
@@ -66,8 +64,6 @@ void render_draw_lists(ImDrawData* draw_data) {
   glUniform1i(g_UniformLocationTex, 0);
   glUniformMatrix4fv(g_UniformLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
 
-  glVertexArrayVertexBuffer(g_VaoHandle, 0, g_VboHandle, 0, sizeof(ImDrawVert));
-  
   glBindVertexArray(g_VaoHandle);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
 
@@ -305,14 +301,6 @@ namespace framework {
       if (g_ElementsHandle) glDeleteBuffers(1, &g_ElementsHandle);
       g_VaoHandle = g_VboHandle = g_ElementsHandle = 0;
 
-      glDetachShader(g_ShaderHandle, g_VertHandle);
-      glDeleteShader(g_VertHandle);
-      g_VertHandle = 0;
-
-      glDetachShader(g_ShaderHandle, g_FragHandle);
-      glDeleteShader(g_FragHandle);
-      g_FragHandle = 0;
-
       glDeleteProgram(g_ShaderHandle);
       g_ShaderHandle = 0;
 
@@ -324,42 +312,28 @@ namespace framework {
     }
     bool system::create_device_objects() {
     
-      const GLchar *vertex_shader =
-        "#version 330\n"
-        "uniform mat4 ProjMtx;\n"
-        "in vec2 Position;\n"
-        "in vec2 UV;\n"
-        "in vec4 Color;\n"
-        "out vec2 Frag_UV;\n"
-        "out vec4 Frag_Color;\n"
-        "void main()\n"
-        "{\n"
-        "       Frag_UV = UV;\n"
-        "       Frag_Color = Color;\n"
-        "       gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
-        "}\n";
-
-      const GLchar* fragment_shader =
-        "#version 330\n"
-        "uniform sampler2D Texture;\n"
-        "in vec2 Frag_UV;\n"
-        "in vec4 Frag_Color;\n"
-        "out vec4 Out_Color;\n"
-        "void main()\n"
-        "{\n"
-        "       Out_Color = Frag_Color * texture( Texture, Frag_UV.st);\n"
-        "}\n";
-
-      g_ShaderHandle = glCreateProgram();
-      g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
-      g_FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
-      glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
-      glShaderSource(g_FragHandle, 1, &fragment_shader, 0);
-      glCompileShader(g_VertHandle);
-      glCompileShader(g_FragHandle);
-      glAttachShader(g_ShaderHandle, g_VertHandle);
-      glAttachShader(g_ShaderHandle, g_FragHandle);
-      glLinkProgram(g_ShaderHandle);
+      g_ShaderHandle = gl::compile("gui", R"(
+          #version 450
+          uniform mat4 ProjMtx;
+          in vec2 Position;
+          in vec2 UV;
+          in vec4 Color;
+          out vec2 Frag_UV;
+          out vec4 Frag_Color;
+          void main() {
+            Frag_UV = UV;
+            Frag_Color = Color;
+            gl_Position = ProjMtx * vec4(Position.xy,0,1);
+          }
+        )", R"(
+          #version 450
+          uniform sampler2D Texture;
+        in vec2 Frag_UV;
+        in vec4 Frag_Color;
+        out vec4 Out_Color;
+        void main() {
+               Out_Color = Frag_Color * texture( Texture, Frag_UV.st);
+        })");
 
       g_UniformLocationTex = glGetUniformLocation(g_ShaderHandle, "Texture");      
       g_UniformLocationProjMtx = glGetUniformLocation(g_ShaderHandle, "ProjMtx");
@@ -388,6 +362,8 @@ namespace framework {
       glVertexArrayAttribBinding(g_VaoHandle, g_AttribLocationPosition, 0);
       glVertexArrayAttribBinding(g_VaoHandle, g_AttribLocationUV, 0);
       glVertexArrayAttribBinding(g_VaoHandle, g_AttribLocationColor, 0);
+
+      glVertexArrayVertexBuffer(g_VaoHandle, 0, g_VboHandle, 0, sizeof(ImDrawVert));
 
       create_fonts_texture();
 

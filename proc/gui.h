@@ -20,10 +20,5 @@ namespace framework {
       bool create_device_objects();
       float content_scale; // ui scale multiplier
     };
-
-    
-    // Use if you want to reset your rendering device without losing ImGui state.
-   
-    
   }
 }
