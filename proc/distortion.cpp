@@ -201,8 +201,6 @@ distortion::~distortion() {
   log("distortion")->info("shutting down");
   glDeleteBuffers(3, buffer);
   glDeleteVertexArrays(2, array);
-  glDeleteProgram(warp.programId);
-  glDeleteProgram(mask.programId);
 }
 
 void distortion::render(GLuint resolutionTexture) {
