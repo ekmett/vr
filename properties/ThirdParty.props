@@ -15,11 +15,11 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform)\;$(OpenVRDir)lib\$(WinXX)\;$(SDL2Dir)lib\$(xXX)\;$(OculusSDKDir)\LibOVR\Lib\Windows\$(Platform)\$(Configuration)\VS2015\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform)\;$(OpenVRDir)lib\$(WinXX)\;$(SDL2Dir)lib\$(xXX)\;$(OculusSDKDir)\LibOVR\Lib\Windows\$(Platform)\$(Configuration)\VS2015\;$(OpenALSoftDir)libs\$(WinXX)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;glu32.lib;opengl32.lib;LibOVR.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(OpenVRDir)headers\;$(GLEWDir)include\;$(SDL2Dir)include\;$(SPDLogDir)include\;$(GLMDir);$(BoostDir);$(CDSDir);$(OculusSDKDir)LibOVR\;$(OculusSDKDir)LibOVR\Src\Util\;$(OculusSDKDir)LibOVR\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenALSoftDir)include\;$(OpenVRDir)headers\;$(GLEWDir)include\;$(SDL2Dir)include\;$(SPDLogDir)include\;$(GLMDir);$(BoostDir);$(CDSDir);$(OculusSDKDir)LibOVR\;$(OculusSDKDir)LibOVR\Src\Util\;$(OculusSDKDir)LibOVR\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

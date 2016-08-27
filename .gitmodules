@@ -16,3 +16,6 @@
 [submodule "third-party/ck"]
 	path = third-party/ck
 	url = https://github.com/concurrencykit/ck.git
+[submodule "third-party/IconFontCppHeaders"]
+	path = third-party/IconFontCppHeaders
+	url = https://github.com/juliettef/IconFontCppHeaders.git

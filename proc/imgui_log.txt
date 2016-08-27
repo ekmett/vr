@@ -1,0 +1,181 @@
+
+
+## Widgets #
+
+## Graphs widgets #
+
+## Layout #
+> Child regions
+    Without border
+    Goto
+    50
+> Widgets Width
+    PushItemWidth(100) (?)
+    0.000 float
+    PushItemWidth(GetWindowWidth() * 0.5f) (?)
+    0.000 float
+    PushItemWidth(GetContentRegionAvailWidth() * 0.5f) (?)
+    0.000 float
+    PushItemWidth(-100) (?)
+    0.000 float
+    PushItemWidth(-1) (?)
+    0.000 float
+> Basic Horizontal Layout
+    (Use ImGui::SameLine() to keep adding items to the right of the preceeding item)
+    Two items: Hello Sailor
+    More spacing: Hello Sailor
+    Normal buttons Banana Apple Corniflower
+    Small buttons Like this one can fit within a text block.
+    Aligned x=150 x=300
+    Aligned x=150 x=300
+    [x] My [x] Tailor [x] Is [x] Rich
+    Combo 1.000 X 2.000 Y 3.000 Z
+    Lists:
+    A B
+> Groups
+    (Using ImGui::BeginGroup()/EndGroup() to layout items. BeginGroup() basically locks the horizontal position. EndGroup() bundles the whole group so that you can use functions such as IsItemHovered() on it.)
+    AAA BBB
+    CCC
+    DDD
+    EEE
+    ACTION REACTION
+    LEVERAGE
+    BUZZWORD
+    List
+> Text Baseline Alignment
+    (This is testing the vertical alignment that occurs on text to keep it at the same baseline as widgets. Lines only composed of text or "small" widgets fit in less vertical spaces than lines with normal widgets)
+    One
+    Two
+    Three Hello
+    World Banana
+    Banana Hello
+    World One
+    Two
+    Three
+    HOP Banana Hello
+    World Banana
+    HOP Hello
+    World Banana
+    TEST TEST TEST
+    Text aligned to Widget Widget Widget Widget
+    Button > Node
+        Item 0..
+        Item 1..
+        Item 2..
+        Item 3..
+        Item 4..
+        Item 5..
+    > Node Button
+        Item 0..
+        Item 1..
+        Item 2..
+        Item 3..
+        Item 4..
+        Item 5..
+    Button Bullet text
+    Node Button
+> Scrolling
+    (Use SetScrollHere() or SetScrollFromPosY() to scroll to a given position.)
+    [x] Track Line 50
+    Scroll To y = 200 px
+    Top
+    25%
+    Center
+    75%
+    Bottom
+> Horizontal Scrolling
+    Horizontal scrolling for a window has to be enabled explicitly via the ImGuiWindowFlags_HorizontalScrollbar flag.
+    You may want to explicitly specify content width by calling SetNextWindowContentWidth() before Begin().
+    7 Lines
+    << Scroll from code >>
+> Clipping
+    On a per-widget basis we are occasionally clipping text CPU-side if it won't fit in its frame. Otherwise we are doing coarser clipping + passing a scissor rectangle to the renderer. The system is designed to try minimizing both execution and CPU/GPU rendering cost.
+    96 100 size
+    (Click and drag)
+
+## Popups & Modal windows #
+> Popups
+    When a popup is active, it inhibits interacting with windows that are behind the popup. Clicking outside the popup closes it.
+    Select.. <None>
+    Toggle..
+    Popup Menu..
+    Below we are testing adding menu items to a regular window. It's rather unusual but should work!
+--------------------------------
+    Menu item CTRL+M
+    Menu inside a regular window
+--------------------------------
+> Context menus
+    Value = 0.500 (<-- right-click here)
+    (<-- right-click here)
+> Modals
+    Modal windows are like popups but the user cannot close them by clicking outside the window.
+    Delete..
+    Stacked modals..
+
+## Columns #
+> Basic
+    Without border:
+--------------------------------
+    Item 0 Item 1 Item 2
+    Item 3 Item 4 Item 5
+    Item 6 Item 7 Item 8
+    Item 9 Item 10 Item 11
+    Item 12 Item 13
+--------------------------------
+    With border:
+--------------------------------
+    ID Name Path Flags
+--------------------------------
+    0000 One /path/one ....
+    0001 Two /path/two ....
+    0002 Three /path/three ....
+--------------------------------
+> Mixed items
+--------------------------------
+    Hello
+    Banana ImGui
+    Apple
+    1.000 - + red
+    An extra line here. Sailor
+    Corniflower
+    1.000 - + blue
+    
+    ## Category A # 
+    ## Category B # 
+    ## Category C #
+--------------------------------
+> Word-wrapping
+--------------------------------
+    The quick brown fox jumps over the lazy dog.
+    Hello Left The quick brown fox jumps over the lazy dog.
+    Hello Right
+--------------------------------
+> Borders
+    [x] horizontal [x] vertical
+--------------------------------
+    aaa bbb ccc ddd
+    eee fff ggg hhh
+--------------------------------
+> Tree within single cell (?)
+--------------------------------
+    > Hello
+        Sailor > Bonjour
+        Marin
+--------------------------------
+
+## Filtering #
+Filter usage:
+  ""         display all lines
+  "xxx"      display lines containing "xxx"
+  "xxx,yyy"  display lines containing "xxx" or "yyy"
+  "-xxx"     hide lines containing "xxx" Filter (inc,-exc)
+aaa1.c
+bbb1.c
+ccc1.c
+aaa2.cpp
+bbb2.cpp
+ccc2.cpp
+abc.h
+hello, world
+
+## Keyboard, Mouse & Focus #

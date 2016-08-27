@@ -5,9 +5,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>boilerplate</Filter>
     </ClCompile>
-    <ClCompile Include="imgui_impl.cpp">
-      <Filter>imgui\extensions</Filter>
-    </ClCompile>
     <ClCompile Include="..\third-party\imgui\imgui.cpp">
       <Filter>imgui\standard</Filter>
     </ClCompile>
@@ -17,13 +14,12 @@
     <ClCompile Include="..\third-party\imgui\imgui_draw.cpp">
       <Filter>imgui\standard</Filter>
     </ClCompile>
+    <ClCompile Include="gui.cpp" />
+    <ClCompile Include="openal.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>boilerplate</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_impl.h">
-      <Filter>imgui\extensions</Filter>
     </ClInclude>
     <ClInclude Include="imgui_table.h">
       <Filter>imgui\extensions</Filter>
@@ -43,6 +39,8 @@
     <ClInclude Include="..\third-party\imgui\stb_truetype.h">
       <Filter>imgui\standard</Filter>
     </ClInclude>
+    <ClInclude Include="gui.h" />
+    <ClInclude Include="openal.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="boilerplate">

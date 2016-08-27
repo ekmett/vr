@@ -4,10 +4,9 @@
 #include "framework/worker.h"
 #include "framework/gl.h"
 #include "framework/signal.h"
-#include "imgui.h"
-#include "imgui_impl.h"
-#include "imgui_table.h"
+#include "gui.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include "openal.h"
 
 using namespace framework;
 using namespace glm;
@@ -23,11 +22,13 @@ struct app {
 
   sdl::window window; // must come before anything that needs opengl support in this object
   openvr::system vr;
+  gui::system gui;
+  openal::system al;
   vr::TrackedDevicePose_t physical_pose[vr::k_unMaxTrackedDeviceCount]; // current poses
   vr::TrackedDevicePose_t predicted_pose[vr::k_unMaxTrackedDeviceCount]; // poses 2 frames out
   std::mt19937 rng; // for the main thread
   vr::IVRCompositor & compositor;
-
+  
   enum display_pass { render, resolve };
   struct {
     uint32_t w, h;
@@ -50,8 +51,7 @@ static float reverseZ_contents[16] = { // transposed of course
 static mat4 reverseZ = glm::make_mat4(reverseZ_contents);
 #endif
 
-app::app() : window("proc", { 4, 5, gl::profile::core }, false), vr(), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f) {
-
+app::app() : window("proc", { 4, 5, gl::profile::core }, false), vr(), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window) {
 
   // load matrices.
   for (int i = 0;i < 2;++i) {
@@ -97,16 +97,15 @@ app::app() : window("proc", { 4, 5, gl::profile::core }, false), vr(), composito
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     die("Unable to allocate frame buffer");
+
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  ImGui_ImplSdlGL3_Init(window);
-  // imgui_sdl_event_connection = window.on_event.connect([](SDL_Event & event) { ImGui_ImplSdlGL3_ProcessEvent(&event); });
   SDL_StartTextInput();
+
 }
 
 app::~app() {
   SDL_StopTextInput();
-  ImGui_ImplSdlGL3_Shutdown(window);
 
   glDeleteFramebuffers(2, display.fbo);
   glDeleteRenderbuffers(1, &display.depth);
@@ -116,7 +115,7 @@ app::~app() {
 void app::run() {
   while (!vr.poll() && !window.poll()) {
     // clear the display window
-    ImGui_ImplSdlGL3_NewFrame(window);
+    gui.new_frame();
     glClearColor(0.15f, 0.15f, 0.15f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_MULTISAMPLE);
@@ -127,6 +126,7 @@ void app::run() {
     glClearColor(0.15f, 0.15f, 0.18f, 1.0f); // nice background color, but not black
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+
     // compute stuff that can deal with approximate pose info, such as most of the shadow maps
 
     compositor.WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, 0);
@@ -146,9 +146,12 @@ void app::run() {
     compositor.PostPresentHandoff();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-    ImGui::ShowTestWindow();
+    gui::Text(ICON_MD_FILE_DOWNLOAD " Download");
+    gui::Text(ICON_MD_FILE_UPLOAD " Upload");
 
-    ImGui::Render();
+    gui::ShowTestWindow();
+
+    gui::Render();
 
     SDL_GL_SwapWindow(window.sdl_window);
   }
@@ -156,13 +159,14 @@ void app::run() {
 
 
 int SDL_main(int argc, char ** argv) {
-  spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
-  cds_main_thread_attachment<> main_thread;
+  SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96
+  spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
+  cds_main_thread_attachment<> main_thread; // Allow use of concurrent data structures in the main threads
 
   app main;
   main.run();
 
-  spdlog::details::registry::instance().apply_all([](shared_ptr<logger> logger) { logger->flush(); });
-  spdlog::details::registry::instance().drop_all();
+  spdlog::details::registry::instance().apply_all([](shared_ptr<logger> logger) { logger->flush(); }); // make sure the logs are flushed before shutting down
+  spdlog::details::registry::instance().drop_all(); // allow any dangling logs with no references to more gracefully shutdown
   return 0;
 }

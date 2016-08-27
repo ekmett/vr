@@ -8,12 +8,14 @@
 #include <functional> // mem_fn
 #include <mutex>
 #include <cassert>
+#include <vector>
 
 namespace framework {
   using std::atomic;
   using std::shared_ptr;
   using std::unique_ptr;
   using std::string;
+  using std::vector;
   using std::map;
   using std::set;
   using std::mem_fn;

@@ -97,7 +97,7 @@
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -107,8 +107,11 @@
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
@@ -120,7 +123,7 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -130,8 +133,11 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
@@ -145,7 +151,7 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -157,8 +163,11 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
@@ -172,7 +181,7 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -184,8 +193,11 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
+
 XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
@@ -195,7 +207,8 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     <ClCompile Include="..\third-party\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\third-party\imgui\imgui_draw.cpp" />
     <ClCompile Include="app.cpp" />
-    <ClCompile Include="imgui_impl.cpp" />
+    <ClCompile Include="gui.cpp" />
+    <ClCompile Include="openal.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -217,8 +230,9 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     <ClInclude Include="..\third-party\imgui\stb_rect_pack.h" />
     <ClInclude Include="..\third-party\imgui\stb_textedit.h" />
     <ClInclude Include="..\third-party\imgui\stb_truetype.h" />
-    <ClInclude Include="imgui_impl.h" />
+    <ClInclude Include="gui.h" />
     <ClInclude Include="imgui_table.h" />
+    <ClInclude Include="openal.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

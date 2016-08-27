@@ -36,6 +36,9 @@ namespace framework {
       int height;
 
       unique_ptr<gl::debugger> debugger;
+
+      inline int display_index() const { return SDL_GetWindowDisplayIndex(sdl_window); }
+
     };
   }
 }
