@@ -51,5 +51,8 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{c2cd084c-ca84-4939-a864-514315ef7518}</UniqueIdentifier>
     </Filter>
+    <Filter Include="imgui\addons">
+      <UniqueIdentifier>{561bf521-e822-4c82-9e9b-ef71abb5f442}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

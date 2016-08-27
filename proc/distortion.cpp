@@ -93,36 +93,29 @@ distortion::distortion(GLushort segmentsH , GLushort segmentsV)
 
   n_indices = int(indices.size());
 
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
+  glCreateVertexArrays(1, &vao);
   gl::label(GL_VERTEX_ARRAY, vao, "distortion vao");
 
-  glGenBuffers(2, buffer); // ibo and vbo
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glCreateBuffers(2, buffer);
+
   gl::label(GL_BUFFER, vbo, "distortion vbo");
-  glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(vertex), verts.data(), GL_STATIC_DRAW);
+  glNamedBufferData(vbo, verts.size() * sizeof(vertex), verts.data(), GL_STATIC_DRAW);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   gl::label(GL_BUFFER, ibo, "distortion ibo");
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), indices.data(), GL_STATIC_DRAW);
+  glNamedBufferData(ibo, indices.size() * sizeof(GLushort), indices.data(), GL_STATIC_DRAW);
 
-  glEnableVertexAttribArray(0);  
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)offsetof(vertex, p));
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)offsetof(vertex, r));
-  glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)offsetof(vertex, g));
-  glEnableVertexAttribArray(3);
-  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)offsetof(vertex, b));
+  for (int i = 0;i < 4;++i)
+    glEnableVertexArrayAttrib(vao, i);
+    
+  glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, p));
+  glVertexArrayAttribFormat(vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, r));
+  glVertexArrayAttribFormat(vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, g));
+  glVertexArrayAttribFormat(vao, 3, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, b));
 
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-  glDisableVertexAttribArray(2);
-  glDisableVertexAttribArray(3);
+  for (int i = 0;i < 4;++i)
+    glVertexArrayAttribBinding(vao, i, 0);
 
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(vertex)); // bind the data
 
   log("distortion")->info("{} vertices, {} indices", verts.size(), indices.size());
 }
@@ -137,13 +130,16 @@ void distortion::render(GLuint resolutionTexture) {
   glDisable(GL_DEPTH_TEST);
   glBindVertexArray(vao);
   glUseProgram(program.programId);
-  glBindTexture(GL_TEXTURE_2D, resolutionTexture);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+  glBindTexture(GL_TEXTURE_2D, resolutionTexture); // TODO: move this into a uniform so we can bake it into the program?
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, 0);
   glBindVertexArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  glBindTexture(GL_TEXTURE_2D, 0);
   glUseProgram(0);
   glEnable(GL_DEPTH_TEST);
 }

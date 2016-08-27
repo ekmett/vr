@@ -78,48 +78,40 @@ app::app() : window("proc", { 4, 5, gl::profile::core }, true), vr(), compositor
     eyePoseMatrix[i] = openvr::hmd_mat3x4(vr.handle->GetEyeToHeadTransform(vr::EVREye(i)));
   }
 
-  // set up rendering targets  
-  vr.handle->GetRecommendedRenderTargetSize(&display.w, &display.h);
-  glCreateFramebuffers(2, display.fbo);
-  glGenRenderbuffers(1, &display.depth);
-  glGenTextures(2, display.texture);
-
 #ifdef USE_REVERSED_Z
   glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); // switch to reversed z
   glDepthFunc(GL_GREATER);
   glClearDepth(0.f);
 #endif
-   
-  // set up render fbo
-  glBindFramebuffer(GL_FRAMEBUFFER, display.render_fbo);
-  gl::label(GL_FRAMEBUFFER, display.render_fbo, "render fbo");
-  glBindRenderbuffer(GL_RENDERBUFFER, display.depth);
-  gl::label(GL_RENDERBUFFER, display.depth, "render depth");
-  glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT32F, display.w * 2, display.h); // ask for a floating point z buffer
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, display.depth);
-  glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, display.render_texture);
-  gl::label(GL_TEXTURE, display.render_texture, "render texture");
-  glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, display.w * 2, display.h, true);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, display.render_texture, 0);
 
-  // set up resolve fbo
-  glBindFramebuffer(GL_FRAMEBUFFER, display.resolve_fbo);
+  // set up rendering targets  
+  vr.handle->GetRecommendedRenderTargetSize(&display.w, &display.h);
+  glCreateFramebuffers(2, display.fbo);
+  gl::label(GL_FRAMEBUFFER, display.render_fbo, "render fbo");
   gl::label(GL_FRAMEBUFFER, display.resolve_fbo, "resolve fbo");
-  glBindTexture(GL_TEXTURE_2D, display.resolve_texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, display.w * 2, display.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, display.resolve_texture, 0);
+
+  glCreateRenderbuffers(1, &display.depth);
+  gl::label(GL_RENDERBUFFER, display.depth, "render depth");
+  glNamedRenderbufferStorageMultisample(display.depth, 4, GL_DEPTH_COMPONENT32F, display.w * 2, display.h); // ask for a floating point z buffer -- TODO add stencil?
+  glNamedFramebufferRenderbuffer(display.render_fbo, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, display.depth);
+
+  glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &display.render_texture);
+  gl::label(GL_TEXTURE, display.render_texture, "render texture");
+  glTextureImage2DMultisampleNV(display.render_texture, GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, display.w * 2, display.h, true);
+  glNamedFramebufferTexture(display.render_fbo, GL_COLOR_ATTACHMENT0, display.render_texture, 0);
+ 
+  glCreateTextures(GL_TEXTURE_2D, 1, &display.resolve_texture);
   gl::label(GL_TEXTURE, display.resolve_texture, "resolve texture");
+  glTextureParameteri(display.resolve_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTextureParameteri(display.resolve_texture, GL_TEXTURE_MAX_LEVEL, 0);
+  glTextureImage2DEXT(display.resolve_texture, GL_TEXTURE_2D, 0, GL_RGBA8, display.w * 2, display.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  glNamedFramebufferTexture(display.resolve_fbo, GL_COLOR_ATTACHMENT0, display.resolve_texture, 0);
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     die("Unable to allocate frame buffer");
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
   SDL_StartTextInput();
-
 }
 
 app::~app() {
@@ -182,7 +174,7 @@ void app::run() {
     gui::Text(ICON_MD_FILE_DOWNLOAD " Download");
     gui::Text(ICON_MD_FILE_UPLOAD " Upload");
 
-    gui::ShowTestWindow();
+   // gui::ShowTestWindow();
 
     gui::Render();
 

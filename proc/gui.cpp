@@ -155,10 +155,6 @@ void create_fonts_texture() {
   int width, height;
   io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bits for OpenGL3 demo because it is more likely to be compatible with user's existing shader.
 
-  // Upload texture to graphics system
-  //GLint last_texture;
-  //glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-
   glCreateTextures(GL_TEXTURE_2D, 1, &g_FontTexture);
   gl::label(GL_TEXTURE, g_FontTexture, "gui font atlas");
   glTextureParameteri(g_FontTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -166,18 +162,9 @@ void create_fonts_texture() {
   glTextureStorage2D(g_FontTexture, 1, GL_RGBA8, width, height);
   glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
   glTextureSubImage2D(g_FontTexture, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-  //
-  //glGenTextures(1, &g_FontTexture);
-  //glBindTexture(GL_TEXTURE_2D, g_FontTexture);
-  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   // Store our identifier
   io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
-
-  // Restore state
-  //glBindTexture(GL_TEXTURE_2D, last_texture);
 }
 
 namespace framework {
@@ -224,7 +211,6 @@ namespace framework {
       window.on_key_up.connect(&key_up);
 
       // generalities are out of the way, now let's work on look and feel
-
       std::string font_dir = R"(d:\vr\assets\fonts\)";
 
       int display = window.display_index();
@@ -273,7 +259,7 @@ namespace framework {
       io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
 
       // Setup time step
-      Uint32      time = SDL_GetTicks();
+      Uint32 time = SDL_GetTicks();
       double current_time = time / 1000.0;
       io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f / 60.0f);
       g_Time = current_time;
@@ -287,7 +273,7 @@ namespace framework {
       else
         io.MousePos = ImVec2(-1, -1);
 
-      io.MouseDown[0] = g_MousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;              // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+      io.MouseDown[0] = g_MousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0; // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
       io.MouseDown[1] = g_MousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
       io.MouseDown[2] = g_MousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
       g_MousePressed[0] = g_MousePressed[1] = g_MousePressed[2] = false;
@@ -375,7 +361,7 @@ namespace framework {
       glAttachShader(g_ShaderHandle, g_FragHandle);
       glLinkProgram(g_ShaderHandle);
 
-      g_UniformLocationTex = glGetUniformLocation(g_ShaderHandle, "Texture");
+      g_UniformLocationTex = glGetUniformLocation(g_ShaderHandle, "Texture");      
       g_UniformLocationProjMtx = glGetUniformLocation(g_ShaderHandle, "ProjMtx");
 
       g_AttribLocationPosition = glGetAttribLocation(g_ShaderHandle, "Position");
