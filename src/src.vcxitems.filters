@@ -115,9 +115,6 @@
     <Filter Include="framework\work-in-progress">
       <UniqueIdentifier>{156ceea3-ba8b-4462-a937-4565aea8bd8f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="framework\serialization">
-      <UniqueIdentifier>{e3f7ff7b-e90b-426b-8c49-cce573c626c3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="framework\openvr">
       <UniqueIdentifier>{d8b6bfe1-4f80-4187-a447-e7a5cb21ff63}</UniqueIdentifier>
     </Filter>

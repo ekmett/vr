@@ -5,54 +5,62 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>boilerplate</Filter>
     </ClCompile>
-    <ClCompile Include="gui.cpp" />
-    <ClCompile Include="openal.cpp" />
     <ClCompile Include="distortion.cpp" />
     <ClCompile Include="..\third-party\imgui\imgui.cpp">
-      <Filter>imgui</Filter>
+      <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="..\third-party\imgui\imgui_demo.cpp">
-      <Filter>imgui</Filter>
+      <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="..\third-party\imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="openal.cpp">
+      <Filter>sound</Filter>
+    </ClCompile>
+    <ClCompile Include="gui.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>boilerplate</Filter>
     </ClInclude>
-    <ClInclude Include="gui.h" />
-    <ClInclude Include="openal.h" />
     <ClInclude Include="distortion.h" />
     <ClInclude Include="imgui_table.h">
-      <Filter>imgui</Filter>
+      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\third-party\imgui\imgui.h">
-      <Filter>imgui</Filter>
+      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\third-party\imgui\imgui_internal.h">
-      <Filter>imgui</Filter>
+      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\third-party\imgui\stb_rect_pack.h">
-      <Filter>imgui</Filter>
+      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\third-party\imgui\stb_textedit.h">
-      <Filter>imgui</Filter>
+      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\third-party\imgui\stb_truetype.h">
-      <Filter>imgui</Filter>
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="openal.h">
+      <Filter>sound</Filter>
+    </ClInclude>
+    <ClInclude Include="gui.h">
+      <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="boilerplate">
       <UniqueIdentifier>{3cdaa1f2-5169-48dd-b3a9-7c74f81c41e0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="imgui">
-      <UniqueIdentifier>{c2cd084c-ca84-4939-a864-514315ef7518}</UniqueIdentifier>
+    <Filter Include="sound">
+      <UniqueIdentifier>{67e316a2-aff3-4702-8114-0b0f6a7d44ab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="imgui\addons">
-      <UniqueIdentifier>{561bf521-e822-4c82-9e9b-ef71abb5f442}</UniqueIdentifier>
+    <Filter Include="gui">
+      <UniqueIdentifier>{c2cd084c-ca84-4939-a864-514315ef7518}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

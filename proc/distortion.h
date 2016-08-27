@@ -3,6 +3,7 @@
 #include "framework/gl.h"
 #include "framework/shader.h"
 
+// generates a preview of the warped display looks like
 struct distortion {
   distortion(GLushort segmentsH = 50, GLushort segmentsV = 50);
   ~distortion();
