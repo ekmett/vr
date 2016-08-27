@@ -22,22 +22,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="app.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="tracker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="distortion.cpp">
@@ -48,25 +33,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="app.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="noncopyable.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shader.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="util.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="tracker.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="log.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="distortion.h">
@@ -75,19 +42,8 @@
     <ClInclude Include="signal.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="window.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="rendermodel.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="memory.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="core.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
   </ItemGroup>
 </Project>

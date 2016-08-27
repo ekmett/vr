@@ -225,32 +225,16 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="app.cpp" />
     <ClCompile Include="distortion.cpp" />
-    <ClCompile Include="log.cpp" />
     <ClCompile Include="tracker.cpp" />
-    <ClCompile Include="util.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="rendermodel.cpp" />
-    <ClCompile Include="shader.cpp" />
-    <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="app.h" />
     <ClInclude Include="distortion.h" />
-    <ClInclude Include="log.h" />
-    <ClInclude Include="memory.h" />
     <ClInclude Include="signal.h" />
     <ClInclude Include="tracker.h" />
-    <ClInclude Include="util.h" />
     <ClInclude Include="rendermodel.h" />
-    <ClInclude Include="noncopyable.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="window.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="core.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

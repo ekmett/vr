@@ -251,6 +251,7 @@ namespace core {
       }
     }
     // send one at a time as we finish above?  
+    glEnable(GL_DEPTH_TEST);
   }
 
   void openvr_distortion::recalculate_pose() {
