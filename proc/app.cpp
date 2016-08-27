@@ -125,7 +125,7 @@ app::~app() {
 void app::run() {
   while (!vr.poll() && !window.poll()) {
     // clear the display window  
-    glClearColor(0.15f, 0.15f, 0.45f, 1.f);
+    glClearColor(0.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // start a new imgui frame

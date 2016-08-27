@@ -8,6 +8,8 @@ using namespace framework;
 using namespace glm;
 using namespace vr;
 
+// TODO: clip the distortion mesh to the hidden area mesh, rather than draw the hidden area mesh at all.
+
 distortion::distortion(GLushort segmentsH, GLushort segmentsV)
   : mask("distortion mask",
     R"(
@@ -19,9 +21,9 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
     )", 
     R"(
       #version 450 core
-      out vec4 outputColor;
+      //out vec4 outputColor;
       void main() {
-        outputColor = vec4(1.0,0.0,0.0,1.0);
+        //outputColor = vec4(0.0,0.0,0.0,1.0);
       }
     )"), warp("distortion warp",
     R"(
@@ -50,7 +52,7 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
       void main() {
         float fBoundsCheck = ( (dot( vec2( lessThan( v2UVgreen.xy, vec2(0.05, 0.05)) ), vec2(1.0, 1.0))+dot( vec2( greaterThan( v2UVgreen.xy, vec2( 0.95, 0.95)) ), vec2(1.0, 1.0))) );
         if( fBoundsCheck > 1.0 ) {
-       	  outputColor = vec4( 0, 1.0, 0, 1.0 );
+       	  outputColor = vec4( 0, 0.0, 0, 1.0 );
         } else {
           float red = texture(mytexture, v2UVred).x;
           float green = texture(mytexture, v2UVgreen).y;
@@ -89,6 +91,7 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
     for (GLushort y = 0; y < segmentsV - 1; y++) {
       for (GLushort x = 0; x < segmentsH - 1; x++) {
         GLushort a = segmentsH*y + x + offset, b = a + 1, c = a + segmentsH, d = c + 1;
+        keep[a] = keep[b] = keep[c] = keep[d] = true;
         if (good[a] || good[b] || good[d]) keep[a] = keep[b] = keep[d] = true; // if any corner is good the triangle is
         if (good[a] || good[d] || good[c]) keep[a] = keep[d] = keep[c] = true; // if any corner is good the triangle is
       }
@@ -120,7 +123,6 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
     }
   }
   
-  log("bug")->info("keeping {} out of {}", ranks[ranks.size() - 1], ranks.size());
   vector<GLushort> indices;
 
   // mark all the vertices we need
@@ -152,7 +154,7 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
     if (mesh.unTriangleCount == 0) continue;
     for (int j = 0; j < mesh.unTriangleCount * 3; ++j) {
       auto v = mesh.pVertexData[j].v;
-      log("hidden")->info("{}, {}, {}, {}", i, j, v[0], v[1]);
+     
       hidden_verts.push_back(vec2(i - 1 + v[0], 1 - 2*v[1]));
     }
   }
@@ -208,6 +210,7 @@ void distortion::render(GLuint resolutionTexture) {
   glDisable(GL_CULL_FACE);
   glEnable(GL_STENCIL_TEST);
 
+  glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
   glStencilMask(1);
   glStencilFunc(GL_ALWAYS, 1, 1);
   glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
@@ -221,6 +224,7 @@ void distortion::render(GLuint resolutionTexture) {
   glStencilFunc(GL_EQUAL, 0, 1);
   glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // use the stencil mask to disable writes
   glStencilMask(0);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
   glBindVertexArray(vao);
   glUseProgram(warp.programId);
@@ -230,6 +234,7 @@ void distortion::render(GLuint resolutionTexture) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, 0);
   //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glBindVertexArray(0);
@@ -238,4 +243,5 @@ void distortion::render(GLuint resolutionTexture) {
   glUseProgram(0);
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_STENCIL_TEST);
+  glStencilMask(1);
 }
