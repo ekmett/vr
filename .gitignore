@@ -254,3 +254,5 @@ paket-files/
 
 build/
 lib/
+
+imgui.ini
