@@ -225,14 +225,11 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="distortion.cpp" />
     <ClCompile Include="tracker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="rendermodel.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="distortion.h" />
-    <ClInclude Include="signal.h" />
     <ClInclude Include="tracker.h" />
     <ClInclude Include="rendermodel.h" />
   </ItemGroup>

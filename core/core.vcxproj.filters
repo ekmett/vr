@@ -25,21 +25,12 @@
     <ClCompile Include="tracker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="distortion.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rendermodel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tracker.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="distortion.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="signal.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="rendermodel.h">
