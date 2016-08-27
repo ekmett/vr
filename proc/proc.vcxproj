@@ -107,12 +107,10 @@
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
-
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
-
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
+MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -133,12 +131,10 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
-
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
-
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
+MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -163,12 +159,10 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
-
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
-
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
+MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -193,12 +187,10 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Comma
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
-
 XCOPY "$(GLEWDir)bin\Release\$(Platform)\glew32.dll" "$(TargetDir)" /D /K /Y
-
 XCOPY "$(SDL2Dir)lib\$(xXX)\SDL2.dll" "$(TargetDir)" /D /K /Y
-
-XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y</Command>
+XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
+MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

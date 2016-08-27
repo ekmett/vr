@@ -8,11 +8,14 @@ struct distortion {
   ~distortion();
   void render(GLuint resolutionTexture);
 private:
-  GLuint vao;
-  framework::gl::shader program;
-  int n_indices;
   union {
-    GLuint buffer[2];
-    struct { GLuint vbo, ibo; };
+    GLuint array[2];
+    struct { GLuint vao, hidden_vao; };
   };
+  int n_indices, n_hidden;
+  union {
+    GLuint buffer[3];
+    struct { GLuint vbo, ibo, hidden_vbo; };
+  };
+  framework::gl::shader mask, warp;
 };

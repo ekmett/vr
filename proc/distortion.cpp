@@ -8,17 +8,31 @@ using namespace framework;
 using namespace glm;
 using namespace vr;
 
-distortion::distortion(GLushort segmentsH , GLushort segmentsV) 
-  : program("distortion",
+distortion::distortion(GLushort segmentsH, GLushort segmentsV)
+  : mask("distortion mask",
     R"(
-      #version 410 core
+      #version 450 core
+      layout(location = 0) in vec4 position;
+      void main() {
+         gl_Position = position;
+      }
+    )", 
+    R"(
+      #version 450 core
+      out vec4 outputColor;
+      void main() {
+        outputColor = vec4(1.0,0.0,0.0,1.0);
+      }
+    )"), warp("distortion warp",
+    R"(
+      #version 450 core
       layout(location = 0) in vec4 position;
       layout(location = 1) in vec2 v2UVredIn;
       layout(location = 2) in vec2 v2UVGreenIn;
       layout(location = 3) in vec2 v2UVblueIn;
-      noperspective  out vec2 v2UVred;
-      noperspective  out vec2 v2UVgreen;
-      noperspective  out vec2 v2UVblue;
+      noperspective out vec2 v2UVred;
+      noperspective out vec2 v2UVgreen;
+      noperspective out vec2 v2UVblue;
       void main() {
         v2UVred = v2UVredIn;
         v2UVgreen = v2UVGreenIn;
@@ -26,7 +40,7 @@ distortion::distortion(GLushort segmentsH , GLushort segmentsV)
         gl_Position = position;
       }
     )", R"(
-      #version 410 core
+      #version 450 core
       uniform sampler2D mytexture;
       noperspective in vec2 v2UVred;
       noperspective in vec2 v2UVgreen;
@@ -106,12 +120,6 @@ distortion::distortion(GLushort segmentsH , GLushort segmentsV)
     }
   }
   
-  assert(ranks.size() == good.size());
-  for (int i = 0; i < ranks.size() - 1; ++i) {
-    assert(ranks[i] <= ranks[i + 1]);
-    assert(ranks[i + 1] <= ranks[i] + 1);
-  }
-
   log("bug")->info("keeping {} out of {}", ranks[ranks.size() - 1], ranks.size());
   vector<GLushort> indices;
 
@@ -138,13 +146,30 @@ distortion::distortion(GLushort segmentsH , GLushort segmentsV)
 
   n_indices = int(indices.size());
 
-  glCreateVertexArrays(1, &vao);
-  gl::label(GL_VERTEX_ARRAY, vao, "distortion vao");
+  vector<vec2> hidden_verts;
+  for (int i = 0;i < 2;++i) {
+    auto mesh = VRSystem()->GetHiddenAreaMesh(EVREye(i));
+    if (mesh.unTriangleCount == 0) continue;
+    for (int j = 0; j < mesh.unTriangleCount * 3; ++j) {
+      auto v = mesh.pVertexData[j].v;
+      log("hidden")->info("{}, {}, {}, {}", i, j, v[0], v[1]);
+      hidden_verts.push_back(vec2(i - 1 + v[0], 1 - 2*v[1]));
+    }
+  }
 
-  glCreateBuffers(2, buffer);
+  n_hidden = int(hidden_verts.size());
+
+  glCreateVertexArrays(2, array);
+  gl::label(GL_VERTEX_ARRAY, vao, "distortion vao");
+  gl::label(GL_VERTEX_ARRAY, hidden_vao, "distortion hidden vao");
+
+  glCreateBuffers(3, buffer);
 
   gl::label(GL_BUFFER, vbo, "distortion vbo");
   glNamedBufferData(vbo, verts.size() * sizeof(vertex), verts.data(), GL_STATIC_DRAW);
+
+  gl::label(GL_BUFFER, hidden_vbo, "distortion hidden vbo");
+  glNamedBufferData(hidden_vbo, hidden_verts.size() * sizeof(vec2), hidden_verts.data(), GL_STATIC_DRAW);
 
   gl::label(GL_BUFFER, ibo, "distortion ibo");
   glNamedBufferData(ibo, indices.size() * sizeof(GLushort), indices.data(), GL_STATIC_DRAW);
@@ -162,31 +187,55 @@ distortion::distortion(GLushort segmentsH , GLushort segmentsV)
 
   glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(vertex)); // bind the data
 
-  log("distortion")->info("{} vertices, {} indices", verts.size(), indices.size());
+  glEnableVertexArrayAttrib(hidden_vao, 0);
+  glVertexArrayAttribFormat(hidden_vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
+  glVertexArrayAttribBinding(hidden_vao, 0, 0);
+  glVertexArrayVertexBuffer(hidden_vao, 0, hidden_vbo, 0, sizeof(vec2));
+
+  log("distortion")->info("{} vertices, {} indices, {} hidden triangles", verts.size(), indices.size(), hidden_verts.size() / 3);
 }
 
 distortion::~distortion() {
   log("distortion")->info("shutting down");
-  glDeleteBuffers(2, buffer);
-  glDeleteVertexArrays(1, &vao);
+  glDeleteBuffers(3, buffer);
+  glDeleteVertexArrays(2, array);
+  glDeleteProgram(warp.programId);
+  glDeleteProgram(mask.programId);
 }
 
 void distortion::render(GLuint resolutionTexture) {
   glDisable(GL_DEPTH_TEST);
+  glDisable(GL_CULL_FACE);
+  glEnable(GL_STENCIL_TEST);
+
+  glStencilMask(1);
+  glStencilFunc(GL_ALWAYS, 1, 1);
+  glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+
+  glBindVertexArray(hidden_vao);
+  glUseProgram(mask.programId);
+  //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glDrawArrays(GL_TRIANGLES, 0, n_hidden); // put 1 in the stencil mask everywhere the hidden mesh lies
+  //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+  glStencilFunc(GL_EQUAL, 0, 1);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // use the stencil mask to disable writes
+  glStencilMask(0);
+
   glBindVertexArray(vao);
-  glUseProgram(program.programId);
+  glUseProgram(warp.programId);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   glBindTexture(GL_TEXTURE_2D, resolutionTexture); // TODO: move this into a uniform so we can bake it into the program?
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, 0);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glBindVertexArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindTexture(GL_TEXTURE_2D, 0);
   glUseProgram(0);
   glEnable(GL_DEPTH_TEST);
+  glDisable(GL_STENCIL_TEST);
 }
