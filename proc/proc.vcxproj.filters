@@ -22,6 +22,7 @@
       <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="controllers.cpp" />
+    <ClCompile Include="overlay.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -56,15 +57,7 @@
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="controllers.h" />
-    <ClInclude Include="shaders\oct.h">
-      <Filter>shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="shaders\approx.h">
-      <Filter>shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="shaders\uniforms.h">
-      <Filter>shaders</Filter>
-    </ClInclude>
+    <ClInclude Include="overlay.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="boilerplate">

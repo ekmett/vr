@@ -10,6 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "openal.h"
 #include "distortion.h"
+#include "overlay.h"
 
 using namespace framework;
 using namespace glm;
@@ -28,14 +29,15 @@ struct app {
   gl::compiler compiler;
   openvr::system vr;
   gui::system gui;
-  openal::system al;
+  overlay dashboard;
   vr::TrackedDevicePose_t physical_pose[vr::k_unMaxTrackedDeviceCount]; // current poses
   vr::TrackedDevicePose_t predicted_pose[vr::k_unMaxTrackedDeviceCount]; // poses 2 frames out
   controllers controllers;
   std::mt19937 rng; // for the main thread
   vr::IVRCompositor & compositor;
   distortion distorted;
-  
+  openal::system al;
+
   struct {
     uint32_t w, h;
     union {
@@ -68,7 +70,7 @@ static float reverseZ_contents[16] = {
 static mat4 reverseZ = glm::make_mat4(reverseZ_contents);
 #endif
 
-app::app() : window("proc", { 4, 5, gl::profile::core }, true), compiler(boost::filesystem::path(LR"(d:\vr\proc\shaders)")), vr(), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted() {
+app::app() : window("proc", { 4, 5, gl::profile::core }, true), compiler(boost::filesystem::path(LR"(d:\vr\proc\shaders)")), vr(), dashboard("proc","Debug",1024,1024), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted() {
 
   // load matrices.
   for (int i = 0;i < 2;++i) {

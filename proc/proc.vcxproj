@@ -101,7 +101,7 @@
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -129,7 +129,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -159,7 +159,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -192,7 +192,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -224,6 +224,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClCompile Include="distortion.cpp" />
     <ClCompile Include="gui.cpp" />
     <ClCompile Include="openal.cpp" />
+    <ClCompile Include="overlay.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -251,10 +252,8 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui_table.h" />
     <ClInclude Include="openal.h" />
-    <ClInclude Include="shaders\approx.h" />
-    <ClInclude Include="shaders\oct.h" />
+    <ClInclude Include="overlay.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="shaders\uniforms.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -33,6 +33,31 @@ namespace framework {
       }
     }
 
+    const char * show_overlay_error(EVROverlayError e) noexcept {
+      switch (e) {
+        case VROverlayError_ArrayTooSmall: return "ArrayTooSmall";
+        case VROverlayError_InvalidHandle: return "InvalidHandle";
+        case VROverlayError_InvalidParameter: return "InvalidParameter";
+        case VROverlayError_InvalidTexture: return "InvalidTexture";
+        case VROverlayError_InvalidTrackedDevice: return "InvalidTrackedDevice";
+        case VROVerlayError_KeyboardAlreadyInUse: return "KeyboardAlreadyInUse"; // [sic]
+        case VROverlayError_KeyInUse: return "KeyInUse";
+        case VROverlayError_KeyTooLong: return "KeyTooLong";
+        case VROverlayError_NameTooLong: return "NameTooLong";
+        case VROverlayError_None: return "None";
+        case VROverlayError_NoNeighbor: return "NoNeighbor";
+        case VROverlayError_OverlayLimitExceeded: return "OverlayLimitExceeded";
+        case VROverlayError_PermissionDenied: return "PermissionDenied";
+        case VROverlayError_RequestFailed: return "RequestFailed";
+        case VROverlayError_ThumbnailCantBeDestroyed: return "ThumbnailCantBeDestroyed";
+        case VROverlayError_UnableToLoadFile: return "UnableToLoadFile";
+        case VROverlayError_UnknownOverlay: return "UnknownOverlay";
+        case VROverlayError_WrongTransformType: return "WrongTransformType";
+        case VROverlayError_WrongVisibilityType: return "WrongVisibilityType";
+        default: return "unknown";
+      }
+    }
+
     const char * show_event_type(int e) noexcept {
       switch (e) {
         case VREvent_None: return "None";

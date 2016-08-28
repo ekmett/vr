@@ -198,7 +198,6 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
 }
 
 distortion::~distortion() {
-  log("distortion")->info("shutting down");
   glDeleteBuffers(3, buffer);
   glDeleteVertexArrays(2, array);
 }
@@ -243,3 +242,4 @@ void distortion::render(GLuint resolutionTexture) {
   glDisable(GL_STENCIL_TEST);
   glStencilMask(1);
 }
+ 

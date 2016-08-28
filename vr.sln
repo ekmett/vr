@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scene", "scene\scene.vcxpro
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{3E37E7E8-DF0F-4CD8-BA9C-141EB8102A94}"
 	ProjectSection(SolutionItems) = preProject
+		properties\Debug.props = properties\Debug.props
+		properties\Release.props = properties\Release.props
 		properties\ThirdParty.props = properties\ThirdParty.props
 		properties\Win32.props = properties\Win32.props
 		properties\Win64.props = properties\Win64.props
@@ -23,6 +25,55 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "framework-static-win32", "framework-static-win32\framework-static-win32.vcxproj", "{A9326043-2D69-4511-8564-7A8F93E4E0BB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{01B3A2F7-B589-4B41-ADD7-2B4A6A5DA002}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{A4A1D558-6CFB-4A1E-9CE8-D6DE035530FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fonts", "fonts", "{4DF2662C-F826-46E3-BAAB-C12F6DF48737}"
+	ProjectSection(SolutionItems) = preProject
+		assets\fonts\Cousine-Regular.ttf = assets\fonts\Cousine-Regular.ttf
+		assets\fonts\DejaVuMathTeXGyre.ttf = assets\fonts\DejaVuMathTeXGyre.ttf
+		assets\fonts\DejaVuSans-Bold.ttf = assets\fonts\DejaVuSans-Bold.ttf
+		assets\fonts\DejaVuSans-BoldOblique.ttf = assets\fonts\DejaVuSans-BoldOblique.ttf
+		assets\fonts\DejaVuSans-ExtraLight.ttf = assets\fonts\DejaVuSans-ExtraLight.ttf
+		assets\fonts\DejaVuSans-Oblique.ttf = assets\fonts\DejaVuSans-Oblique.ttf
+		assets\fonts\DejaVuSans.ttf = assets\fonts\DejaVuSans.ttf
+		assets\fonts\DejaVuSansCondensed-Bold.ttf = assets\fonts\DejaVuSansCondensed-Bold.ttf
+		assets\fonts\DejaVuSansCondensed-BoldOblique.ttf = assets\fonts\DejaVuSansCondensed-BoldOblique.ttf
+		assets\fonts\DejaVuSansCondensed-Oblique.ttf = assets\fonts\DejaVuSansCondensed-Oblique.ttf
+		assets\fonts\DejaVuSansCondensed.ttf = assets\fonts\DejaVuSansCondensed.ttf
+		assets\fonts\DejaVuSansMono-Bold.ttf = assets\fonts\DejaVuSansMono-Bold.ttf
+		assets\fonts\DejaVuSansMono-BoldOblique.ttf = assets\fonts\DejaVuSansMono-BoldOblique.ttf
+		assets\fonts\DejaVuSansMono-Oblique.ttf = assets\fonts\DejaVuSansMono-Oblique.ttf
+		assets\fonts\DejaVuSansMono.ttf = assets\fonts\DejaVuSansMono.ttf
+		assets\fonts\DejaVuSerif-Bold.ttf = assets\fonts\DejaVuSerif-Bold.ttf
+		assets\fonts\DejaVuSerif-BoldItalic.ttf = assets\fonts\DejaVuSerif-BoldItalic.ttf
+		assets\fonts\DejaVuSerif-Italic.ttf = assets\fonts\DejaVuSerif-Italic.ttf
+		assets\fonts\DejaVuSerif.ttf = assets\fonts\DejaVuSerif.ttf
+		assets\fonts\DejaVuSerifCondensed-Bold.ttf = assets\fonts\DejaVuSerifCondensed-Bold.ttf
+		assets\fonts\DejaVuSerifCondensed-BoldItalic.ttf = assets\fonts\DejaVuSerifCondensed-BoldItalic.ttf
+		assets\fonts\DejaVuSerifCondensed-Italic.ttf = assets\fonts\DejaVuSerifCondensed-Italic.ttf
+		assets\fonts\DejaVuSerifCondensed.ttf = assets\fonts\DejaVuSerifCondensed.ttf
+		assets\fonts\DroidSans.ttf = assets\fonts\DroidSans.ttf
+		assets\fonts\fontawesome-webfont.ttf = assets\fonts\fontawesome-webfont.ttf
+		assets\fonts\Karla-Regular.ttf = assets\fonts\Karla-Regular.ttf
+		assets\fonts\kenney-icon-font.ttf = assets\fonts\kenney-icon-font.ttf
+		assets\fonts\MaterialIcons-Regular.ttf = assets\fonts\MaterialIcons-Regular.ttf
+		assets\fonts\ProggyClean.ttf = assets\fonts\ProggyClean.ttf
+		assets\fonts\ProggyTiny.ttf = assets\fonts\ProggyTiny.ttf
+		assets\fonts\VeraMono.ttf = assets\fonts\VeraMono.ttf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "objects", "objects", "{3905AE52-6A0D-456C-84CF-E287D12D5C10}"
+	ProjectSection(SolutionItems) = preProject
+		assets\objects\dragon.obj = assets\objects\dragon.obj
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shaders", "shaders", "{827334E1-7617-4D08-B03B-963D0A7C8751}"
+	ProjectSection(SolutionItems) = preProject
+		assets\shaders\approx.h = assets\shaders\approx.h
+		assets\shaders\oct.h = assets\shaders\oct.h
+		assets\shaders\uniforms.h = assets\shaders\uniforms.h
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -80,5 +131,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4DF2662C-F826-46E3-BAAB-C12F6DF48737} = {A4A1D558-6CFB-4A1E-9CE8-D6DE035530FA}
+		{3905AE52-6A0D-456C-84CF-E287D12D5C10} = {A4A1D558-6CFB-4A1E-9CE8-D6DE035530FA}
+		{827334E1-7617-4D08-B03B-963D0A7C8751} = {A4A1D558-6CFB-4A1E-9CE8-D6DE035530FA}
 	EndGlobalSection
 EndGlobal
