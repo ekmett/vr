@@ -32,7 +32,7 @@ namespace framework {
       int width,
       int height
     ) : width(width), height(height) {
-      Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+      Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
 
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, version.major);
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, version.minor);

@@ -170,6 +170,10 @@ void app::run() {
     // let the compositor know we handed off a frame
     compositor.PostPresentHandoff();
 
+    // check if window is minimized here.
+    auto flags = SDL_GetWindowFlags(window.sdl_window);
+    if (flags & SDL_WINDOW_MINIMIZED) continue; // drop gui on the floor?
+
     ImGui::Text("HMD Position: %3.2f %3.2f %3.2f", hmdToWorld[3][0], hmdToWorld[3][1], hmdToWorld[3][2]);
 
     {
