@@ -199,6 +199,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClCompile Include="..\third-party\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\third-party\imgui\imgui_draw.cpp" />
     <ClCompile Include="app.cpp" />
+    <ClCompile Include="controllers.cpp" />
     <ClCompile Include="distortion.cpp" />
     <ClCompile Include="gui.cpp" />
     <ClCompile Include="openal.cpp" />
@@ -223,8 +224,10 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="..\third-party\imgui\stb_rect_pack.h" />
     <ClInclude Include="..\third-party\imgui\stb_textedit.h" />
     <ClInclude Include="..\third-party\imgui\stb_truetype.h" />
+    <ClInclude Include="controllers.h" />
     <ClInclude Include="distortion.h" />
     <ClInclude Include="gui.h" />
+    <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui_table.h" />
     <ClInclude Include="openal.h" />
     <ClInclude Include="stdafx.h" />

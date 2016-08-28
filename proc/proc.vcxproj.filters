@@ -21,6 +21,7 @@
     <ClCompile Include="gui.cpp">
       <Filter>gui</Filter>
     </ClCompile>
+    <ClCompile Include="controllers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -51,6 +52,10 @@
     <ClInclude Include="gui.h">
       <Filter>gui</Filter>
     </ClInclude>
+    <ClInclude Include="imconfig.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="controllers.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="boilerplate">

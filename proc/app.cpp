@@ -4,7 +4,9 @@
 #include "framework/worker.h"
 #include "framework/gl.h"
 #include "framework/signal.h"
+#include "controllers.h"
 #include "gui.h"
+#include "imgui_internal.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "openal.h"
 #include "distortion.h"
@@ -13,13 +15,14 @@ using namespace framework;
 using namespace glm;
 
 // used reversed [1..0] floating point z rather than the classic [-1..1] mapping
-// #define USE_REVERSED_Z
+//#define USE_REVERSED_Z
 
 struct app {
   app();
   ~app();
 
   void run();
+  bool show_gui(bool * open = nullptr);
 
   sdl::window window; // must come before anything that needs opengl support in this object
   openvr::system vr;
@@ -27,6 +30,7 @@ struct app {
   openal::system al;
   vr::TrackedDevicePose_t physical_pose[vr::k_unMaxTrackedDeviceCount]; // current poses
   vr::TrackedDevicePose_t predicted_pose[vr::k_unMaxTrackedDeviceCount]; // poses 2 frames out
+  controllers controllers;
   std::mt19937 rng; // for the main thread
   vr::IVRCompositor & compositor;
   distortion distorted;
@@ -110,7 +114,6 @@ app::app() : window("proc", { 4, 5, gl::profile::core }, true), vr(), compositor
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     die("Unable to allocate frame buffer");
 
-
   SDL_StartTextInput();
 }
 
@@ -137,15 +140,18 @@ void app::run() {
     glBindFramebuffer(GL_FRAMEBUFFER, display.render_fbo);
     glClearColor(0.15f, 0.15f, 0.18f, 1.0f); // nice background color, not black, distinct from desktop clear
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //glViewportIndexedf(0, 0, 0, display.w, display.h);         // viewport 0 left eye
-    //glViewportIndexedf(1, display.w, 0, display.w, display.h); // viewport 1 right eye
+    glViewportIndexedf(0, 0, 0, display.w, display.h);         // viewport 0 left eye
+    glViewportIndexedf(1, display.w, 0, display.w, display.h); // viewport 1 right eye
     
     // compute stuff that can deal with approximate pose info, such as most of the shadow maps
 
     compositor.WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, 0);
-    
-    // we now know _precisely_ where we are and we're ready to draw to other things here
-    // TODO: render eye-specific stuff here
+    mat4 hmdPose = glm::inverse(openvr::hmd_mat3x4(physical_pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking));
+    mat4 eyes[2];
+    for (int i = 0;i < 2;++i)
+      eyes[i] = eyeProjectionMatrix[i] * eyePoseMatrix[i] * hmdPose;    
+
+    controllers.render(physical_pose, eyes); // draw controller rays
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_MULTISAMPLE);
@@ -153,7 +159,7 @@ void app::run() {
     // copy the msaa render target to a lower quality 'resolve' texture for display
     glBlitNamedFramebuffer(display.render_fbo, display.resolve_fbo, 0, 0, display.w * 2, display.h, 0, 0, display.w * 2, display.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
     {
-      vr::Texture_t eyeTexture = { reinterpret_cast<void*>(display.resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
+      vr::Texture_t eyeTexture { reinterpret_cast<void*>(display.resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
       for (int i = 0;i < 2;++i) {
         vr::VRTextureBounds_t eyeBounds = { 0.5 * i, 0.0, 0.5 + 0.5 * i , 1.0 };
         vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds);
@@ -171,16 +177,53 @@ void app::run() {
 
     distorted.render(display.resolve_texture);
 
-    gui::Text(ICON_MD_FILE_DOWNLOAD " Download");
-    gui::Text(ICON_MD_FILE_UPLOAD " Upload");
-
-   // gui::ShowTestWindow();
-
-    gui::Render();
+    if (show_gui()) return;
 
     window.swap();
   }
 }
+
+bool app::show_gui(bool * open) {
+
+  static bool show_debug_window = false, show_demo_window = false;
+  if (gui::BeginMainMenuBar()) {
+    if (gui::BeginMenu("File")) {
+      if (gui::MenuItem("New")) {}
+      gui::Separator();
+      if (gui::MenuItem("Quit")) return true;
+      gui::EndMenu();
+    }
+    if (gui::BeginMenu("Edit")) {
+      if (gui::MenuItem(ICON_MD_UNDO " Undo", "CTRL+Z")) {}
+      if (gui::MenuItem(ICON_MD_REDO " Redo", "CTRL+Y", false, false)) {}  // Disabled item
+      gui::Separator();
+      if (gui::MenuItem("Cut", "CTRL+X")) {}
+      if (gui::MenuItem("Copy", "CTRL+C")) {}
+      if (gui::MenuItem("Paste", "CTRL+V")) {}
+      gui::EndMenu();
+    }
+    if (gui::BeginMenu("Window")) {
+      if (gui::MenuItem("Debug", nullptr, &show_debug_window)) {}
+      if (gui::MenuItem("Demo", nullptr, &show_demo_window)) {}
+      gui::EndMenu();
+    }
+    gui::EndMainMenuBar();
+  }
+
+  if (show_debug_window) {
+    gui::Begin("Debug", &show_debug_window);
+    gui::Text("Hello World");
+    gui::End();
+  }
+
+  if (show_demo_window)
+    gui::ShowTestWindow(&show_demo_window);
+
+  gui::Render();
+  return false;
+}
+
+
 
 
 int SDL_main(int argc, char ** argv) {
