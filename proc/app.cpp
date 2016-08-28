@@ -15,7 +15,7 @@ using namespace framework;
 using namespace glm;
 
 // used reversed [1..0] floating point z rather than the classic [-1..1] mapping
-//#define USE_REVERSED_Z
+#define USE_REVERSED_Z
 
 struct app {
   app();
@@ -71,19 +71,16 @@ app::app() : window("proc", { 4, 5, gl::profile::core }, true), vr(), compositor
 
   // load matrices.
   for (int i = 0;i < 2;++i) {
-    // use directx [0,1] z clip plane and reverse for improvied floating point depth buffer precision
 #ifdef USE_REVERSED_Z
     eyeProjectionMatrix[i] = reverseZ * openvr::hmd_mat4(vr.handle->GetProjectionMatrix(vr::EVREye(i), nearClip, farClip, vr::API_DirectX));
 #else
-    float l, r, t, b;
-    vr.handle->GetProjectionRaw(vr::EVREye(i), &l, &r, &t, &b);
-    eyeProjectionMatrix[i] = glm::frustum(l, r, b, t, nearClip, farClip);
+    eyeProjectionMatrix[i] = openvr::hmd_mat4(vr.handle->GetProjectionMatrix(vr::EVREye(i), nearClip, farClip, vr::API_OpenGL));
 #endif
     eyePoseMatrix[i] = openvr::hmd_mat3x4(vr.handle->GetEyeToHeadTransform(vr::EVREye(i)));
   }
 
 #ifdef USE_REVERSED_Z
-  glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); // switch to reversed z
+  glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
   glDepthFunc(GL_GREATER);
   glClearDepth(0.f);
 #endif
@@ -145,11 +142,11 @@ void app::run() {
     
     // compute stuff that can deal with approximate pose info, such as most of the shadow maps
 
-    compositor.WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, 0);
-    mat4 hmdPose = glm::inverse(openvr::hmd_mat3x4(physical_pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking));
+    compositor.WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, 0);    
+    mat4 hmdToWorld = openvr::hmd_mat3x4(physical_pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
     mat4 eyes[2];
     for (int i = 0;i < 2;++i)
-      eyes[i] = eyeProjectionMatrix[i] * eyePoseMatrix[i] * hmdPose;    
+      eyes[i] = eyeProjectionMatrix[i] * glm::inverse(hmdToWorld * eyePoseMatrix[i]);
 
     controllers.render(physical_pose, eyes); // draw controller rays
 
@@ -166,14 +163,18 @@ void app::run() {
       }
     }
 
+
     // let the compositor know we handed off a frame
     compositor.PostPresentHandoff();
 
-    //{
-    //  int w, h;
-    //  SDL_GetWindowSize(window.sdl_window, &w, &h);
-    //  glViewport(0, 0, w, h); // paint over the entire sdl window
-    //}
+    ImGui::Text("HMD Position: %3.2f %3.2f %3.2f", hmdToWorld[3][0], hmdToWorld[3][1], hmdToWorld[3][2]);
+
+    {
+      int w, h;
+      SDL_GetWindowSize(window.sdl_window, &w, &h);
+      glViewport(0, 0, w, h); // paint over the entire sdl window
+    }
+    //glViewportIndexedf(0, 0, 0, display.w, display.h);         // viewport 0 left eye
 
     distorted.render(display.resolve_texture);
 
@@ -222,9 +223,6 @@ bool app::show_gui(bool * open) {
   gui::Render();
   return false;
 }
-
-
-
 
 int SDL_main(int argc, char ** argv) {
   SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96

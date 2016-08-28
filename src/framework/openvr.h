@@ -25,7 +25,7 @@ namespace framework {
     };
 
     static inline glm::mat4 hmd_mat4(const vr::HmdMatrix44_t & m) noexcept {
-      return glm::make_mat4((float*)&m.m);
+      return glm::transpose(glm::make_mat4((float*)&m.m));
     }
 
     static inline glm::mat4 hmd_mat3x4(const vr::HmdMatrix34_t & m) noexcept {
