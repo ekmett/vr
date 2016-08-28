@@ -129,7 +129,14 @@ static void text_input(SDL_TextInputEvent & e) {
 static void key(bool down, SDL_KeyboardEvent & e) {
   ImGuiIO & io = ImGui::GetIO();
   int key = e.keysym.sym & ~SDLK_SCANCODE_MASK;
+
   io.KeysDown[key] = down;
+
+  switch (key) {
+    case SDLK_KP_ENTER: io.KeysDown[SDLK_RETURN] = down; break;
+    default: break;
+  }
+
   io.KeyShift = (SDL_GetModState() & KMOD_SHIFT) != 0;
   io.KeyCtrl = (SDL_GetModState() & KMOD_CTRL) != 0;
   io.KeyAlt = (SDL_GetModState() & KMOD_ALT) != 0;
@@ -239,6 +246,8 @@ namespace framework {
         static const ImWchar icons_ranges[] = { ICON_MIN_KI, ICON_MAX_KI, 0 }; // TODO: tighten
         io.Fonts->AddFontFromFileTTF((font_dir + "kenney-icon-font.ttf").c_str(), 15.0f, &config, icons_ranges);
       }
+
+
     }
 
     void system::new_frame() {
