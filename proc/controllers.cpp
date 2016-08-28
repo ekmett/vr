@@ -1,4 +1,5 @@
 #include "framework/error.h"
+#include "framework/gl.h"
 #include "framework/glm.h"
 #include "framework/openvr.h"
 #include "controllers.h"
@@ -38,7 +39,9 @@ controllers::controllers()
   if (matrixUniformLocation == -1) die("unable to find matrix uniform");
 
   glCreateVertexArrays(1, &vao);
+  gl::label(GL_VERTEX_ARRAY, vao, "controller vao");
   glCreateBuffers(1, &vbo);
+  gl::label(GL_BUFFER, vbo, "controller vbo");
 
   glEnableVertexArrayAttrib(vao, 0);
   glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(vertex, pos));
