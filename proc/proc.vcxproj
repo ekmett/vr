@@ -56,21 +56,25 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win32.props" />
+    <Import Project="..\properties\Debug.props" />
     <Import Project="..\properties\ThirdParty.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win32.props" />
+    <Import Project="..\properties\Release.props" />
     <Import Project="..\properties\ThirdParty.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win64.props" />
+    <Import Project="..\properties\Debug.props" />
     <Import Project="..\properties\ThirdParty.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win64.props" />
+    <Import Project="..\properties\Release.props" />
     <Import Project="..\properties\ThirdParty.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -103,7 +107,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(WinXX)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(WinXX)\;$(BoostDir)bin.v2\libs\filesystem\build\msvc-14.0\$(Configuration_lc)\address-model-$(NN)\link-static\threading-multi\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
@@ -113,6 +117,10 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
 MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -127,7 +135,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(WinXX)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(WinXX)\;$(BoostDir)bin.v2\libs\filesystem\build\msvc-14.0\$(Configuration_lc)\address-model-$(NN)\link-static\threading-multi\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
@@ -137,6 +145,10 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
 MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -155,7 +167,8 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(WinXX)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(WinXX)\;$(BoostDir)bin.v2\libs\filesystem\build\msvc-14.0\$(Configuration_lc)\address-model-$(NN)\link-static\threading-multi\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
@@ -165,6 +178,10 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
 MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -183,7 +200,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(WinXX)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(WinXX)\;$(BoostDir)bin.v2\libs\filesystem\build\msvc-14.0\$(Configuration_lc)\address-model-$(NN)\link-static\threading-multi\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(OpenVRDir)bin\$(WinXX)\openvr_api.*" "$(TargetDir)" /D /K /Y
@@ -193,6 +210,10 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
 MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <Message>Copy DLLs</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\third-party\imgui\imgui.cpp" />
@@ -230,7 +251,10 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui_table.h" />
     <ClInclude Include="openal.h" />
+    <ClInclude Include="shaders\approx.h" />
+    <ClInclude Include="shaders\oct.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="shaders\uniforms.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

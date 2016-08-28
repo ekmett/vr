@@ -1,6 +1,13 @@
 #include "framework/stdafx.h"
 #include "framework/shader.h"
 #include "framework/gl.h"
+#include "framework/std.h"
+#include <boost/filesystem/operations.hpp>
+#include <iostream>
+#include <fstream>
+#include <cerrno>
+
+using namespace boost::filesystem;
 
 namespace framework {
   namespace gl {
@@ -77,6 +84,38 @@ namespace framework {
       glUseProgram(0);
 
       return programId;
+    }
+
+    string read_file(path filename) {
+      auto name = filename.native();
+      std::ifstream in(name.c_str(), std::ios::in | std::ios::binary);
+      if (in) {
+         std::string contents;
+         in.seekg(0, std::ios::end);
+         contents.resize(in.tellg());
+         in.seekg(0, std::ios::beg);
+         in.read(&contents[0], contents.size());
+         in.close();
+         return(contents);
+      }
+      //string truncated_name(name.begin(), name.end());
+      die("unable to read file"); // : {}", truncated_name);
+    }
+
+    void include(path real, path imaginary) {
+      if (is_directory(real)) {
+        log("compiler")->info("recursing into {}", real.string());
+        for (auto && entry : directory_iterator(real)) {
+          include(entry.path(), imaginary.append(entry.path().filename().native()));
+        }
+      } else if (is_regular_file(real)) {
+        log("compiler")->info("include {} as {}", real.string(), imaginary.generic_string());
+        string contents = read_file(real);
+        string imaginary_name = imaginary.generic_string();
+        glNamedStringARB(GL_SHADER_INCLUDE_ARB, imaginary_name.size(), imaginary_name.c_str(), contents.size(), contents.c_str());
+      } else {
+        log("compiler")->warn("ignoring file {}", real.string());
+      }
     }
   }
 }

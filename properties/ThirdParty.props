@@ -12,10 +12,11 @@
     <CDSDir>$(SolutionDir)third-party\libcds\</CDSDir>
     <BOOST_PATH>$(BoostDir)</BOOST_PATH>
     <OculusSDKDir>$(SolutionDir)third-party\ovr_sdk_win_1.6.0_public\OculusSDK\</OculusSDKDir>
+    <BOOST_ROOT>$(BoostDir)</BOOST_ROOT>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform)\;$(OpenVRDir)lib\$(WinXX)\;$(SDL2Dir)lib\$(xXX)\;$(OculusSDKDir)\LibOVR\Lib\Windows\$(Platform)\$(Configuration)\VS2015\;$(OpenALSoftDir)libs\$(WinXX)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(GLEWDir)lib\Release\$(Platform)\;$(OpenVRDir)lib\$(WinXX)\;$(SDL2Dir)lib\$(xXX)\;$(OculusSDKDir)\LibOVR\Lib\Windows\$(Platform)\$(Configuration)\VS2015\;$(OpenALSoftDir)libs\$(WinXX)\;$(BoostDir)bin.v2\libs\filesystem\build\msvc-14.0\$(Configuration_lc)\$(AddressModel64)link-static\threading-multi\;$(BoostDir)bin.v2\libs\system\build\msvc-14.0\$(Configuration_lc)\$(AddressModel64)link-static\threading-multi\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;glu32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
@@ -61,6 +62,10 @@
     </BuildMacro>
     <BuildMacro Include="OculusSDKDir">
       <Value>$(OculusSDKDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BOOST_ROOT">
+      <Value>$(BOOST_ROOT)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

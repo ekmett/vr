@@ -92,6 +92,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\chase_lev_deque.h">
       <Filter>framework\concurrency</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\filesystem.h">
+      <Filter>framework</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="framework">

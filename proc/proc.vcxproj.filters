@@ -56,6 +56,15 @@
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="controllers.h" />
+    <ClInclude Include="shaders\oct.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\approx.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\uniforms.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="boilerplate">
@@ -66,6 +75,9 @@
     </Filter>
     <Filter Include="gui">
       <UniqueIdentifier>{c2cd084c-ca84-4939-a864-514315ef7518}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{1d07ab07-a57f-4d98-8d9f-1ac28deb426d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -15,6 +15,7 @@ namespace framework {
   using std::shared_ptr;
   using std::unique_ptr;
   using std::string;
+  using std::wstring;
   using std::vector;
   using std::map;
   using std::set;

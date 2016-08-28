@@ -5,6 +5,7 @@
     <WinXX>win32</WinXX>
     <xXX>x86</xXX>
     <amdXX>x86</amdXX>
+    <NN>32</NN>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -18,6 +19,10 @@
     </BuildMacro>
     <BuildMacro Include="amdXX">
       <Value>$(amdXX)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="NN">
+      <Value>$(NN)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

@@ -5,6 +5,8 @@
     <WinXX>win64</WinXX>
     <xXX>x64</xXX>
     <amdXX>amd64</amdXX>
+    <NN>64</NN>
+    <AddressModel64>address-model-64\</AddressModel64>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -18,6 +20,14 @@
     </BuildMacro>
     <BuildMacro Include="amdXX">
       <Value>$(amdXX)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="NN">
+      <Value>$(NN)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="AddressModel64">
+      <Value>$(AddressModel64)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

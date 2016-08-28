@@ -66,22 +66,26 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win32.props" />
+    <Import Project="..\properties\Debug.props" />
     <Import Project="..\properties\ThirdParty.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win32.props" />
     <Import Project="..\properties\ThirdParty.props" />
+    <Import Project="..\properties\Release.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win64.props" />
+    <Import Project="..\properties\Debug.props" />
     <Import Project="..\properties\ThirdParty.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\properties\Win64.props" />
     <Import Project="..\properties\ThirdParty.props" />
+    <Import Project="..\properties\Release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -112,6 +116,11 @@
     <PostBuildEvent>
       <Command>XCOPY "$(SolutionDir)lib\$(WinXX)\$(ProjectName).pdb" "$(SolutionDir)bin\$(WinXX)\" /K /D /Y</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>CD $(BoostDir)
+b2.exe system filesystem address-model=$(NN) threading=multi variant=$(Configuration_lc) link=static
+CD $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -129,6 +138,11 @@
     <PostBuildEvent>
       <Command>XCOPY "$(SolutionDir)lib\$(WinXX)\$(ProjectName).pdb" "$(SolutionDir)bin\$(WinXX)\" /K /D /Y</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>CD $(BoostDir)
+b2.exe system filesystem address-model=$(NN) threading=multi variant=$(Configuration_lc) link=static
+CD $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -150,6 +164,11 @@
     <PostBuildEvent>
       <Command>XCOPY "$(SolutionDir)lib\$(WinXX)\$(ProjectName).pdb" "$(SolutionDir)bin\$(WinXX)\" /K /D /Y</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>CD $(BoostDir)
+b2.exe system filesystem address-model=$(NN) threading=multi variant=$(Configuration_lc) link=static
+CD $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -171,6 +190,11 @@
     <PostBuildEvent>
       <Command>XCOPY "$(SolutionDir)lib\$(WinXX)\$(ProjectName).pdb" "$(SolutionDir)bin\$(WinXX)\" /K /D /Y</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>CD $(BoostDir)
+b2.exe system filesystem address-model=$(NN) threading=multi variant=$(Configuration_lc) link=static
+CD $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
