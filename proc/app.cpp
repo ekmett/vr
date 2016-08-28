@@ -25,6 +25,7 @@ struct app {
   bool show_gui(bool * open = nullptr);
 
   sdl::window window; // must come before anything that needs opengl support in this object
+  gl::compiler compiler;
   openvr::system vr;
   gui::system gui;
   openal::system al;
@@ -67,7 +68,7 @@ static float reverseZ_contents[16] = {
 static mat4 reverseZ = glm::make_mat4(reverseZ_contents);
 #endif
 
-app::app() : window("proc", { 4, 5, gl::profile::core }, true), vr(), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted() {
+app::app() : window("proc", { 4, 5, gl::profile::core }, true), compiler(boost::filesystem::path(LR"(d:\vr\proc\shaders)")), vr(), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted() {
 
   // load matrices.
   for (int i = 0;i < 2;++i) {
@@ -228,6 +229,7 @@ int SDL_main(int argc, char ** argv) {
   SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96
   spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
   cds_main_thread_attachment<> main_thread; // Allow use of concurrent data structures in the main threads
+
 
   app main;
   main.run();
