@@ -6,6 +6,10 @@
 
 #ifdef FRAMEWORK_SUPPORTS_SDL2
 
+// I don't want SDL to define M_PI
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 

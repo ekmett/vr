@@ -23,7 +23,7 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
       #version 450 core
       //out vec4 outputColor;
       void main() {
-        //outputColor = vec4(0.0,0.0,0.0,1.0);
+        //outputColor = vec4(0,0,0,1);
       }
     )"), warp("distortion warp",
     R"(
@@ -50,15 +50,15 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
       out vec4 outputColor;
 
       void main() {
-        float fBoundsCheck = ( (dot( vec2( lessThan( v2UVgreen.xy, vec2(0.05, 0.05)) ), vec2(1.0, 1.0))+dot( vec2( greaterThan( v2UVgreen.xy, vec2( 0.95, 0.95)) ), vec2(1.0, 1.0))) );
-        if( fBoundsCheck > 1.0 ) {
-       	  outputColor = vec4( 0, 0.0, 0, 1.0 );
-        } else {
+        //float fBoundsCheck = ( (dot( vec2( lessThan( v2UVgreen.xy, vec2(0.05, 0.05)) ), vec2(1.0, 1.0))+dot( vec2( greaterThan( v2UVgreen.xy, vec2( 0.95, 0.95)) ), vec2(1.0, 1.0))) );
+        //if( fBoundsCheck > 1.0 ) {
+        //  outputColor = vec4(0,0,0,1);
+        //} else {
           float red = texture(mytexture, v2UVred).x;
           float green = texture(mytexture, v2UVgreen).y;
           float blue = texture(mytexture, v2UVblue).z;
           outputColor = vec4( red, green, blue, 1.0  ); 
-        }
+        //}
       }
     )") {
 
@@ -207,7 +207,7 @@ void distortion::render(GLuint resolutionTexture) {
   glDisable(GL_CULL_FACE);
   glEnable(GL_STENCIL_TEST);
 
-  glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+  //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
   glStencilMask(1);
   glStencilFunc(GL_ALWAYS, 1, 1);
   glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
@@ -221,7 +221,7 @@ void distortion::render(GLuint resolutionTexture) {
   glStencilFunc(GL_EQUAL, 0, 1);
   glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // use the stencil mask to disable writes
   glStencilMask(0);
-  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
   glBindVertexArray(vao);
   glUseProgram(warp.programId);

@@ -18,6 +18,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\alloca_array.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\apply.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\cache_isolated.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\cds.h" />
@@ -43,6 +44,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\signal.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\noncopyable.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_system.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\spectrum.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\spherical_harmonics.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\std.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stdafx.h" />
@@ -61,6 +63,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_system.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spdlog.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\spectrum.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

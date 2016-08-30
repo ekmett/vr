@@ -41,7 +41,7 @@ struct app {
   vr::IVRCompositor & compositor;
   distortion distorted;
   openal::system al;
-  int desktop_view; // 0 = both eyes, 1 = left, 2 = right, 3 = undistorted left view center
+  int desktop_view;
 
   struct {
     uint32_t w, h;
@@ -75,7 +75,7 @@ static float reverseZ_contents[16] = {
 static mat4 reverseZ = glm::make_mat4(reverseZ_contents);
 #endif
 
-app::app() : window("proc", { 4, 5, gl::profile::core }, true), compiler(path("shaders")), vr(), dashboard("proc","Debug",1024,1024), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted(), desktop_view(0) {
+app::app() : window("proc", { 4, 5, gl::profile::core }, true,50, 50, 1280,1024), compiler(path("shaders")), vr(), dashboard("proc","Debug",1024,1024), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted(), desktop_view(1) {
 
   // load matrices.
   for (int i = 0;i < 2;++i) {
@@ -147,7 +147,7 @@ viewport_dim fit_viewport(float aspectRatio, int w, int h) {
 void app::run() {
   while (!vr.poll() && !window.poll()) {
     // clear the display window  
-    glClearColor(0.f, 0.f, 0.f, 1.f);
+    glClearColor(0.2f, 0.2f, 0.2f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // start a new imgui frame
@@ -193,7 +193,7 @@ void app::run() {
     auto flags = SDL_GetWindowFlags(window.sdl_window);
     if (flags & SDL_WINDOW_MINIMIZED) continue; // drop gui on the floor?
 
-    ImGui::Text("HMD Position: %3.2f %3.2f %3.2f", hmdToWorld[3][0], hmdToWorld[3][1], hmdToWorld[3][2]);
+    //ImGui::Text("HMD Position: %3.2f %3.2f %3.2f", hmdToWorld[3][0], hmdToWorld[3][1], hmdToWorld[3][2]);
 
     {
       int w, h;
@@ -201,23 +201,24 @@ void app::run() {
 
       // lets find an aspect ratio preserving viewport
       switch (desktop_view) {
-        case 0: {
+        case 0: break;
+        case 1: {
           auto dim = fit_viewport(float(display.w) * 2 / display.h, w, h);
           glViewport(dim.x, dim.y, dim.w, dim.h);
           distorted.render(display.resolve_texture);
           break; // paint over the entire sdl window
         }
-        case 1: 
-        case 2: {
+        case 2: 
+        case 3: {
           auto dim = fit_viewport(float(display.w) / display.h, w, h);
-          glViewport(dim.x - (desktop_view - 1) * dim.w, dim.y, dim.w * 2, dim.h);
+          glViewport(dim.x - (desktop_view - 2) * dim.w, dim.y, dim.w * 2, dim.h);
           glScissor(dim.x, dim.y, dim.w, dim.h);
           glEnable(GL_SCISSOR_TEST);
           distorted.render(display.resolve_texture);
           glDisable(GL_SCISSOR_TEST);
           break;
         }
-        case 3: {
+        case 4: {
           auto dim = fit_viewport(float(display.w) * 2 / display.h, w, h);
           glBlitNamedFramebuffer(
             display.resolve_fbo, 0,
@@ -230,10 +231,10 @@ void app::run() {
           );
           break;
         }
-        case 4: 
-        case 5: {
+        case 5: 
+        case 6: {
           auto dim = fit_viewport(float(display.w) / display.h, w, h);
-          auto display_shift = (desktop_view - 4) * display.w;
+          auto display_shift = (desktop_view - 5) * display.w;
           glBlitNamedFramebuffer(
             display.resolve_fbo, 0, 
             display_shift, 0, 
@@ -265,16 +266,17 @@ bool app::show_gui(bool * open) {
       gui::EndMenu();
     }
     if (gui::BeginMenu("Edit")) {
-      if (gui::MenuItem(ICON_MD_UNDO " Undo", "CTRL+Z")) {}
-      if (gui::MenuItem(ICON_MD_REDO " Redo", "CTRL+Y", false, false)) {}  // Disabled item
+      if (gui::MenuItem(ICON_MD_UNDO " Undo", "^Z")) {}
+      if (gui::MenuItem(ICON_MD_REDO " Redo", "^Y", false, false)) {}  // Disabled item
       gui::Separator();
-      if (gui::MenuItem("Cut", "CTRL+X")) {}
-      if (gui::MenuItem("Copy", "CTRL+C")) {}
-      if (gui::MenuItem("Paste", "CTRL+V")) {}
+      if (gui::MenuItem("Cut", "^X")) {}
+      if (gui::MenuItem("Copy", "^C")) {}
+      if (gui::MenuItem("Paste", "^V")) {}
       gui::EndMenu();
     }
     if (gui::BeginMenu("View")) {
-      static const char * view_name[] = {
+      static const char * view_name[] = {\
+        "None",
         "Both Eyes Distorted",
         "Left Eye Distorted",
         "Right Eye Distorted",

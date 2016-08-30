@@ -247,7 +247,14 @@ namespace framework {
         io.Fonts->AddFontFromFileTTF((font_dir + "kenney-icon-font.ttf").c_str(), 15.0f, &config, icons_ranges);
       }
 
-
+      ImGuiStyle& style = ImGui::GetStyle();
+      style.WindowPadding.x = 4;
+      style.WindowPadding.y = 6;
+      style.WindowRounding = 3;
+      style.GrabRounding = 10;
+      style.FrameRounding = 16;
+      style.ScrollbarSize = 18;
+      style.GrabMinSize = 20;            
     }
 
     void system::new_frame() {

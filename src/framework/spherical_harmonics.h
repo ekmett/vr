@@ -1,7 +1,7 @@
 #pragma once
 
-#include <boost/array.hpp>
 #include <functional>
+#include "framework/std.h"
 #include "framework/glm.h"
 
 #define _USE_MATH_DEFINES
@@ -10,7 +10,7 @@
 namespace framework {
   namespace spherical_harmonics {
         
-    template <typename T, size_t N> struct sh : boost::array<T, N> {
+    template <typename T, size_t N> struct sh : array<T, N> {
 
       // permit array initialization list syntax
       template <typename... Ts>
@@ -31,9 +31,6 @@ namespace framework {
       }
 
       inline sh & operator+=(const sh & that) {
-        // return modify(that, &T::operator+=);
-        // return modify(that, [](auto & i, auto j) { i += j; }, that);
-
         for (size_t i = 0; i < N; ++i) elems[i] += that[i];
         return *this;
       }
@@ -67,6 +64,13 @@ namespace framework {
       sh operator/(const T& scale) const {
         sh result;
         for (size_t i = 0; i < N; ++i) result[i] = elems[i] / scale;
+        return result;
+      }
+
+      template <typename T> 
+      friend inline sh operator * (T scale, const sh & that) {
+        sh result;
+        for (size_t i = 0; i < N; ++i) result[i] = scale * that.elems[i];
         return result;
       }
 
@@ -205,3 +209,10 @@ namespace framework {
     static const h4 h4_identity { std::sqrt(2.0f * 3.14159f), 0.0f, 0.0f, 0.0f };
   }
 }
+
+
+/* Portions drawn from:  
+  MJP's DX12 Sample Framework
+  http://mynameismjp.wordpress.com/
+  All code licensed under the MIT license
+*/

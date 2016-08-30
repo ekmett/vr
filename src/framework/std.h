@@ -9,6 +9,8 @@
 #include <mutex>
 #include <cassert>
 #include <vector>
+#include <tuple>
+#include <array>
 
 namespace framework {
   using std::atomic;
@@ -19,7 +21,9 @@ namespace framework {
   using std::vector;
   using std::map;
   using std::set;
+  using std::tuple;
   using std::mem_fn;
+  using std::array;
   using std::mutex;
   using std::lock_guard;  
   using std::chrono::duration;
