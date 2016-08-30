@@ -8,7 +8,6 @@
 #include <math.h>
 
 namespace framework {
-  namespace spherical_harmonics {
         
     template <typename T, size_t N> struct sh : array<T, N> {
 
@@ -207,7 +206,7 @@ namespace framework {
 
     // Constants
     static const h4 h4_identity { std::sqrt(2.0f * 3.14159f), 0.0f, 0.0f, 0.0f };
-  }
+  
 }
 
 

@@ -101,7 +101,7 @@
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;$(SolutionDir)third-party\HosekWilkie_SkylightModel_C_Source.1.4a;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -129,7 +129,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;$(SolutionDir)third-party\HosekWilkie_SkylightModel_C_Source.1.4a;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -159,7 +159,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;$(SolutionDir)third-party\HosekWilkie_SkylightModel_C_Source.1.4a;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -192,7 +192,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;$(SolutionDir)src;$(SolutionDir)framework-static-win32;$(SolutionDir)assets\shaders;$(SolutionDir)third-party\HosekWilkie_SkylightModel_C_Source.1.4a;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
