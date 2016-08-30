@@ -16,3 +16,12 @@
 [submodule "third-party/IconFontCppHeaders"]
 	path = third-party/IconFontCppHeaders
 	url = https://github.com/juliettef/IconFontCppHeaders.git
+[submodule "third-party/DirectXTex"]
+	path = third-party/DirectXTex
+	url = https://github.com/Microsoft/DirectXTex.git
+[submodule "third-party/assimp"]
+	path = third-party/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "third-party/recastnavigation"]
+	path = third-party/recastnavigation
+	url = https://github.com/recastnavigation/recastnavigation.git

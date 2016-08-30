@@ -4,6 +4,7 @@
 #include "framework/worker.h"
 #include "framework/gl.h"
 #include "framework/signal.h"
+#include "framework/filesystem.h"
 #include "controllers.h"
 #include "gui.h"
 #include "imgui_internal.h"
@@ -11,8 +12,11 @@
 #include "openal.h"
 #include "distortion.h"
 #include "overlay.h"
+#include "framework/spherical_harmonics.h"
 
 using namespace framework;
+using namespace filesystem;
+using namespace spherical_harmonics;
 using namespace glm;
 
 // used reversed [1..0] floating point z rather than the classic [-1..1] mapping
@@ -37,6 +41,7 @@ struct app {
   vr::IVRCompositor & compositor;
   distortion distorted;
   openal::system al;
+  int desktop_view; // 0 = both eyes, 1 = left, 2 = right, 3 = undistorted left view center
 
   struct {
     uint32_t w, h;
@@ -70,7 +75,7 @@ static float reverseZ_contents[16] = {
 static mat4 reverseZ = glm::make_mat4(reverseZ_contents);
 #endif
 
-app::app() : window("proc", { 4, 5, gl::profile::core }, true), compiler(boost::filesystem::path(LR"(d:\vr\proc\shaders)")), vr(), dashboard("proc","Debug",1024,1024), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted() {
+app::app() : window("proc", { 4, 5, gl::profile::core }, true), compiler(path("shaders")), vr(), dashboard("proc","Debug",1024,1024), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted(), desktop_view(0) {
 
   // load matrices.
   for (int i = 0;i < 2;++i) {
@@ -125,6 +130,20 @@ app::~app() {
   glDeleteTextures(2, display.texture);
 }
 
+struct viewport_dim {
+  GLint x, y, w, h;
+};
+
+viewport_dim fit_viewport(float aspectRatio, int w, int h) {
+  GLint x = GLint(h * aspectRatio);
+  if (x <= w) {
+    return viewport_dim { (w-x)/2, 0, x, h };
+  } else {
+    GLint y = GLint(w / aspectRatio);
+    return viewport_dim { 0, (h-y)/2, w, y };
+  }
+}
+
 void app::run() {
   while (!vr.poll() && !window.poll()) {
     // clear the display window  
@@ -138,10 +157,10 @@ void app::run() {
 
     // switch to the hmd
     glBindFramebuffer(GL_FRAMEBUFFER, display.render_fbo);
-    glClearColor(0.15f, 0.15f, 0.18f, 1.0f); // nice background color, not black, distinct from desktop clear
+    glClearColor(0.15f, 0.15f, 0.18f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewportIndexedf(0, 0, 0, display.w, display.h);         // viewport 0 left eye
-    glViewportIndexedf(1, display.w, 0, display.w, display.h); // viewport 1 right eye
+    glViewportIndexedf(0, 0, 0, (float)display.w, (float)display.h);         // viewport 0 left eye
+    glViewportIndexedf(1, (float)display.w, 0, (float)display.w, (float)display.h); // viewport 1 right eye
     
     // compute stuff that can deal with approximate pose info, such as most of the shadow maps
 
@@ -159,9 +178,9 @@ void app::run() {
     // copy the msaa render target to a lower quality 'resolve' texture for display
     glBlitNamedFramebuffer(display.render_fbo, display.resolve_fbo, 0, 0, display.w * 2, display.h, 0, 0, display.w * 2, display.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
     {
-      vr::Texture_t eyeTexture { reinterpret_cast<void*>(display.resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
+      vr::Texture_t eyeTexture { (void*)(intptr_t)(display.resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
       for (int i = 0;i < 2;++i) {
-        vr::VRTextureBounds_t eyeBounds = { 0.5 * i, 0.0, 0.5 + 0.5 * i , 1.0 };
+        vr::VRTextureBounds_t eyeBounds = { 0.5f * i, 0, 0.5f + 0.5f * i , 1 };
         vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds);
       }
     }
@@ -179,11 +198,55 @@ void app::run() {
     {
       int w, h;
       SDL_GetWindowSize(window.sdl_window, &w, &h);
-      glViewport(0, 0, w, h); // paint over the entire sdl window
-    }
-    //glViewportIndexedf(0, 0, 0, display.w, display.h);         // viewport 0 left eye
 
-    distorted.render(display.resolve_texture);
+      // lets find an aspect ratio preserving viewport
+      switch (desktop_view) {
+        case 0: {
+          auto dim = fit_viewport(float(display.w) * 2 / display.h, w, h);
+          glViewport(dim.x, dim.y, dim.w, dim.h);
+          distorted.render(display.resolve_texture);
+          break; // paint over the entire sdl window
+        }
+        case 1: 
+        case 2: {
+          auto dim = fit_viewport(float(display.w) / display.h, w, h);
+          glViewport(dim.x - (desktop_view - 1) * dim.w, dim.y, dim.w * 2, dim.h);
+          glScissor(dim.x, dim.y, dim.w, dim.h);
+          glEnable(GL_SCISSOR_TEST);
+          distorted.render(display.resolve_texture);
+          glDisable(GL_SCISSOR_TEST);
+          break;
+        }
+        case 3: {
+          auto dim = fit_viewport(float(display.w) * 2 / display.h, w, h);
+          glBlitNamedFramebuffer(
+            display.resolve_fbo, 0,
+            0, 0,
+            display.w*2, display.h,
+            dim.x, dim.y,
+            dim.x + dim.w, dim.y + dim.h,
+            GL_COLOR_BUFFER_BIT,
+            GL_LINEAR
+          );
+          break;
+        }
+        case 4: 
+        case 5: {
+          auto dim = fit_viewport(float(display.w) / display.h, w, h);
+          auto display_shift = (desktop_view - 4) * display.w;
+          glBlitNamedFramebuffer(
+            display.resolve_fbo, 0, 
+            display_shift, 0, 
+            display_shift + display.w, display.h, 
+            dim.x, dim.y, 
+            dim.x + dim.w, dim.y + dim.h, 
+            GL_COLOR_BUFFER_BIT, 
+            GL_LINEAR
+          );
+          break;
+        }
+      }
+    }
 
     if (show_gui()) return;
 
@@ -210,7 +273,21 @@ bool app::show_gui(bool * open) {
       if (gui::MenuItem("Paste", "CTRL+V")) {}
       gui::EndMenu();
     }
-    if (gui::BeginMenu("Window")) {
+    if (gui::BeginMenu("View")) {
+      static const char * view_name[] = {
+        "Both Eyes Distorted",
+        "Left Eye Distorted",
+        "Right Eye Distorted",
+        "Both Eyes Raw",
+        "Left Eye Raw",
+        "Right Eye Raw"
+      };
+      for (int i = 0; i < countof(view_name); ++i)
+        if (gui::MenuItem(view_name[i], nullptr, desktop_view == i))
+          desktop_view = i;              
+      gui::EndMenu();
+    }
+    if (gui::BeginMenu("Window")) {      
       if (gui::MenuItem("Debug", nullptr, &show_debug_window)) {}
       if (gui::MenuItem("Demo", nullptr, &show_demo_window)) {}
       gui::EndMenu();
@@ -232,8 +309,19 @@ bool app::show_gui(bool * open) {
 }
 
 int SDL_main(int argc, char ** argv) {
-  SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96
   spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
+#ifdef _WIN32
+  SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96
+#endif
+
+  path exe = executable_path();
+  log("app")->info("path: {}", exe);
+
+  path asset_dir = path(exe.parent_path().parent_path().parent_path()).append("assets");
+  log("app")->info("assets: {}", asset_dir);
+
+  _wchdir(asset_dir.native().c_str());
+
   cds_main_thread_attachment<> main_thread; // Allow use of concurrent data structures in the main threads
 
 

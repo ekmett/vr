@@ -9,5 +9,7 @@
 namespace framework {
   namespace filesystem {
     using namespace boost::filesystem;
+
+    extern path executable_path();
   };
 };

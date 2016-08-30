@@ -95,6 +95,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\filesystem.h">
       <Filter>framework</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\spherical_harmonics.h">
+      <Filter>framework</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="framework">
@@ -162,6 +165,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp">
       <Filter>framework\concurrency</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\filesystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="$(MSBuildThisFileDirectory)README.txt" />

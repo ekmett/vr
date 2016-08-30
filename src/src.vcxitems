@@ -43,6 +43,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\signal.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\noncopyable.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_system.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\spherical_harmonics.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\std.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stdafx.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\utf8.h" />
@@ -52,6 +53,7 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\epoch.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\filesystem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gl.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_system.cpp" />

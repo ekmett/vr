@@ -18,20 +18,21 @@
     <ClCompile Include="openal.cpp">
       <Filter>sound</Filter>
     </ClCompile>
-    <ClCompile Include="gui.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
     <ClCompile Include="controllers.cpp" />
     <ClCompile Include="overlay.cpp" />
+    <ClCompile Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c">
+      <Filter>skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="gui.cpp" />
+    <ClCompile Include="spectrum.cpp">
+      <Filter>pbrt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>boilerplate</Filter>
     </ClInclude>
     <ClInclude Include="distortion.h" />
-    <ClInclude Include="imgui_table.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="..\third-party\imgui\imgui.h">
       <Filter>gui</Filter>
     </ClInclude>
@@ -50,14 +51,31 @@
     <ClInclude Include="openal.h">
       <Filter>sound</Filter>
     </ClInclude>
-    <ClInclude Include="gui.h">
-      <Filter>gui</Filter>
-    </ClInclude>
+    <ClInclude Include="controllers.h" />
+    <ClInclude Include="overlay.h" />
     <ClInclude Include="imconfig.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="controllers.h" />
-    <ClInclude Include="overlay.h" />
+    <ClInclude Include="imgui_table.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h">
+      <Filter>skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h">
+      <Filter>skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h">
+      <Filter>skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_Spectral.h">
+      <Filter>skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="gui.h" />
+    <ClInclude Include="skybox.h" />
+    <ClInclude Include="spectrum.h">
+      <Filter>pbrt</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="boilerplate">
@@ -71,6 +89,12 @@
     </Filter>
     <Filter Include="shaders">
       <UniqueIdentifier>{1d07ab07-a57f-4d98-8d9f-1ac28deb426d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="skybox">
+      <UniqueIdentifier>{26859297-1fdd-46cc-9a6b-13b6835f6703}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pbrt">
+      <UniqueIdentifier>{ec834b88-8735-49bf-936c-9c6a9e58d3ca}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
