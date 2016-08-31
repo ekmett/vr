@@ -243,6 +243,10 @@ namespace framework {
     static sampled_spectrum from_xyz(vec3 xyz, spectrum_type type = spectrum_type::illuminant) {
       return from_rgb(xyz_to_rgb(xyz), type);
     }
+    vec3 to_xyz() const noexcept;
+    vec3 to_rgb() const noexcept {
+      return xyz_to_rgb(to_xyz());
+    }
   };
 
 }

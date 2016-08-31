@@ -104,6 +104,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\alloca_array.h">
       <Filter>framework\util</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\sampling.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\skybox.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="framework">
@@ -175,6 +180,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spectrum.cpp">
       <Filter>framework</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\skybox.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\gui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="$(MSBuildThisFileDirectory)README.txt" />

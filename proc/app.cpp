@@ -6,7 +6,7 @@
 #include "framework/signal.h"
 #include "framework/filesystem.h"
 #include "controllers.h"
-#include "gui.h"
+#include "framework/gui.h"
 #include "imgui_internal.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "openal.h"
@@ -16,8 +16,6 @@
 
 using namespace framework;
 using namespace filesystem;
-using namespace spherical_harmonics;
-using namespace glm;
 
 // used reversed [1..0] floating point z rather than the classic [-1..1] mapping
 #define USE_REVERSED_Z

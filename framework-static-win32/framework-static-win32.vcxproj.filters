@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Hosek-Wilkie Sky Model">
+      <UniqueIdentifier>{1e1faa00-fbf5-4699-96b2-27806fa8156c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{945deefb-c5e1-4b77-8c77-424dea90ff26}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.txt" />
@@ -21,5 +27,60 @@
     <ClInclude Include="framework\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h">
+      <Filter>Hosek-Wilkie Sky Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h">
+      <Filter>Hosek-Wilkie Sky Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h">
+      <Filter>Hosek-Wilkie Sky Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_Spectral.h">
+      <Filter>Hosek-Wilkie Sky Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\imgui_user.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\stb_rect_pack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\stb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\imgui\stb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c">
+      <Filter>Hosek-Wilkie Sky Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third-party\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third-party\imgui\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third-party\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\third-party\imgui\imgui_user.inl">
+      <Filter>imgui</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -3,10 +3,13 @@
 
 namespace framework {
 
+  static sampled_spectrum XYZ[3]{
+    sampled_spectrum::from_sorted_samples<nCIESamples>(CIE_lambda, CIE_X),
+    sampled_spectrum::from_sorted_samples<nCIESamples>(CIE_lambda, CIE_Y),
+    sampled_spectrum::from_sorted_samples<nCIESamples>(CIE_lambda, CIE_Z)
+  };
+
   static sampled_spectrum
-    X = sampled_spectrum::from_sorted_samples<nCIESamples>(CIE_lambda, CIE_X),
-    Y = sampled_spectrum::from_sorted_samples<nCIESamples>(CIE_lambda, CIE_Y),
-    Z = sampled_spectrum::from_sorted_samples<nCIESamples>(CIE_lambda, CIE_Z),
     rgbRefl2SpectWhite = sampled_spectrum::from_sorted_samples<nRGB2SpectSamples>(RGB2SpectLambda, RGBRefl2SpectWhite),
     rgbRefl2SpectCyan = sampled_spectrum::from_sorted_samples<nRGB2SpectSamples>(RGB2SpectLambda, RGBRefl2SpectCyan),
     rgbRefl2SpectMagenta = sampled_spectrum::from_sorted_samples<nRGB2SpectSamples>(RGB2SpectLambda, RGBRefl2SpectMagenta),
@@ -115,6 +118,14 @@ namespace framework {
       r *= .86445f;
     }
     return r.clamp();
+  }
+
+  vec3 sampled_spectrum::to_xyz() const noexcept {
+    vec3 result{ 0.0f, 0.0f, 0.0f };
+    for (int i=0; i < spectral_samples; ++i)
+      for (int j = 0; j < 3; ++j)
+        result[j] += XYZ[j][i] * _Elems[i];
+    return result;
   }
 
   const float CIE_X[nCIESamples] = {

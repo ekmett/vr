@@ -1,9 +1,9 @@
-
+#include "framework/stdafx.h"
 #include "framework/config.h"
 #include "framework/shader.h"
 #include "framework/sdl_window.h"
+#include "framework/gui.h"
 #include <SDL_syswm.h>
-#include "gui.h"
 
 using namespace framework;
 

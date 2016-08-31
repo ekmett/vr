@@ -33,9 +33,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\oculus.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\sampling.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\shader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\skybox.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\spdlog.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\error.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gl.h" />
@@ -51,6 +53,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\utf8.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\chase_lev_deque.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\worker.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp" />
@@ -62,12 +65,14 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_window.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_system.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\skybox.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spdlog.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spectrum.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\worker.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\gui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="$(MSBuildThisFileDirectory)README.txt" />

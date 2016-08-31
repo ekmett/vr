@@ -2,9 +2,11 @@
 
 #include "framework/spherical_harmonics.h"
 #include "framework/glm.h"
-#include "ArHosekSkyModel.h"
+
+struct ArHosekSkyModelState;
 
 namespace framework {
+
 
   struct skybox {
     skybox(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity) {

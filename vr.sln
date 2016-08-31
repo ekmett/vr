@@ -14,8 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", 
 		properties\Win64.props = properties\Win64.props
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "core\core.vcxproj", "{80D6964D-C863-428E-8902-A2C6ED39383A}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "proc", "proc\proc.vcxproj", "{4E658DEB-0CA1-4817-B404-2868AED2B0DC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cds", "cds.vcxproj", "{408FE9BC-44F0-4E6A-89FA-D6F952584239}"
@@ -92,10 +90,6 @@ Global
 		{FF19F6AE-67E0-4585-9D4A-038CB6E8DD09}.Release|x64.ActiveCfg = Release|Win32
 		{FF19F6AE-67E0-4585-9D4A-038CB6E8DD09}.Release|x86.ActiveCfg = Release|Win32
 		{FF19F6AE-67E0-4585-9D4A-038CB6E8DD09}.Release|x86.Build.0 = Release|Win32
-		{80D6964D-C863-428E-8902-A2C6ED39383A}.Debug|x64.ActiveCfg = Debug|x64
-		{80D6964D-C863-428E-8902-A2C6ED39383A}.Debug|x86.ActiveCfg = Debug|Win32
-		{80D6964D-C863-428E-8902-A2C6ED39383A}.Release|x64.ActiveCfg = Release|x64
-		{80D6964D-C863-428E-8902-A2C6ED39383A}.Release|x86.ActiveCfg = Release|Win32
 		{4E658DEB-0CA1-4817-B404-2868AED2B0DC}.Debug|x64.ActiveCfg = Debug|x64
 		{4E658DEB-0CA1-4817-B404-2868AED2B0DC}.Debug|x64.Build.0 = Debug|x64
 		{4E658DEB-0CA1-4817-B404-2868AED2B0DC}.Debug|x86.ActiveCfg = Debug|Win32
