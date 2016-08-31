@@ -5,7 +5,9 @@
 #include <algorithm>
 #include "framework/spectrum.h"
 #include "framework/sampling.h"
-
+#include <glm/detail/type_half.hpp>
+#include "framework/half.h"
+#include "framework/texturing.h"
 #include "ArHosekSkyModel.h"
 
 static inline float angle_between(const glm::vec3 & x, const glm::vec3 & y) {
@@ -45,6 +47,7 @@ namespace framework {
     sun_size = new_sun_size;
     turbidity = new_turbidity;
     ground_albedo = new_ground_albedo;
+    log("sky")->info("beginning update");
 
     for (int i = 0;i < 3;++i) {
       if (rgb[i] != nullptr) 
@@ -92,14 +95,77 @@ namespace framework {
       arhosekskymodelstate_free(sky_states[i]);
       sky_states[i] = nullptr;
     }
-
+    
     // compute uniform solar radiance value
     sun_radiance = sun_irradiance / irradiance_integral(sun_size);
+
+    log("sky")->info("computed solar radiance: {}", sun_radiance);
+
+    sh = sh9_t<vec3>();
+    float weights = 0.0f;
+
+    static const int N = 128;
+    alloca_array<tvec4<half>> cubemap_data(6 * N * N);
+    for (int s = 0 ; s < 6; ++s)
+      for (int y = 0; y < N; ++y)
+        for (int x = 0; x < N; ++x) {
+          vec3 dir = xys_to_direction(x, y, s, N, N);
+          vec3 radiance = sample(dir);
+          int i = s*N*N + y*N + x;
+          cubemap_data[i] = tvec4<half> { 
+            half(radiance.r), 
+            half(radiance.g), 
+            half(radiance.b), 
+            1.0_half
+          };
+
+          float u = (x + 0.5f) / N;
+          float v = (y + 0.5f) / N;
+
+          // map onto -1 to 1
+          u = u * 2.0f - 1.0f;
+          v = v * 2.0f - 1.0f;
+
+          // account for distribution
+          const float temp = 1.0f + u*u + v*v;
+          const float weight = 4.0f / (sqrt(temp) * temp);
+
+          sh += project_onto_sh9(dir, radiance) * weight;
+          weights += weight;
+    }
+    sh *= (4.0f * float(M_PI)) / weights;
+
+    log("sky")->info("spherical harmonics: {}", sh);
+
+    if (!cubemap) {
+      glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &cubemap);
+      glTextureParameteri(cubemap, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTextureParameteri(cubemap, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+      glTextureParameteri(cubemap, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTextureParameteri(cubemap, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      glTextureParameteri(cubemap, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+      if (GLEW_ARB_seamless_cubemap_per_texture)
+        glTextureParameteri(cubemap, GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_TRUE);
+      glTextureStorage3D(cubemap, 7, GL_RGBA16F, N, N, 6);
+    }
+    glTextureSubImage3D(cubemap, 7, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
+  }
+
+  vec3 skybox::sample(const vec3 & dir) const {
+    float gamma = angle_between(dir, sun_direction);
+    float theta = angle_between(dir, vec3(0, 1, 0));
+    vec3 radiance{
+      arhosek_tristim_skymodel_radiance(rgb[0], theta, gamma, 0),
+      arhosek_tristim_skymodel_radiance(rgb[0], theta, gamma, 1),
+      arhosek_tristim_skymodel_radiance(rgb[0], theta, gamma, 2),
+    };
+    // multiply by luminous efficiency and scale down for fp16 samples
+    return radiance * 683.0f * fp16_scale;
   }
 
 
   skybox::~skybox() {
     for (auto m : rgb) arhosekskymodelstate_free(m);
-
+    glDeleteTextures(1, &cubemap);
   }
 }

@@ -9,13 +9,16 @@
 #include "framework/gui.h"
 #include "imgui_internal.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include "openal.h"
+#include "framework/openal.h"
 #include "distortion.h"
 #include "overlay.h"
-#include "framework/spherical_harmonics.h"
+#include "framework/skybox.h"
 
 using namespace framework;
 using namespace filesystem;
+
+static const float super_sampling_factor = 1.0;
+static const int msaa_samples = 8;
 
 // used reversed [1..0] floating point z rather than the classic [-1..1] mapping
 #define USE_REVERSED_Z
@@ -30,8 +33,9 @@ struct app {
   sdl::window window; // must come before anything that needs opengl support in this object
   gl::compiler compiler;
   openvr::system vr;
+  skybox sky;
   gui::system gui;
-  overlay dashboard;
+  //overlay dashboard;
   vr::TrackedDevicePose_t physical_pose[vr::k_unMaxTrackedDeviceCount]; // current poses
   vr::TrackedDevicePose_t predicted_pose[vr::k_unMaxTrackedDeviceCount]; // poses 2 frames out
   controllers controllers;
@@ -73,7 +77,7 @@ static float reverseZ_contents[16] = {
 static mat4 reverseZ = glm::make_mat4(reverseZ_contents);
 #endif
 
-app::app() : window("proc", { 4, 5, gl::profile::core }, true,50, 50, 1280,1024), compiler(path("shaders")), vr(), dashboard("proc","Debug",1024,1024), compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted(), desktop_view(1) {
+app::app() : window("proc", { 4, 5, gl::profile::core }, true,50, 50, 1280,1024), compiler(path("shaders")), vr(), /*dashboard("proc","Debug",1024,1024),*/ compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted(), desktop_view(1), sky(vec3(0.5,0.5,0.5), 0.2f, vec3(0.3,0.3,0.3), 4.f) {
 
   // load matrices.
   for (int i = 0;i < 2;++i) {
@@ -93,18 +97,20 @@ app::app() : window("proc", { 4, 5, gl::profile::core }, true,50, 50, 1280,1024)
 
   // set up rendering targets  
   vr.handle->GetRecommendedRenderTargetSize(&display.w, &display.h);
+  display.w *= super_sampling_factor;
+  display.h *= super_sampling_factor;
   glCreateFramebuffers(2, display.fbo);
   gl::label(GL_FRAMEBUFFER, display.render_fbo, "render fbo");
   gl::label(GL_FRAMEBUFFER, display.resolve_fbo, "resolve fbo");
 
   glCreateRenderbuffers(1, &display.depth);
   gl::label(GL_RENDERBUFFER, display.depth, "render depth");
-  glNamedRenderbufferStorageMultisample(display.depth, 4, GL_DEPTH_COMPONENT32F, display.w * 2, display.h); // ask for a floating point z buffer -- TODO add stencil?
+  glNamedRenderbufferStorageMultisample(display.depth, msaa_samples, GL_DEPTH_COMPONENT32F, display.w * 2, display.h); // ask for a floating point z buffer -- TODO add stencil?
   glNamedFramebufferRenderbuffer(display.render_fbo, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, display.depth);
 
   glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &display.render_texture);
   gl::label(GL_TEXTURE, display.render_texture, "render texture");
-  glTextureImage2DMultisampleNV(display.render_texture, GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, display.w * 2, display.h, true);
+  glTextureImage2DMultisampleNV(display.render_texture, GL_TEXTURE_2D_MULTISAMPLE, msaa_samples, GL_RGBA8, display.w * 2, display.h, true);
   glNamedFramebufferTexture(display.render_fbo, GL_COLOR_ATTACHMENT0, display.render_texture, 0);
  
   glCreateTextures(GL_TEXTURE_2D, 1, &display.resolve_texture);
@@ -145,7 +151,7 @@ viewport_dim fit_viewport(float aspectRatio, int w, int h) {
 void app::run() {
   while (!vr.poll() && !window.poll()) {
     // clear the display window  
-    glClearColor(0.2f, 0.2f, 0.2f, 1.f);
+    glClearColor(0.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // start a new imgui frame

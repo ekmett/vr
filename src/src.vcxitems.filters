@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\signal.h">
       <Filter>framework</Filter>
     </ClInclude>
@@ -107,8 +106,22 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sampling.h">
       <Filter>framework</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\skybox.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\skybox.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\openal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\half.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\texturing.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_Spectral.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="framework">
@@ -176,12 +189,20 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp">
       <Filter>framework\concurrency</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\filesystem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spectrum.cpp">
       <Filter>framework</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\skybox.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\gui.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\filesystem.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\gui.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\skybox.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\openal.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="$(MSBuildThisFileDirectory)README.txt" />

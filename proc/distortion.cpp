@@ -207,7 +207,7 @@ void distortion::render(GLuint resolutionTexture) {
   glDisable(GL_CULL_FACE);
   glEnable(GL_STENCIL_TEST);
 
-  //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+  glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
   glStencilMask(1);
   glStencilFunc(GL_ALWAYS, 1, 1);
   glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
@@ -221,7 +221,7 @@ void distortion::render(GLuint resolutionTexture) {
   glStencilFunc(GL_EQUAL, 0, 1);
   glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // use the stencil mask to disable writes
   glStencilMask(0);
-  //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
   glBindVertexArray(vao);
   glUseProgram(warp.programId);

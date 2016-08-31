@@ -6,9 +6,6 @@
       <Filter>boilerplate</Filter>
     </ClCompile>
     <ClCompile Include="distortion.cpp" />
-    <ClCompile Include="openal.cpp">
-      <Filter>sound</Filter>
-    </ClCompile>
     <ClCompile Include="controllers.cpp" />
     <ClCompile Include="overlay.cpp" />
   </ItemGroup>
@@ -17,9 +14,6 @@
       <Filter>boilerplate</Filter>
     </ClInclude>
     <ClInclude Include="distortion.h" />
-    <ClInclude Include="openal.h">
-      <Filter>sound</Filter>
-    </ClInclude>
     <ClInclude Include="controllers.h" />
     <ClInclude Include="overlay.h" />
   </ItemGroup>

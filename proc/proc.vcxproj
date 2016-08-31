@@ -219,7 +219,6 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClCompile Include="app.cpp" />
     <ClCompile Include="controllers.cpp" />
     <ClCompile Include="distortion.cpp" />
-    <ClCompile Include="openal.cpp" />
     <ClCompile Include="overlay.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -239,7 +238,6 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
   <ItemGroup>
     <ClInclude Include="controllers.h" />
     <ClInclude Include="distortion.h" />
-    <ClInclude Include="openal.h" />
     <ClInclude Include="overlay.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
