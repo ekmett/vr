@@ -49,17 +49,17 @@ namespace framework {
       #version 450 core
       #extension GL_ARB_bindless_texture : require
 
-      layout (location=4) uniform samplerCube sky2;
       layout (std140, binding=1) uniform SKY {
         vec3 sun_dir;
         vec3 sun_color;      
+        samplerCube sky;
         float cos_sun_angular_radius;
       };
 
       in vec3 coord;
       out vec4 outputColor;
       void main() {
-        vec3 color = texture(sky2, coord).xyz;
+        vec3 color = texture(sky, coord).xyz;
         vec3 dir = normalize(coord);
         if (cos_sun_angular_radius > 0.0f) {
           float cos_sun_angle = dot(dir, sun_dir);
@@ -67,10 +67,8 @@ namespace framework {
             color = sun_color;
         }        
         //color = clamp(color, 0.0f, 65000.0f);       
-        //color = color / (color + vec3(1)); // tonemap directly for now
-         //color.g = 0;
+        // color = color / (color + vec3(1)); // tonemap for testing
         outputColor = vec4(color,1.0f);
-        //outputColor = vec4(0.5,0.5,0.5,1.0f);
       })") {
     glCreateBuffers(1, &ubo);
     gl::label(GL_BUFFER, ubo, "sky ubo");
@@ -200,8 +198,8 @@ namespace framework {
     glTextureStorage2D(cubemap, 7, GL_RGBA16F, N, N);
     glTextureSubImage3D(cubemap, 0, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
     glGenerateTextureMipmap(cubemap);
-    //cubemap_handle = glGetTextureHandleARB(cubemap);
-    //glMakeTextureHandleResidentARB(cubemap_handle);
+    cubemap_handle = glGetTextureHandleARB(cubemap);
+    glMakeTextureHandleResidentARB(cubemap_handle);
 
     glCreateTextures(GL_TEXTURE_2D, 1, &testmap);
     glTextureParameteri(testmap, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -215,8 +213,9 @@ namespace framework {
     struct {
       __declspec(align(16)) vec3 sun_dir;
       __declspec(align(16)) vec3 sun_color;      
-      float cos_sun_angular_radius;
-    } ubo_contents{ sun_direction, sun_radiance, std::cos(sun_size) };
+      __declspec(align(16)) GLuint64 handle;
+      __declspec(align(8)) float cos_sun_angular_radius;      
+    } ubo_contents{ sun_direction, sun_radiance, cubemap_handle, cos(sun_size) };
 
     glNamedBufferData(ubo, sizeof(ubo_contents), &ubo_contents, GL_STATIC_DRAW);
   }
@@ -236,7 +235,7 @@ namespace framework {
 
   sky::~sky() {
     for (auto m : rgb) arhosekskymodelstate_free(m);
-    //glMakeTextureHandleNonResidentARB(cubemap_handle);
+    glMakeTextureHandleNonResidentARB(cubemap_handle);
     glDeleteTextures(1, &cubemap);
     glDeleteTextures(1, &testmap);
     glDeleteBuffers(1, &ubo);
@@ -248,10 +247,6 @@ namespace framework {
     glBindVertexArray(vao);
     glUniformMatrix4fv(0, 2, GL_FALSE, &perspectives[0][0][0]);
     glUniformMatrix4fv(2, 2, GL_FALSE, &model_view[0][0][0]);
-    glUniform1i(4, 1); // texture
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
-    // glUniformBlockBinding(program.programId, 1, 1);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, 0);
