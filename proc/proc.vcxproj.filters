@@ -13,5 +13,6 @@
     <ClInclude Include="overlay.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="bloom.h" />
+    <ClInclude Include="seascape.h" />
   </ItemGroup>
 </Project>
