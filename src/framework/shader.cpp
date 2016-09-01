@@ -9,6 +9,8 @@
 
 using namespace boost::filesystem;
 
+static const char * const searchpath = "/";
+
 namespace framework {
   namespace gl {
 
@@ -36,14 +38,14 @@ namespace framework {
 
 
     GLuint compile(const char * name, const char * vertexShader, const char * fragmentShader) {
-      const char * const searchpath = "/";
 
       int programId = glCreateProgram();
       label(GL_PROGRAM, programId, "{} program", name);
+
+
       GLuint v = glCreateShader(GL_VERTEX_SHADER);
       glShaderSource(v, 1, &vertexShader, NULL);
       glCompileShaderIncludeARB(v, 1, &searchpath, nullptr);
-
       label(GL_SHADER, v, "{} vertex shader", name);
 
       GLint vShaderCompiled = GL_FALSE;
@@ -82,11 +84,40 @@ namespace framework {
         glDeleteProgram(programId);
         die("error linking program: {} ({}):\n{}", name, programId, log);
       }
-
       glUseProgram(programId);
       glUseProgram(0);
-
       return programId;
+    }
+
+    // this is a version of glCreateShaderProgramv that names the shader and includes NamedStringARB support for #include directives
+    GLuint compile(GLuint type, const char * name, const char * body) {
+      auto shader = glCreateShader(type);
+      label(GL_SHADER, shader, "{} shader", name);
+      glShaderSource(shader, 1, &body, nullptr);
+      glCompileShaderIncludeARB(shader, 1, &searchpath, nullptr);
+      GLint vShaderCompiled = GL_FALSE;
+      glGetShaderiv(shader, GL_COMPILE_STATUS, &vShaderCompiled);
+      if (vShaderCompiled != GL_TRUE) {
+        string log = shader_log(shader);
+        glDeleteShader(shader);
+        die("error in program shader: {} ({})\n{}", name, shader, log);
+      }
+      int program = glCreateProgram();
+      glProgramParameteri(program, GL_PROGRAM_SEPARABLE, GL_TRUE);
+      glAttachShader(program, shader);
+      glLinkProgram(program);
+      glDetachShader(program, shader);
+      glDeleteShader(shader);
+      GLint programSuccess = GL_TRUE;
+      glGetProgramiv(program, GL_LINK_STATUS, &programSuccess);
+      if (programSuccess != GL_TRUE) {
+        string log = program_log(program);
+        glDeleteProgram(program);
+        die("error linking program: {} ({}):\n{}", name, program, log);
+      }
+      glUseProgram(program);
+      glUseProgram(0);
+      return program;
     }
 
     string read_file(path filename) {

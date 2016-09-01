@@ -236,6 +236,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bloom.h" />
     <ClInclude Include="controllers.h" />
     <ClInclude Include="distortion.h" />
     <ClInclude Include="overlay.h" />

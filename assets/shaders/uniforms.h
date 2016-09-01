@@ -14,14 +14,17 @@ namespace uniform {
 
 #define MAX_TRACKED_DEVICES 16
 
-struct head {
+UNIFORM_STRUCT(0) settings {
+  float bloom_exposure;
+  float bloom_magnitude;
+  float exposure;
   mat4 perspective[2];
   mat4 inversePerspective[2];
   mat4 headToEye[2];
   mat4 eyeToHead[2];
 };
 
-struct pose {
+UNIFORM_STRUCT(1) frame {
   mat4 headToWorld;
   mat4 worldToHead;
   mat4 tracked[16];
@@ -29,10 +32,6 @@ struct pose {
   mat4 controller[2];
 };
 
-struct sky {
-  
-
-}
 
 #ifdef __cplusplus
 } // namespace uniform

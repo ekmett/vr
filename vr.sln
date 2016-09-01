@@ -16,11 +16,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "proc", "proc\proc.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cds", "cds.vcxproj", "{408FE9BC-44F0-4E6A-89FA-D6F952584239}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "src", "src\src.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "framework", "src\src.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "framework-static-win32", "framework-static-win32\framework-static-win32.vcxproj", "{A9326043-2D69-4511-8564-7A8F93E4E0BB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "win32-lib", "framework-static-win32\framework-static-win32.vcxproj", "{A9326043-2D69-4511-8564-7A8F93E4E0BB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{01B3A2F7-B589-4B41-ADD7-2B4A6A5DA002}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "win32-test", "test\test.vcxproj", "{01B3A2F7-B589-4B41-ADD7-2B4A6A5DA002}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{A4A1D558-6CFB-4A1E-9CE8-D6DE035530FA}"
 EndProject
@@ -67,6 +67,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shaders", "shaders", "{827334E1-7617-4D08-B03B-963D0A7C8751}"
 	ProjectSection(SolutionItems) = preProject
 		assets\shaders\approx.h = assets\shaders\approx.h
+		blur.h = blur.h
 		assets\shaders\oct.h = assets\shaders\oct.h
 		assets\shaders\uniforms.h = assets\shaders\uniforms.h
 	EndProjectSection

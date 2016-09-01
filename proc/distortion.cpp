@@ -70,8 +70,8 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
       for (int x = 0; x < segmentsH; ++x) {
         DistortionCoordinates_t dc = VRSystem()->ComputeDistortion(vr::EVREye(i), x*w, 1-y*h);
         good.push_back(
-          0.05 <= min(dc.rfGreen[0], dc.rfGreen[1]) && 
-          max(dc.rfGreen[0], dc.rfGreen[1]) <= 0.95
+          0.00 <= min(dc.rfGreen[0], dc.rfGreen[1]) && 
+          max(dc.rfGreen[0], dc.rfGreen[1]) <= 1
         );
       }
     }
@@ -86,7 +86,7 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
     for (GLushort y = 0; y < segmentsV - 1; y++) {
       for (GLushort x = 0; x < segmentsH - 1; x++) {
         GLushort a = segmentsH*y + x + offset, b = a + 1, c = a + segmentsH, d = c + 1;
-        keep[a] = keep[b] = keep[c] = keep[d] = true;
+        //keep[a] = keep[b] = keep[c] = keep[d] = true;
         if (good[a] || good[b] || good[d]) keep[a] = keep[b] = keep[d] = true; // if any corner is good the triangle is
         if (good[a] || good[d] || good[c]) keep[a] = keep[d] = keep[c] = true; // if any corner is good the triangle is
       }
@@ -197,7 +197,7 @@ distortion::~distortion() {
   glDeleteVertexArrays(2, array);
 }
 
-void distortion::render(GLuint resolutionTexture) {
+void distortion::render_stencil() {
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   glEnable(GL_STENCIL_TEST);
@@ -211,13 +211,17 @@ void distortion::render(GLuint resolutionTexture) {
   glUseProgram(mask.programId);
   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glDrawArrays(GL_TRIANGLES, 0, n_hidden); // put 1 in the stencil mask everywhere the hidden mesh lies
-  //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                                           //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   glStencilFunc(GL_EQUAL, 0, 1);
   glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // use the stencil mask to disable writes
   glStencilMask(0);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glUseProgram(0);
+  glBindVertexArray(0);
+}
 
+void distortion::render(GLuint resolutionTexture) {
   glBindVertexArray(vao);
   glUseProgram(warp.programId);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);

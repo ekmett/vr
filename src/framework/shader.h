@@ -7,13 +7,15 @@
 
 namespace framework {
   namespace gl {
-    extern GLuint compile(const char * name, const char * vertexShader, const char * fragmentShader);
+    extern GLuint compile(const char * name, const char * vertexShader, const char * fragmentShader); // build a standard vertex-shader fragment-shader pair
+    extern GLuint compile(GLuint type, const char * name, const char * body); // build a shader program
 
     void include(boost::filesystem::path real, boost::filesystem::path imaginary = L"/");
 
     // use a simplistic shader compiler for now
     struct shader : noncopyable {
       shader(const char * name, const char * vertexShader, const char * fragmentShader) : programId(compile(name, vertexShader, fragmentShader)) {}
+      shader(GLuint type, const char * name, const char * body) : programId(compile(type, name, body)) {}
       virtual ~shader() {
         if (programId != 0) glDeleteProgram(programId);
       }

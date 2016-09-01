@@ -12,5 +12,6 @@
     <ClInclude Include="controllers.h" />
     <ClInclude Include="overlay.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="bloom.h" />
   </ItemGroup>
 </Project>

@@ -244,13 +244,13 @@ namespace framework {
   void sky::render(const mat4 perspectives[2], const mat4 model_view[2]) const {
     glDisable(GL_DEPTH_TEST);
     glUseProgram(program.programId);
-    glBindVertexArray(vao);
-    glUniformMatrix4fv(0, 2, GL_FALSE, &perspectives[0][0][0]);
-    glUniformMatrix4fv(2, 2, GL_FALSE, &model_view[0][0][0]);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo);
+
+    // Removable cruft
+    glBindVertexArray(vao); // TODO: use a common vao
+    glUniformMatrix4fv(0, 2, GL_FALSE, &perspectives[0][0][0]); // TODO: use a common uniform 
+    glUniformMatrix4fv(2, 2, GL_FALSE, &model_view[0][0][0]);   
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo); // place these in the big commom uniform
+
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, 0);
-    glUseProgram(0);
-    glEnable(GL_DEPTH_TEST);
   }
 }

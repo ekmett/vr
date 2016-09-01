@@ -30,6 +30,7 @@ struct app {
 
   void run();
   bool show_gui(bool * open = nullptr);
+  void tonemap();
 
   sdl::window window; // must come before anything that needs opengl support in this object
   gl::compiler compiler;
@@ -40,7 +41,7 @@ struct app {
   vr::TrackedDevicePose_t physical_pose[vr::k_unMaxTrackedDeviceCount]; // current poses
   vr::TrackedDevicePose_t predicted_pose[vr::k_unMaxTrackedDeviceCount]; // poses 2 frames out
   controllers controllers;
-  std::mt19937 rng; // for the main thread
+  std::mt19937 rng; // for the main thread  
   vr::IVRCompositor & compositor;
   distortion distorted;
   openal::system al;
@@ -112,20 +113,21 @@ app::app()
   vr.handle->GetRecommendedRenderTargetSize(&display.w, &display.h);
   display.w *= super_sampling_factor;
   display.h *= super_sampling_factor;
-  glCreateFramebuffers(2, display.fbo);
+  glCreateFramebuffers(countof(display.fbo), display.fbo);
   gl::label(GL_FRAMEBUFFER, display.render_fbo, "render fbo");
   gl::label(GL_FRAMEBUFFER, display.resolve_fbo, "resolve fbo");
 
   glCreateRenderbuffers(1, &display.depth);
   gl::label(GL_RENDERBUFFER, display.depth, "render depth");
-  glNamedRenderbufferStorageMultisample(display.depth, msaa_samples, GL_DEPTH_COMPONENT32F, display.w * 2, display.h); // ask for a floating point z buffer -- TODO add stencil?
-  glNamedFramebufferRenderbuffer(display.render_fbo, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, display.depth);
+  glNamedRenderbufferStorageMultisample(display.depth, msaa_samples, GL_DEPTH32F_STENCIL8, display.w * 2, display.h); // ask for a floating point z buffer
+  glNamedFramebufferRenderbuffer(display.render_fbo, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, display.depth);
 
   glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &display.render_texture);
   gl::label(GL_TEXTURE, display.render_texture, "render texture");
-  glTextureImage2DMultisampleNV(display.render_texture, GL_TEXTURE_2D_MULTISAMPLE, msaa_samples, GL_RGBA8, display.w * 2, display.h, true);
+  glTextureImage2DMultisampleNV(display.render_texture, GL_TEXTURE_2D_MULTISAMPLE, msaa_samples, GL_RGBA16F, display.w * 2, display.h, true);
   glNamedFramebufferTexture(display.render_fbo, GL_COLOR_ATTACHMENT0, display.render_texture, 0);
  
+
   glCreateTextures(GL_TEXTURE_2D, 1, &display.resolve_texture);
   gl::label(GL_TEXTURE, display.resolve_texture, "resolve texture");
   glTextureParameteri(display.resolve_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -146,9 +148,9 @@ app::app()
 app::~app() {
   SDL_StopTextInput();
 
-  glDeleteFramebuffers(2, display.fbo);
+  glDeleteFramebuffers(countof(display.fbo), display.fbo);
   glDeleteRenderbuffers(1, &display.depth);
-  glDeleteTextures(2, display.texture);
+  glDeleteTextures(countof(display.texture), display.texture);
 }
 
 struct viewport_dim {
@@ -165,10 +167,15 @@ viewport_dim fit_viewport(float aspectRatio, int w, int h) {
   }
 }
 
+void app::tonemap() {
+
+
+}
+
 void app::run() {
   while (!vr.poll() && !window.poll()) {
     // clear the display window  
-    glClearColor(0.f, 0.f, 0.f, 1.f);
+    glClearColor(0.0f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // start a new imgui frame
@@ -178,8 +185,12 @@ void app::run() {
 
     // switch to the hmd
     glBindFramebuffer(GL_FRAMEBUFFER, display.render_fbo);
-    glClearColor(0.15f, 0.15f, 0.18f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glViewport(0, 0, display.w * 2, display.h);
+    distorted.render_stencil();
+
     glViewportIndexedf(0, 0, 0, (float)display.w, (float)display.h);                // viewport 0 left eye
     glViewportIndexedf(1, (float)display.w, 0, (float)display.w, (float)display.h); // viewport 1 right eye
     
@@ -197,11 +208,14 @@ void app::run() {
       sky.render(eyeProjectionMatrix, model_view);
     controllers.render(physical_pose, eyes); // draw controller rays
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glDisable(GL_MULTISAMPLE);
+
+    tonemap();
+    // time to downsample into the bloom filter 
 
     // copy the msaa render target to a lower quality 'resolve' texture for display
     glBlitNamedFramebuffer(display.render_fbo, display.resolve_fbo, 0, 0, display.w * 2, display.h, 0, 0, display.w * 2, display.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+
     {
       vr::Texture_t eyeTexture { (void*)(intptr_t)(display.resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
       for (int i = 0;i < 2;++i) {
@@ -209,6 +223,8 @@ void app::run() {
         vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds);
        }
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_MULTISAMPLE);
 
 
     // let the compositor know we handed off a frame
