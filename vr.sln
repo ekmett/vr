@@ -69,6 +69,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shaders", "shaders", "{8273
 		assets\shaders\approx.h = assets\shaders\approx.h
 		blur.h = blur.h
 		assets\shaders\oct.h = assets\shaders\oct.h
+		assets\shaders\seascape.h = assets\shaders\seascape.h
 		assets\shaders\uniforms.h = assets\shaders\uniforms.h
 	EndProjectSection
 EndProject
