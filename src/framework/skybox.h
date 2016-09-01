@@ -25,7 +25,6 @@ namespace framework {
     float elevation;
     sh9_t<vec3> sh;
     ArHosekSkyModelState * rgb[3];
-    GLuint testmap; // for showing
     GLuint cubemap;
     GLuint64 cubemap_handle;
     gl::shader program;

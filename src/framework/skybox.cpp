@@ -201,15 +201,6 @@ namespace framework {
     cubemap_handle = glGetTextureHandleARB(cubemap);
     glMakeTextureHandleResidentARB(cubemap_handle);
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &testmap);
-    glTextureParameteri(testmap, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameteri(testmap, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTextureParameteri(testmap, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(testmap, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTextureStorage2D(testmap, 7, GL_RGBA16F, N, N);
-    glTextureSubImage2D(testmap, 0, 0, 0, N, N, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data() + 2*N*N);
-    glGenerateTextureMipmap(testmap);
-
     struct {
       __declspec(align(16)) vec3 sun_dir;
       __declspec(align(16)) vec3 sun_color;      
@@ -237,7 +228,6 @@ namespace framework {
     for (auto m : rgb) arhosekskymodelstate_free(m);
     glMakeTextureHandleNonResidentARB(cubemap_handle);
     glDeleteTextures(1, &cubemap);
-    glDeleteTextures(1, &testmap);
     glDeleteBuffers(1, &ubo);
   }
 

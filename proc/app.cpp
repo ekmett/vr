@@ -31,6 +31,7 @@ struct app {
   void run();
   bool show_gui(bool * open = nullptr);
   void tonemap();
+  void present();
 
   sdl::window window; // must come before anything that needs opengl support in this object
   gl::compiler compiler;
@@ -168,8 +169,19 @@ viewport_dim fit_viewport(float aspectRatio, int w, int h) {
 }
 
 void app::tonemap() {
+  // time to downsample into the bloom filter 
 
-
+  // copy the msaa render target to a lower quality 'resolve' texture for display
+  glBlitNamedFramebuffer(display.render_fbo, display.resolve_fbo, 0, 0, display.w * 2, display.h, 0, 0, display.w * 2, display.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+}
+void app::present() {
+  vr::Texture_t eyeTexture{ (void*)(intptr_t)(display.resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
+  for (int i = 0;i < 2;++i) {
+    vr::VRTextureBounds_t eyeBounds = { 0.5f * i, 0, 0.5f + 0.5f * i , 1 };
+    vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds);
+  }
+  // let the compositor know we handed off a frame
+  compositor.PostPresentHandoff();
 }
 
 void app::run() {
@@ -208,27 +220,11 @@ void app::run() {
       sky.render(eyeProjectionMatrix, model_view);
     controllers.render(physical_pose, eyes); // draw controller rays
 
-
     tonemap();
-    // time to downsample into the bloom filter 
+    present();
 
-    // copy the msaa render target to a lower quality 'resolve' texture for display
-    glBlitNamedFramebuffer(display.render_fbo, display.resolve_fbo, 0, 0, display.w * 2, display.h, 0, 0, display.w * 2, display.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-
-    {
-      vr::Texture_t eyeTexture { (void*)(intptr_t)(display.resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
-      for (int i = 0;i < 2;++i) {
-        vr::VRTextureBounds_t eyeBounds = { 0.5f * i, 0, 0.5f + 0.5f * i , 1 };
-        vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds);
-       }
-    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_MULTISAMPLE);
-
-
-    // let the compositor know we handed off a frame
-    compositor.PostPresentHandoff();
 
     // check if window is minimized here.
     auto flags = SDL_GetWindowFlags(window.sdl_window);
@@ -236,7 +232,7 @@ void app::run() {
 
     //ImGui::Text("HMD Position: %3.2f %3.2f %3.2f", hmdToWorld[3][0], hmdToWorld[3][1], hmdToWorld[3][2]);
 
-    ImGui::Image(ImTextureID(sky.testmap), ImVec2(128, 128));
+    // ImGui::Image(ImTextureID(sky.testmap), ImVec2(128, 128));
 
     {
       int w, h;
