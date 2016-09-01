@@ -7,29 +7,32 @@
 namespace uniform {
   using namespace glm;
 
-#define BEGIN_UNIFORM_BLOCK(x) struct x {
-#define END_UNIFORM_BLOCK(x) };
+#define UNIFORM_STRUCT(n) struct
 #else
-#define BEGIN_UNIFORM_BLOCK(x) layout (std14) uniform x {
-#define END_UNIFORM_BLOCK(x) } x;
+#define UNIFORM_STRUCT(n) layout (std140, binding = n) uniform
 #endif
 
 #define MAX_TRACKED_DEVICES 16
 
-  BEGIN_UNIFORM_BLOCK(Head)
-    mat4 perspective[2];
-    mat4 inversePerspective[2];
-    mat4 headToEye[2];
-    mat4 eyeToHead[2];
-  END_UNIFORM_BLOCK(head)
+struct head {
+  mat4 perspective[2];
+  mat4 inversePerspective[2];
+  mat4 headToEye[2];
+  mat4 eyeToHead[2];
+};
 
-  BEGIN_UNIFORM_BLOCK(Pose)
-    mat4 headToWorld;
-    mat4 worldToHead;
-    mat4 tracked[16];
-    mat4 predicted[16];
-    mat4 controller[2];
-  END_UNIFORM_BLOCK(pose);
+struct pose {
+  mat4 headToWorld;
+  mat4 worldToHead;
+  mat4 tracked[16];
+  mat4 predicted[16];
+  mat4 controller[2];
+};
+
+struct sky {
+  
+
+}
 
 #ifdef __cplusplus
 } // namespace uniform

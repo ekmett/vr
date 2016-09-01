@@ -13,6 +13,7 @@
 #include "distortion.h"
 #include "overlay.h"
 #include "framework/skybox.h"
+#include "framework/spectrum.h"
 
 using namespace framework;
 using namespace filesystem;
@@ -33,7 +34,7 @@ struct app {
   sdl::window window; // must come before anything that needs opengl support in this object
   gl::compiler compiler;
   openvr::system vr;
-  skybox sky;
+  sky sky;
   gui::system gui;
   //overlay dashboard;
   vr::TrackedDevicePose_t physical_pose[vr::k_unMaxTrackedDeviceCount]; // current poses
@@ -44,6 +45,7 @@ struct app {
   distortion distorted;
   openal::system al;
   int desktop_view;
+  bool skybox_visible = true;
 
   struct {
     uint32_t w, h;
@@ -77,7 +79,18 @@ static float reverseZ_contents[16] = {
 static mat4 reverseZ = glm::make_mat4(reverseZ_contents);
 #endif
 
-app::app() : window("proc", { 4, 5, gl::profile::core }, true,50, 50, 1280,1024), compiler(path("shaders")), vr(), /*dashboard("proc","Debug",1024,1024),*/ compositor(*vr::VRCompositor()), nearClip(0.1f), farClip(10000.f), gui(window), distorted(), desktop_view(1), sky(vec3(0.5,0.5,0.5), 0.2f, vec3(0.3,0.3,0.3), 4.f) {
+app::app() 
+  : window("proc", { 4, 5, gl::profile::core }, true,50, 50, 1280,1024)
+  , compiler(path("shaders"))
+  , vr()
+  // ,  dashboard("proc","Debug",1024,1024),
+  , compositor(*vr::VRCompositor())
+  , nearClip(0.1f)
+  , farClip(10000.f)
+  , gui(window)
+  , distorted()
+  , desktop_view(4)
+  , sky(vec3(0.5,0.5,0.5), 0.2f, vec3(0.3,0.3,0.3), 4.f) {
 
   // load matrices.
   for (int i = 0;i < 2;++i) {
@@ -123,6 +136,10 @@ app::app() : window("proc", { 4, 5, gl::profile::core }, true,50, 50, 1280,1024)
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     die("Unable to allocate frame buffer");
 
+  SDL_DisplayMode wdm;
+  SDL_GetWindowDisplayMode(window.sdl_window, &wdm);
+  log("app")->info("desktop window refresh rate: {}hz", wdm.refresh_rate); // TODO: compute frame skipping for gui and desktop display off this relative to the gpu rate.
+
   SDL_StartTextInput();
 }
 
@@ -163,17 +180,21 @@ void app::run() {
     glBindFramebuffer(GL_FRAMEBUFFER, display.render_fbo);
     glClearColor(0.15f, 0.15f, 0.18f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewportIndexedf(0, 0, 0, (float)display.w, (float)display.h);         // viewport 0 left eye
+    glViewportIndexedf(0, 0, 0, (float)display.w, (float)display.h);                // viewport 0 left eye
     glViewportIndexedf(1, (float)display.w, 0, (float)display.w, (float)display.h); // viewport 1 right eye
     
-    // compute stuff that can deal with approximate pose info, such as most of the shadow maps
-
+    // compute stuff that can deal with approximate pose info, such as most of the shadow maps here
     compositor.WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, 0);    
     mat4 hmdToWorld = openvr::hmd_mat3x4(physical_pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
+    mat4 model_view[2];
     mat4 eyes[2];
-    for (int i = 0;i < 2;++i)
-      eyes[i] = eyeProjectionMatrix[i] * glm::inverse(hmdToWorld * eyePoseMatrix[i]);
+    for (int i = 0;i < 2;++i) {
+      model_view[i] = inverse(hmdToWorld * eyePoseMatrix[i]);
+      eyes[i] = eyeProjectionMatrix[i] * model_view[i];
+    }
 
+    if (skybox_visible)
+      sky.render(eyeProjectionMatrix, model_view);
     controllers.render(physical_pose, eyes); // draw controller rays
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -186,7 +207,7 @@ void app::run() {
       for (int i = 0;i < 2;++i) {
         vr::VRTextureBounds_t eyeBounds = { 0.5f * i, 0, 0.5f + 0.5f * i , 1 };
         vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds);
-      }
+       }
     }
 
 
@@ -198,6 +219,8 @@ void app::run() {
     if (flags & SDL_WINDOW_MINIMIZED) continue; // drop gui on the floor?
 
     //ImGui::Text("HMD Position: %3.2f %3.2f %3.2f", hmdToWorld[3][0], hmdToWorld[3][1], hmdToWorld[3][2]);
+
+    ImGui::Image(ImTextureID(sky.testmap), ImVec2(128, 128));
 
     {
       int w, h;
@@ -278,6 +301,11 @@ bool app::show_gui(bool * open) {
       if (gui::MenuItem("Paste", "^V")) {}
       gui::EndMenu();
     }
+    if (gui::BeginMenu("Scene")) {
+      if (gui::MenuItem("Skybox Enabled", nullptr, &skybox_visible)) {}
+      gui::EndMenu();
+
+    }
     if (gui::BeginMenu("View")) {
       static const char * view_name[] = {\
         "None",
@@ -315,10 +343,13 @@ bool app::show_gui(bool * open) {
 }
 
 int SDL_main(int argc, char ** argv) {
+  auto test = sampled_spectrum::from_rgb(vec3(1, 0.5, 0.5));
   spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
 #ifdef _WIN32
   SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96
 #endif
+
+  log("app")->info("process id: {}", GetCurrentProcessId());
 
   path exe = executable_path();
   log("app")->info("path: {}", exe);

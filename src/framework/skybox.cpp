@@ -8,7 +8,11 @@
 #include <glm/detail/type_half.hpp>
 #include "framework/half.h"
 #include "framework/texturing.h"
+#include "framework/gl.h"
+
+extern "C" {
 #include "ArHosekSkyModel.h"
+}
 
 static inline float angle_between(const glm::vec3 & x, const glm::vec3 & y) {
   return std::acosf(std::max(glm::dot(x,y), 0.00001f));
@@ -28,9 +32,61 @@ static float irradiance_integral(float theta) {
 }
 
 namespace framework {
+  sky::sky(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity)
+    : rgb{}
+    , cubemap(0)
+    , program("sky", R"(
+      #version 450 core
+      #extension GL_ARB_shader_viewport_layer_array : require
+      layout (location=0) uniform mat4 projection[2];
+      layout (location=2) uniform mat4 model_view[2];
+      const vec2 positions[4] = vec2[](vec2(-1.0,1.0),vec2(-1.0,-1.0),vec2(1.0,1.0),vec2(1.0,-1.0));
+      out vec3 coord;
+      void main() {
+        vec4 position = vec4(positions[gl_VertexID],0.0,1.0);
+        mat4 inv_projection = inverse(projection[gl_InstanceID]);
+        mat3 inv_model_view = transpose(mat3(model_view[gl_InstanceID]));
+        coord = inv_model_view * (inv_projection * position).xyz;
+        gl_ViewportIndex = gl_InstanceID;
+        gl_Position = position;
+      }
+    )", R"(
+      #version 450 core
+      #extension GL_ARB_bindless_texture : require
+
+      layout (location=4) uniform samplerCube sky2;
+      layout (std140, binding=1) uniform SKY {
+        vec3 sun_dir;
+        vec3 sun_color;      
+        float cos_sun_angular_radius;
+      };
+
+      in vec3 coord;
+      out vec4 outputColor;
+      void main() {
+        vec3 color = texture(sky2, coord).xyz;
+        vec3 dir = normalize(coord);
+        if (cos_sun_angular_radius > 0.0f) {
+          float cos_sun_angle = dot(dir, sun_dir);
+          if (cos_sun_angle >= cos_sun_angular_radius)
+            color = sun_color;
+        }        
+        //color = clamp(color, 0.0f, 65000.0f);       
+        //color = color / (color + vec3(1)); // tonemap directly for now
+         //color.g = 0;
+        outputColor = vec4(color,1.0f);
+        //outputColor = vec4(0.5,0.5,0.5,1.0f);
+      })") {
+    glCreateBuffers(1, &ubo);
+    gl::label(GL_BUFFER, ubo, "sky ubo");
+    glCreateVertexArrays(1, &vao);
+    gl::label(GL_BUFFER, vao, "sky vao");
+    update(sun_direction, sun_size, ground_albedo, turbidity);
+  }
+
 
   // sun size is in radians, not degrees
-  void skybox::update(const vec3 & sun_direction_, float sun_size_, const vec3 & ground_albedo_, float turbidity_) {
+  void sky::update(const vec3 & sun_direction_, float sun_size_, const vec3 & ground_albedo_, float turbidity_) {
     vec3 new_sun_direction = sun_direction_;
     new_sun_direction.y = (new_sun_direction.y);
     new_sun_direction = normalize(new_sun_direction);
@@ -50,12 +106,10 @@ namespace framework {
     log("sky")->info("beginning update");
 
     for (int i = 0;i < 3;++i) {
-      if (rgb[i] != nullptr) 
-        arhosekskymodelstate_free(rgb[i]);
       rgb[i] = arhosek_rgb_skymodelstate_alloc_init(turbidity, ground_albedo[i], elevation);
     }
 
-    sampled_spectrum ground_albedo_spectrum = sampled_spectrum::from_rgb(albedo);
+    sampled_spectrum ground_albedo_spectrum = sampled_spectrum::from_rgb(ground_albedo);
 
     ArHosekSkyModelState * sky_states[spectral_samples];
     for (auto i = 0; i < spectral_samples; ++i)
@@ -137,35 +191,76 @@ namespace framework {
 
     log("sky")->info("spherical harmonics: {}", sh);
 
-    if (!cubemap) {
-      glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &cubemap);
-      glTextureParameteri(cubemap, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTextureParameteri(cubemap, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-      glTextureParameteri(cubemap, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTextureParameteri(cubemap, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      glTextureParameteri(cubemap, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-      if (GLEW_ARB_seamless_cubemap_per_texture)
-        glTextureParameteri(cubemap, GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_TRUE);
-      glTextureStorage3D(cubemap, 7, GL_RGBA16F, N, N, 6);
-    }
-    glTextureSubImage3D(cubemap, 7, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
+    glActiveTexture(GL_TEXTURE1);
+    glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &cubemap);
+    glTextureParameteri(cubemap, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(cubemap, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(cubemap, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(cubemap, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(cubemap, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    if (GLEW_ARB_seamless_cubemap_per_texture)
+      glTextureParameteri(cubemap, GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_TRUE);
+    else
+      log("sky")->warn("GL_ARB_seamless_cubemap_per_texture unsupported");
+    glTextureStorage2D(cubemap, 7, GL_RGBA16F, N, N);
+    glTextureSubImage3D(cubemap, 0, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
+    glGenerateTextureMipmap(cubemap);
+    //cubemap_handle = glGetTextureHandleARB(cubemap);
+    //glMakeTextureHandleResidentARB(cubemap_handle);
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &testmap);
+    glTextureParameteri(testmap, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(testmap, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(testmap, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(testmap, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTextureStorage2D(testmap, 7, GL_RGBA16F, N, N);
+    glTextureSubImage2D(testmap, 0, 0, 0, N, N, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data() + 2*N*N);
+    glGenerateTextureMipmap(testmap);
+
+    struct {
+      __declspec(align(16)) vec3 sun_dir;
+      __declspec(align(16)) vec3 sun_color;      
+      float cos_sun_angular_radius;
+    } ubo_contents{ sun_direction, sun_radiance, cos_physical_sun_size };
+
+    glNamedBufferData(ubo, sizeof(ubo_contents), &ubo_contents, GL_STATIC_DRAW);
   }
 
-  vec3 skybox::sample(const vec3 & dir) const {
+  vec3 sky::sample(const vec3 & dir) const {
     float gamma = angle_between(dir, sun_direction);
     float theta = angle_between(dir, vec3(0, 1, 0));
     vec3 radiance{
       arhosek_tristim_skymodel_radiance(rgb[0], theta, gamma, 0),
-      arhosek_tristim_skymodel_radiance(rgb[0], theta, gamma, 1),
-      arhosek_tristim_skymodel_radiance(rgb[0], theta, gamma, 2),
+      arhosek_tristim_skymodel_radiance(rgb[1], theta, gamma, 1),
+      arhosek_tristim_skymodel_radiance(rgb[2], theta, gamma, 2),
     };
     // multiply by luminous efficiency and scale down for fp16 samples
     return radiance * 683.0f * fp16_scale;
   }
 
 
-  skybox::~skybox() {
+  sky::~sky() {
     for (auto m : rgb) arhosekskymodelstate_free(m);
+    //glMakeTextureHandleNonResidentARB(cubemap_handle);
     glDeleteTextures(1, &cubemap);
+    glDeleteTextures(1, &testmap);
+    glDeleteBuffers(1, &ubo);
+  }
+
+  void sky::render(const mat4 perspectives[2], const mat4 model_view[2]) const {
+    glDisable(GL_DEPTH_TEST);
+    glUseProgram(program.programId);
+    glBindVertexArray(vao);
+    glUniformMatrix4fv(0, 2, GL_FALSE, &perspectives[0][0][0]);
+    glUniformMatrix4fv(2, 2, GL_FALSE, &model_view[0][0][0]);
+    glUniform1i(4, 1); // texture
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
+    // glUniformBlockBinding(program.programId, 1, 1);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo);
+    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, 0);
+    glUseProgram(0);
+    glEnable(GL_DEPTH_TEST);
   }
 }

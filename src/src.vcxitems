@@ -5,7 +5,7 @@
     <HasSharedItems>true</HasSharedItems>
     <ItemsProjectGuid>{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}</ItemsProjectGuid>
     <ItemsRootNamespace>framework</ItemsRootNamespace>
-    <ItemsProjectName>src</ItemsProjectName>
+    <ItemsProjectName>framework</ItemsProjectName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -16,10 +16,6 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_Spectral.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\alloca_array.h" />
@@ -63,9 +59,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\epoch.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\filesystem.cpp" />
@@ -84,8 +77,5 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\worker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gui.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="$(MSBuildThisFileDirectory)README.txt" />
   </ItemGroup>
 </Project>

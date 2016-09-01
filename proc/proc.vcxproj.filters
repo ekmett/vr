@@ -2,30 +2,15 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="app.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <Filter>boilerplate</Filter>
-    </ClCompile>
     <ClCompile Include="distortion.cpp" />
     <ClCompile Include="controllers.cpp" />
     <ClCompile Include="overlay.cpp" />
+    <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>boilerplate</Filter>
-    </ClInclude>
     <ClInclude Include="distortion.h" />
     <ClInclude Include="controllers.h" />
     <ClInclude Include="overlay.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="boilerplate">
-      <UniqueIdentifier>{3cdaa1f2-5169-48dd-b3a9-7c74f81c41e0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="sound">
-      <UniqueIdentifier>{67e316a2-aff3-4702-8114-0b0f6a7d44ab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gui">
-      <UniqueIdentifier>{c2cd084c-ca84-4939-a864-514315ef7518}</UniqueIdentifier>
-    </Filter>
+    <ClInclude Include="stdafx.h" />
   </ItemGroup>
 </Project>

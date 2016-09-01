@@ -12,11 +12,11 @@ namespace framework {
     // +x, -x, +y, -y, +z, -z
     switch (s) {
       case 0: dir = normalize(vec3(1, v, -u)); break; // right
-      case 1: dir = normalize(vec3(1, v, u)); break;  // left
+      case 1: dir = normalize(vec3(-1, v, u)); break;  // left
       case 2: dir = normalize(vec3(u, 1, -v)); break; // top
-      case 3: dir = normalize(vec3(u, 1, v)); break;  // bottom
-      case 4: dir = normalize(vec3(u, -v, 1)); break; // back
-      case 5: dir = normalize(vec3(u, v, 1)); break;  // front
+      case 3: dir = normalize(vec3(u, -1, v)); break;  // bottom
+      case 4: dir = normalize(vec3(u, v, 1)); break; // back
+      case 5: dir = normalize(vec3(-u, v, -1)); break;  // front
     }
     return dir;
   }

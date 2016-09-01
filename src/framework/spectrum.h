@@ -207,13 +207,13 @@ namespace framework {
       sampled_spectrum result;
       auto start = float(sampled_lambda_start), end = float(sampled_lambda_end);
 
-      float lambda0 = lerp(start, end, 0.f);
+      float lambda0 = start;
       for (int i = 0; i < spectral_samples; ++i) {
         float lambda1 = lerp(start, end, float(i + 1));
         result[i] = average_spectrum_samples(lambda, v, n, lambda0, lambda1);
         lambda0 = lambda1;
       }
-      return sampled_spectrum();
+      return result;
     }
 
     template <size_t N> static sampled_spectrum from_samples(const float lambda[N], const float v[N]) {

@@ -47,7 +47,7 @@ namespace framework {
   }
 
   sampled_spectrum framework::sampled_spectrum::from_rgb(vec3 rgb, spectrum_type type) {
-    sampled_spectrum r;
+    sampled_spectrum r{};
     if (type == spectrum_type::reflectance) {
       // Convert reflectance spectrum to RGB
       if (rgb[0] <= rgb[1] && rgb[0] <= rgb[2]) {

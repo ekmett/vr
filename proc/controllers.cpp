@@ -19,19 +19,19 @@ controllers::controllers()
       #extension GL_ARB_shader_viewport_layer_array : enable
       uniform mat4 matrix[2];
       layout(location = 0) in vec4 position;
-      layout(location = 1) in vec3 v3ColorIn;
-      out vec4 v4Color;
+      layout(location = 1) in vec3 color_in;
+      out vec4 color;
       void main() {
-    	  v4Color.xyz = v3ColorIn; v4Color.a = 1.0;
+    	  color = vec4(color_in, 1.0f);
     	  gl_Position = matrix[gl_InstanceID] * position;
         gl_ViewportIndex = gl_InstanceID;
       }
     )", R"(
       #version 450
-      in vec4 v4Color;
+      in vec4 color;
       out vec4 outputColor;
       void main() {
-        outputColor = v4Color;
+        outputColor = color;
       }
     )") {
 
