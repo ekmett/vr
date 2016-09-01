@@ -7,6 +7,9 @@
 struct ArHosekSkyModelState;
 
 namespace framework {
+  static const float physical_sun_size = 0.27_degrees;
+  static const float fp16_scale = 0.0009765625f; // 2^-10 scaling factor to allow storing physical lights in fp16 floats
+
   struct sky {
     sky(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity);
     ~sky();

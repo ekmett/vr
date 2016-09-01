@@ -95,13 +95,14 @@ void controllers::render(vr::TrackedDevicePose_t pose[vr::k_unMaxTrackedDeviceCo
 
   if (verts.size() > 0) {
     glNamedBufferData(vbo, sizeof(vertex) * verts.size(), verts.data(), GL_STREAM_DRAW); // switch to BufferSubData?
-
+    glLineWidth(6);
     glUseProgram(program.programId);
     glUniformMatrix4fv(matrixUniformLocation, 2, GL_FALSE, &eyeViewProjections[0][0][0]);
     glBindVertexArray(vao);
     glDrawArraysInstanced(GL_LINES, 0, verts.size(), 2);
     glBindVertexArray(0);
     glUseProgram(0);
+    glLineWidth(1);
   }
 }
 

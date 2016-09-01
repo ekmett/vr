@@ -90,7 +90,7 @@ app::app()
   , gui(window)
   , distorted()
   , desktop_view(4)
-  , sky(vec3(0.5,0.5,0.5), 0.2f, vec3(0.3,0.3,0.3), 4.f) {
+  , sky(vec3(0,1,0.1), 3.0_degrees, vec3(0.1,0.1,0.3), 2.f) {
 
   // load matrices.
   for (int i = 0;i < 2;++i) {

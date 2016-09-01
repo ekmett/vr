@@ -18,13 +18,6 @@ static inline float angle_between(const glm::vec3 & x, const glm::vec3 & y) {
   return std::acosf(std::max(glm::dot(x,y), 0.00001f));
 }
 
-constexpr float operator "" _degrees(long double d) noexcept {
-  return float(d * M_PI / 180.f);
-}
-
-static const float physical_sun_size = 0.27_degrees;
-static const float cos_physical_sun_size = std::cos(physical_sun_size);
-static const float fp16_scale = 0.0009765625f; // 2^-10 scaling factor to allow storing physical lights in fp16 floats
 
 static float irradiance_integral(float theta) {
   float sin_theta = std::sin(theta);
@@ -32,6 +25,8 @@ static float irradiance_integral(float theta) {
 }
 
 namespace framework {
+  static const float cos_physical_sun_size = std::cos(physical_sun_size);
+
   sky::sky(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity)
     : rgb{}
     , cubemap(0)
@@ -221,7 +216,7 @@ namespace framework {
       __declspec(align(16)) vec3 sun_dir;
       __declspec(align(16)) vec3 sun_color;      
       float cos_sun_angular_radius;
-    } ubo_contents{ sun_direction, sun_radiance, cos_physical_sun_size };
+    } ubo_contents{ sun_direction, sun_radiance, std::cos(sun_size) };
 
     glNamedBufferData(ubo, sizeof(ubo_contents), &ubo_contents, GL_STATIC_DRAW);
   }

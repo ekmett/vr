@@ -6,6 +6,10 @@
 #include <glm/gtx/compatibility.hpp>
 #include <glm/detail/type_half.hpp>
 
+#define _USE_MATH_DEFINES
+#include <math.h>  // M_PI
+
+
 namespace glm {
   template <typename T, glm::precision P, typename ostream> ostream & operator << (ostream & os, const tvec1<T, P> & v) {
     return os << "[" << v.x << "]";
@@ -33,4 +37,10 @@ namespace framework {
                    : cross(v, vec3(0, 0, 1))
     );
   }
+
+  constexpr float operator "" _degrees(long double d) noexcept {
+    return float(d * M_PI / 180.f);
+  }
+
+
 }
