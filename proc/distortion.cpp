@@ -18,7 +18,7 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
       void main() {
          gl_Position = position;
       }
-    )", 
+    )",
     R"(
       #version 450 core
       //out vec4 outputColor;
@@ -26,7 +26,7 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
         //outputColor = vec4(0,0,0,1);
       }
     )"), warp("distortion warp",
-    R"(
+  R"(
       #version 450 core
       layout(location = 0) in vec4 position;
       layout(location = 1) in vec2 v2UVredIn;
@@ -50,12 +50,15 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV)
       out vec4 outputColor;
 
       void main() {
-        float red = texture(mytexture, v2UVred).x;
-        float green = texture(mytexture, v2UVgreen).y;
-        float blue = texture(mytexture, v2UVblue).z;
-        outputColor = vec4( red, green, blue, 1.0  ); 
-      }
-    )") {
+        float fBoundsCheck = ( (dot( vec2( lessThan( v2UVgreen.xy, vec2(0.02, 0.02)) ), vec2(1.0, 1.0))+dot( vec2( greaterThan( v2UVgreen.xy, vec2( 0.98, 0.98)) ), vec2(1.0, 1.0))) );
+        if (fBoundsCheck > 0.98) outputColor = vec4(0,0,0,1);
+        else {
+          float red = texture(mytexture, v2UVred).x;
+          float green = texture(mytexture, v2UVgreen).y;
+          float blue = texture(mytexture, v2UVblue).z;
+          outputColor = vec4( red, green, blue, 1.0  ); 
+        }
+      })") {
 
   float w = (float)(1.0 / float(segmentsH - 1)),
         h = (float)(1.0 / float(segmentsV - 1));

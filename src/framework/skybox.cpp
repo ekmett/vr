@@ -263,13 +263,14 @@ R"(
         vec3 sea_color = getSeaColor(p,n,light,dir,dist);
 
         vec3 color = mix(sky_color, sea_color, pow(smoothstep(-0.00,-0.01,dir.y),0.3));
-        //color = clamp(color, 0.0f, 65000.0f);       
         color = color / (color + vec3(1)); // tonemap for testing
+        //color = clamp(color, 0.0f, 65000.0f);       
         outputColor = vec4(color,1.0f);
 )"
 
 #else
 R"(
+        //sky_color = sky_color / (sky_color + vec3(1)); // tonemap for testing
         outputColor = vec4(sky_color,1.0f);
 )"
 #endif

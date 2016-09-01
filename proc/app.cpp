@@ -91,8 +91,8 @@ app::app()
   , farClip(10000.f)
   , gui(window)
   , distorted()
-  , desktop_view(4)
-  , sky(vec3(0,1,0.1), 3.0_degrees, vec3(0.1,0.1,0.3), 2.f) {
+  , desktop_view(1)
+  , sky(vec3(0.0,0.05,0.9), 2.0_degrees, vec3(0.1,0.1,0.3), 2.f) {
 
   // load matrices.
   for (int i = 0;i < 2;++i) {
