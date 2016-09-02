@@ -131,6 +131,7 @@ app::app()
   gl::label(GL_FRAMEBUFFER, display.render_fbo, "render fbo");
   gl::label(GL_FRAMEBUFFER, display.resolve_fbo, "resolve fbo");
 
+  // i can't use a render buffer if i want to use layered rendering
   glCreateRenderbuffers(1, &display.depth);
   gl::label(GL_RENDERBUFFER, display.depth, "render depth");
   glNamedRenderbufferStorageMultisample(display.depth, msaa_samples, GL_DEPTH32F_STENCIL8, display.w * 2, display.h); // ask for a floating point z buffer

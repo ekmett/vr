@@ -1,7 +1,7 @@
 #ifndef INCLUDED_SHADERS_UNIFORMS_H_gasdlhad
 #define INCLUDED_SHADERS_UNIFORMS_H_gasdlhad
 
-// #define HACK_SEASCAPE
+#define HACK_SEASCAPE
 
 #ifdef __cplusplus
 #include "framework/glm.h"
@@ -70,4 +70,4 @@ UNIFORM_STRUCT(1) app_uniforms {
 } // namespace uniform
 #endif
 
-#endif // INCLUDED
+#endif

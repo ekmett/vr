@@ -3,9 +3,7 @@
 #extension GL_ARB_shading_language_include : require
 #include "uniforms.h"
 
-#ifdef HACK_SEASCAPE
 #include "seascape.glsl"
-#endif
 
 in vec3 origin;
 in vec3 coord;

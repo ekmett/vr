@@ -1,5 +1,7 @@
+#ifndef INCLUDED_SHADERS_SEASCAPE_GLSL
+#define INCLUDED_SHADERS_SEASCAPE_GLSL
+
 vec2 iResolution = vec2(1024.,768.);
-layout (location=4) uniform float global_time = 0.0f;
 
 // based on https://www.shadertoy.com/view/Ms2SD1
 
@@ -138,11 +140,11 @@ vec3 getNormal(vec3 p, float eps) {
 }
 
 vec3 heightMapTracing(vec3 ori, vec3 dir) {
-    vec3 p;
     float tm = 0.0;
     float tx = 1000.0;
-    float hx = map(ori + dir * tx);
-    if(hx > 0.0) return tx;
+    vec3 p = ori + dir * tx;
+    float hx = map(p);
+    if (hx > 0.0) return p;
     float hm = map(ori + dir * tm);
     float tmid = 0.0;
     for(int i = 0; i < NUM_STEPS; i++) {
@@ -160,3 +162,4 @@ vec3 heightMapTracing(vec3 ori, vec3 dir) {
     return p;
 }
 
+#endif
