@@ -2,15 +2,13 @@
 
 #include "framework/glm.h"
 #include "framework/shader.h"
+#include "uniforms.h"
 
 struct controllers {
   controllers();
   ~controllers();
-
-  void render(vr::TrackedDevicePose_t pose[vr::k_unMaxTrackedDeviceCount], glm::mat4 eyeViewProjections[2]);
-
+  void render(int controller_mask);
   framework::gl::shader program;
-  GLuint matrixUniformLocation;
   GLuint vao;
   GLuint vbo;
 };

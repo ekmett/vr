@@ -9,12 +9,13 @@
 #include "framework/half.h"
 #include "framework/texturing.h"
 #include "framework/gl.h"
+#include "uniforms.h"
 
 extern "C" {
 #include "ArHosekSkyModel.h"
 }
 
-#define HACK_SEASCAPE
+// #define HACK_SEASCAPE
 
 static inline float angle_between(const glm::vec3 & x, const glm::vec3 & y) {
   return std::acosf(std::max(glm::dot(x,y), 0.00001f));
@@ -29,98 +30,16 @@ static float irradiance_integral(float theta) {
 namespace framework {
   static const float cos_physical_sun_size = std::cos(physical_sun_size);
 
-  sky::sky(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity)
+  sky::sky(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms)
     : rgb{}
     , cubemap(0)
-    , program("sky", R"(
-      #version 450 core
-      #extension GL_ARB_shader_viewport_layer_array : require
-      layout (location=0) uniform mat4 projection[2];
-      layout (location=2) uniform mat4 model_view[2];
-      const vec2 positions[4] = vec2[](vec2(-1.0,1.0),vec2(-1.0,-1.0),vec2(1.0,1.0),vec2(1.0,-1.0));
-      out vec3 coord; 
-      out vec3 origin;
-      void main() {
-        vec4 position = vec4(positions[gl_VertexID],0.0,1.0);
-        mat4 inv_projection = inverse(projection[gl_InstanceID]);
-        mat3 inv_model_view = transpose(mat3(model_view[gl_InstanceID]));\
-        vec3 actual_origin = model_view[gl_InstanceID][3].xyz;
-        actual_origin.y -= 3;
-        origin = actual_origin;
-        
-        coord = inv_model_view * (inv_projection * position).xyz;
-        gl_ViewportIndex = gl_InstanceID;
-        gl_Position = position;
-      }
-    )", R"(
-      #version 450 core
-      #extension GL_ARB_bindless_texture : require
-      #extension GL_ARB_shading_language_include : require // only needed if seascape is on
-
-      layout (std140, binding=1) uniform SKY {
-        vec3 sun_dir;
-        vec3 sun_color;      
-        samplerCube sky;
-        float cos_sun_angular_radius;
-      };
-
-      in vec3 origin;
-      in vec3 coord;
-      out vec4 outputColor;
-
-      vec3 getSkyColor() {
-        vec3 sky_color = texture(sky, coord).xyz;
-        vec3 dir = normalize(coord);
-        if (cos_sun_angular_radius > 0.0f) {
-          float cos_sun_angle = dot(dir, sun_dir);
-          if (cos_sun_angle >= cos_sun_angular_radius)
-            sky_color = sun_color;
-        }
-        return sky_color;
-      }
-    )"
-
-#if !defined(HACK_SEASCAPE)
-    R"(
-      void main() {  
-        vec3 sky_color = getSkyColor();
-        sky_color = sky_color / (sky_color + vec3(1)); // quick tonemap for testing
-        outputColor = vec4(sky_color,1.0f);
-      }
-    )"
-#else
-    R"(
-      #include "seascape.h"
-      void main() {
-        float time = iGlobalTime * 0.3f;
-        // trace the sea
-        vec3 p;
-        vec3 dir = normalize(coord);
-        heightMapTracing(origin,dir,p);
-        vec3 dist = p - origin;
-        vec3 n = getNormal(p, dot(dist,dist) * EPSILON_NRM);
-        vec3 light = normalize(vec3(0.0,1.0,0.8)); // TODO: use our actual sky, we have a cube map and spherical harmonics
-
-        // color
-        vec3 sea_color = getSeaColor(p,n,sun_dir,dir,dist);
-        vec3 color = mix(getSkyColor(), sea_color, pow(smoothstep(-0.00,-0.01,dir.y),0.3));
-        color = color / (color + vec3(1)); // tonemap for testing
-        //color = clamp(color, 0.0f, 65000.0f);       
-        outputColor = vec4(color,1.0f);
-      } 
-    )"
-#endif
-    ) {
-    glCreateBuffers(1, &ubo);
-    gl::label(GL_BUFFER, ubo, "sky ubo");
-    glCreateVertexArrays(1, &vao);
-    gl::label(GL_BUFFER, vao, "sky vao");
-    update(sun_direction, sun_size, ground_albedo, turbidity);
+    , program("skybox") {
+    update(sun_direction, sun_size, ground_albedo, turbidity, uniforms);
+    glUniformBlockBinding(program.programId, 0, 0);
   }
 
-
   // sun size is in radians, not degrees
-  void sky::update(const vec3 & sun_direction_, float sun_size_, const vec3 & ground_albedo_, float turbidity_) {
+  void sky::update(const vec3 & sun_direction_, float sun_size_, const vec3 & ground_albedo_, float turbidity_, app_uniforms & uniforms) {
     vec3 new_sun_direction = sun_direction_;
     new_sun_direction.y = (new_sun_direction.y);
     new_sun_direction = normalize(new_sun_direction);
@@ -239,17 +158,14 @@ namespace framework {
     glTextureStorage2D(cubemap, 7, GL_RGBA16F, N, N);
     glTextureSubImage3D(cubemap, 0, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
     glGenerateTextureMipmap(cubemap);
+
     cubemap_handle = glGetTextureHandleARB(cubemap);
     glMakeTextureHandleResidentARB(cubemap_handle);
 
-    struct {
-      __declspec(align(16)) vec3 sun_dir;
-      __declspec(align(16)) vec3 sun_color;      
-      __declspec(align(16)) GLuint64 handle;
-      __declspec(align(8)) float cos_sun_angular_radius;      
-    } ubo_contents{ sun_direction, sun_radiance, cubemap_handle, cos(sun_size) };
-
-    glNamedBufferData(ubo, sizeof(ubo_contents), &ubo_contents, GL_STATIC_DRAW);
+    uniforms.sun_dir = sun_direction;
+    uniforms.sun_color = sun_radiance;
+    uniforms.sky_cubemap = cubemap_handle;
+    uniforms.cos_sun_angular_radius = cos(sun_size);
   }
 
   vec3 sky::sample(const vec3 & dir) const {
@@ -264,27 +180,16 @@ namespace framework {
     return radiance * 683.0f * fp16_scale;
   }
 
-
   sky::~sky() {
     for (auto m : rgb) arhosekskymodelstate_free(m);
     glMakeTextureHandleNonResidentARB(cubemap_handle);
     glDeleteTextures(1, &cubemap);
-    glDeleteBuffers(1, &ubo);
   }
 
-  void sky::render(const mat4 perspectives[2], const mat4 model_view[2]) const {
+  void sky::render() const {
     glDisable(GL_DEPTH_TEST);
     glUseProgram(program.programId);
-
-    // Removable cruft
-    glBindVertexArray(vao); // TODO: use a common vao
-    glUniformMatrix4fv(0, 2, GL_FALSE, &perspectives[0][0][0]); // TODO: use a common uniform 
-    glUniformMatrix4fv(2, 2, GL_FALSE, &model_view[0][0][0]);   
-#ifdef HACK_SEASCAPE
-    glUniform1f(4, SDL_GetTicks() / 1000.0f);
-#endif
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo); // place these in the big commom uniform
-
+    // assume we're bound to the dummy vao
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
   }
 }

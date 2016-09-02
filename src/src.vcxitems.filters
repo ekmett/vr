@@ -28,12 +28,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\std.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\gl.h">
-      <Filter>gl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\glew.h">
-      <Filter>gl</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\utf8.h">
       <Filter>util</Filter>
     </ClInclude>
@@ -48,9 +42,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\epoch.h">
       <Filter>concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\shader.h">
-      <Filter>gl</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr.h">
       <Filter>openvr</Filter>
@@ -94,6 +85,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\spherical_harmonics.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stdafx.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\texturing.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\shader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\gl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\glew.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cds">
@@ -101,9 +95,6 @@
     </Filter>
     <Filter Include="concurrency">
       <UniqueIdentifier>{5f7fc9fe-af54-4f75-b638-707f0b34d926}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gl">
-      <UniqueIdentifier>{e07a8aaa-f1e6-4cc8-9f67-2e91fd31f54e}</UniqueIdentifier>
     </Filter>
     <Filter Include="logging">
       <UniqueIdentifier>{732a0213-062b-4027-baaa-35438e60f193}</UniqueIdentifier>
@@ -134,9 +125,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_system.cpp">
       <Filter>sdl</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\gl.cpp">
-      <Filter>gl</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_system.cpp">
       <Filter>openvr</Filter>
     </ClCompile>
@@ -145,9 +133,6 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\epoch.cpp">
       <Filter>concurrency</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp">
-      <Filter>gl</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr.cpp">
       <Filter>openvr</Filter>
@@ -161,5 +146,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\skybox.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spectrum.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\gl.cpp" />
   </ItemGroup>
 </Project>

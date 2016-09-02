@@ -236,11 +236,10 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bloom.h" />
+    <ClInclude Include="post.h" />
     <ClInclude Include="controllers.h" />
     <ClInclude Include="distortion.h" />
     <ClInclude Include="overlay.h" />
-    <ClInclude Include="seascape.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

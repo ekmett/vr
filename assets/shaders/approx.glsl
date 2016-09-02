@@ -1,11 +1,6 @@
 #ifndef INCLUDED_SHADERS_APPROX_H_hlasdfjhl
 #define INCLUDED_SHADERS_APPROX_H_hlasdfjhl
 
-#ifdef __cplusplus
-#include "framework/glm.h"
-using namespace glm;
-#endif
-
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif

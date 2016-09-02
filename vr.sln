@@ -22,59 +22,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "win32-lib", "framework-stat
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "win32-test", "test\test.vcxproj", "{01B3A2F7-B589-4B41-ADD7-2B4A6A5DA002}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{A4A1D558-6CFB-4A1E-9CE8-D6DE035530FA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fonts", "fonts", "{4DF2662C-F826-46E3-BAAB-C12F6DF48737}"
-	ProjectSection(SolutionItems) = preProject
-		assets\fonts\Cousine-Regular.ttf = assets\fonts\Cousine-Regular.ttf
-		assets\fonts\DejaVuMathTeXGyre.ttf = assets\fonts\DejaVuMathTeXGyre.ttf
-		assets\fonts\DejaVuSans-Bold.ttf = assets\fonts\DejaVuSans-Bold.ttf
-		assets\fonts\DejaVuSans-BoldOblique.ttf = assets\fonts\DejaVuSans-BoldOblique.ttf
-		assets\fonts\DejaVuSans-ExtraLight.ttf = assets\fonts\DejaVuSans-ExtraLight.ttf
-		assets\fonts\DejaVuSans-Oblique.ttf = assets\fonts\DejaVuSans-Oblique.ttf
-		assets\fonts\DejaVuSans.ttf = assets\fonts\DejaVuSans.ttf
-		assets\fonts\DejaVuSansCondensed-Bold.ttf = assets\fonts\DejaVuSansCondensed-Bold.ttf
-		assets\fonts\DejaVuSansCondensed-BoldOblique.ttf = assets\fonts\DejaVuSansCondensed-BoldOblique.ttf
-		assets\fonts\DejaVuSansCondensed-Oblique.ttf = assets\fonts\DejaVuSansCondensed-Oblique.ttf
-		assets\fonts\DejaVuSansCondensed.ttf = assets\fonts\DejaVuSansCondensed.ttf
-		assets\fonts\DejaVuSansMono-Bold.ttf = assets\fonts\DejaVuSansMono-Bold.ttf
-		assets\fonts\DejaVuSansMono-BoldOblique.ttf = assets\fonts\DejaVuSansMono-BoldOblique.ttf
-		assets\fonts\DejaVuSansMono-Oblique.ttf = assets\fonts\DejaVuSansMono-Oblique.ttf
-		assets\fonts\DejaVuSansMono.ttf = assets\fonts\DejaVuSansMono.ttf
-		assets\fonts\DejaVuSerif-Bold.ttf = assets\fonts\DejaVuSerif-Bold.ttf
-		assets\fonts\DejaVuSerif-BoldItalic.ttf = assets\fonts\DejaVuSerif-BoldItalic.ttf
-		assets\fonts\DejaVuSerif-Italic.ttf = assets\fonts\DejaVuSerif-Italic.ttf
-		assets\fonts\DejaVuSerif.ttf = assets\fonts\DejaVuSerif.ttf
-		assets\fonts\DejaVuSerifCondensed-Bold.ttf = assets\fonts\DejaVuSerifCondensed-Bold.ttf
-		assets\fonts\DejaVuSerifCondensed-BoldItalic.ttf = assets\fonts\DejaVuSerifCondensed-BoldItalic.ttf
-		assets\fonts\DejaVuSerifCondensed-Italic.ttf = assets\fonts\DejaVuSerifCondensed-Italic.ttf
-		assets\fonts\DejaVuSerifCondensed.ttf = assets\fonts\DejaVuSerifCondensed.ttf
-		assets\fonts\DroidSans.ttf = assets\fonts\DroidSans.ttf
-		assets\fonts\fontawesome-webfont.ttf = assets\fonts\fontawesome-webfont.ttf
-		assets\fonts\Karla-Regular.ttf = assets\fonts\Karla-Regular.ttf
-		assets\fonts\kenney-icon-font.ttf = assets\fonts\kenney-icon-font.ttf
-		assets\fonts\MaterialIcons-Regular.ttf = assets\fonts\MaterialIcons-Regular.ttf
-		assets\fonts\ProggyClean.ttf = assets\fonts\ProggyClean.ttf
-		assets\fonts\ProggyTiny.ttf = assets\fonts\ProggyTiny.ttf
-		assets\fonts\VeraMono.ttf = assets\fonts\VeraMono.ttf
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "objects", "objects", "{3905AE52-6A0D-456C-84CF-E287D12D5C10}"
-	ProjectSection(SolutionItems) = preProject
-		assets\objects\dragon.obj = assets\objects\dragon.obj
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shaders", "shaders", "{827334E1-7617-4D08-B03B-963D0A7C8751}"
-	ProjectSection(SolutionItems) = preProject
-		assets\shaders\approx.h = assets\shaders\approx.h
-		blur.h = blur.h
-		assets\shaders\oct.h = assets\shaders\oct.h
-		assets\shaders\seascape.h = assets\shaders\seascape.h
-		assets\shaders\uniforms.h = assets\shaders\uniforms.h
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "assets", "assets\assets.vcxitems", "{08A6F359-A78B-4057-8DFA-6E9109C673C1}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		assets\assets.vcxitems*{08a6f359-a78b-4057-8dfa-6e9109c673c1}*SharedItemsImports = 9
 		src\src.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
 		src\src.vcxitems*{a9326043-2d69-4511-8564-7a8f93e4e0bb}*SharedItemsImports = 4
 	EndGlobalSection
@@ -120,10 +72,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{4DF2662C-F826-46E3-BAAB-C12F6DF48737} = {A4A1D558-6CFB-4A1E-9CE8-D6DE035530FA}
-		{3905AE52-6A0D-456C-84CF-E287D12D5C10} = {A4A1D558-6CFB-4A1E-9CE8-D6DE035530FA}
-		{827334E1-7617-4D08-B03B-963D0A7C8751} = {A4A1D558-6CFB-4A1E-9CE8-D6DE035530FA}
 	EndGlobalSection
 EndGlobal

@@ -14,6 +14,21 @@ static const char * const searchpath = "/";
 namespace framework {
   namespace gl {
 
+    string read_file(path filename) {
+      auto name = filename.native();
+      std::ifstream in(name.c_str(), std::ios::in | std::ios::binary);
+      if (in) {
+        std::string contents;
+        in.seekg(0, std::ios::end);
+        contents.resize(in.tellg());
+        in.seekg(0, std::ios::beg);
+        in.read(&contents[0], contents.size());
+        in.close();
+        return(contents);
+      }
+      die("unable to read file {}", filename.string());
+    }
+
     string shader_log(GLuint v) {
       GLint len;
       glGetShaderiv(v, GL_INFO_LOG_LENGTH, &len);
@@ -35,7 +50,6 @@ namespace framework {
       result.resize(actualLen);
       return result;
     }
-
 
     GLuint compile(const char * name, const char * vertexShader, const char * fragmentShader) {
 
@@ -89,6 +103,36 @@ namespace framework {
       return programId;
     }
 
+    GLuint compile(const char * name) {
+      path p = path("shaders").append(name);
+      p.replace_extension("vert");
+      string vs = read_file(p);
+      p.replace_extension("frag");
+      string fs = read_file(p);
+      return compile(name, vs.c_str(), fs.c_str());
+    }
+
+    // borrow the "standard" extensions from glslang
+    const char * shader_extension(GLuint type) {
+      switch (type) {
+        case GL_VERTEX_SHADER: return "vert";
+        case GL_FRAGMENT_SHADER: return "frag";
+        case GL_GEOMETRY_SHADER: return "geom";
+        case GL_COMPUTE_SHADER: return "comp";
+        case GL_TESS_CONTROL_SHADER: return "tesc";
+        case GL_TESS_EVALUATION_SHADER: return "tese";
+        default: die("unknown shader type: {}", type);
+      }
+    }
+
+    // variadic template so we can link complex shader programs? type, name, type, name... ?
+    GLuint compile(GLuint type, const char * name) {
+      auto p = path("shaders").append(name).replace_extension(shader_extension(type));
+      string s = read_file(p);
+      return compile(type, name, s.c_str());      
+    }
+
+
     // this is a version of glCreateShaderProgramv that names the shader and includes NamedStringARB support for #include directives
     GLuint compile(GLuint type, const char * name, const char * body) {
       auto shader = glCreateShader(type);
@@ -120,21 +164,7 @@ namespace framework {
       return program;
     }
 
-    string read_file(path filename) {
-      auto name = filename.native();
-      std::ifstream in(name.c_str(), std::ios::in | std::ios::binary);
-      if (in) {
-         std::string contents;
-         in.seekg(0, std::ios::end);
-         contents.resize(in.tellg());
-         in.seekg(0, std::ios::beg);
-         in.read(&contents[0], contents.size());
-         in.close();
-         return(contents);
-      }
-      //string truncated_name(name.begin(), name.end());
-      die("unable to read file"); // : {}", truncated_name);
-    }
+
 
     void include(path real, path imaginary) {
       if (is_directory(real)) {
@@ -143,10 +173,13 @@ namespace framework {
           include(entry.path(), path(imaginary).append(entry.path().filename().native()));
         }
       } else if (is_regular_file(real)) {
-        log("gl")->info("include {} as {}", real.string(), imaginary.generic_string());
-        string contents = read_file(real);
-        string imaginary_name = imaginary.generic_string();
-        glNamedStringARB(GL_SHADER_INCLUDE_ARB, imaginary_name.size(), imaginary_name.c_str(), contents.size(), contents.c_str());
+        if (real.extension().string() == ".h" || real.extension().string() == ".glsl") {
+          // TODO: check if the extension is .h or .glsl
+          log("gl")->info("include {} as {}", real.string(), imaginary.generic_string());
+          string contents = read_file(real);
+          string imaginary_name = imaginary.generic_string();
+          glNamedStringARB(GL_SHADER_INCLUDE_ARB, imaginary_name.size(), imaginary_name.c_str(), contents.size(), contents.c_str());
+        }
       } else {
         log("gl")->warn("ignoring file {}", real.string());
       }

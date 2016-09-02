@@ -12,7 +12,6 @@
     <ClInclude Include="controllers.h" />
     <ClInclude Include="overlay.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="bloom.h" />
-    <ClInclude Include="seascape.h" />
+    <ClInclude Include="post.h" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/compatibility.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 #include <glm/detail/type_half.hpp>
 
 #define _USE_MATH_DEFINES

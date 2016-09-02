@@ -14,6 +14,7 @@
 #include "overlay.h"
 #include "framework/skybox.h"
 #include "framework/spectrum.h"
+#include "uniforms.h"
 
 using namespace framework;
 using namespace filesystem;
@@ -24,23 +25,29 @@ static const int msaa_samples = 8;
 // used reversed [1..0] floating point z rather than the classic [-1..1] mapping
 #define USE_REVERSED_Z
 
-struct app {
+struct app : app_uniforms {
   app();
   ~app();
 
   void run();
   bool show_gui(bool * open = nullptr);
+  void get_poses();
   void tonemap();
   void present();
+  void update_controller_assignment();
+  void submit_uniforms() {
+    global_time = SDL_GetTicks() / 1000.0f;
+    glNamedBufferSubData(ubo, 0, sizeof(app_uniforms), static_cast<app_uniforms*>(this));
+  }
 
   sdl::window window; // must come before anything that needs opengl support in this object
   gl::compiler compiler;
+  GLuint ubo;
+  GLuint dummy_vao;
   openvr::system vr;
-  sky sky;
+  framework::sky sky;
   gui::system gui;
   //overlay dashboard;
-  vr::TrackedDevicePose_t physical_pose[vr::k_unMaxTrackedDeviceCount]; // current poses
-  vr::TrackedDevicePose_t predicted_pose[vr::k_unMaxTrackedDeviceCount]; // poses 2 frames out
   controllers controllers;
   std::mt19937 rng; // for the main thread  
   vr::IVRCompositor & compositor;
@@ -48,6 +55,7 @@ struct app {
   openal::system al;
   int desktop_view;
   bool skybox_visible = true;
+  int controller_mask;
 
   struct {
     uint32_t w, h;
@@ -65,10 +73,6 @@ struct app {
       };
     };
   } display;
-
-  mat4 eyeProjectionMatrix[2];
-  mat4 eyePoseMatrix[2];
-  float nearClip, farClip;
 };
 
 #ifdef USE_REVERSED_Z
@@ -85,23 +89,32 @@ app::app()
   : window("proc", { 4, 5, gl::profile::core }, true,50, 50, 1280,1024)
   , compiler(path("shaders"))
   , vr()
-  // ,  dashboard("proc","Debug",1024,1024),
   , compositor(*vr::VRCompositor())
-  , nearClip(0.1f)
-  , farClip(10000.f)
   , gui(window)
-  , distorted()
+  , distorted() 
   , desktop_view(1)
-  , sky(vec3(0.0,0.05,0.9), 2.0_degrees, vec3(0.1,0.1,0.3), 2.f) {
+  , sky(vec3(0.0,0.1,0.8), 2.0_degrees, vec3(0.2,0.2,0.4), 6.f, *this) 
+  {
+
+  nearClip = 0.1f;
+  farClip = 10000.f;
+
+  glCreateVertexArrays(1, &dummy_vao);
+  glCreateBuffers(1, &ubo);
+  gl::label(GL_BUFFER, ubo, "app ubo");
+  glNamedBufferStorage(ubo, sizeof(app_uniforms), nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT);
+  glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo); // INVARIANT: we keep this in this slot forever
 
   // load matrices.
   for (int i = 0;i < 2;++i) {
 #ifdef USE_REVERSED_Z
-    eyeProjectionMatrix[i] = reverseZ * openvr::hmd_mat4(vr.handle->GetProjectionMatrix(vr::EVREye(i), nearClip, farClip, vr::API_DirectX));
+    projection[i] = reverseZ * openvr::hmd_mat4(vr.handle->GetProjectionMatrix(vr::EVREye(i), nearClip, farClip, vr::API_DirectX));
 #else
-    eyeProjectionMatrix[i] = openvr::hmd_mat4(vr.handle->GetProjectionMatrix(vr::EVREye(i), nearClip, farClip, vr::API_OpenGL));
+    projection[i] = openvr::hmd_mat4(vr.handle->GetProjectionMatrix(vr::EVREye(i), nearClip, farClip, vr::API_OpenGL));
 #endif
-    eyePoseMatrix[i] = openvr::hmd_mat3x4(vr.handle->GetEyeToHeadTransform(vr::EVREye(i)));
+    inverse_projection[i] = inverse(projection[i]);
+    eye_to_head[i] = openvr::hmd_mat3x4(vr.handle->GetEyeToHeadTransform(vr::EVREye(i)));
+    head_to_eye[i] = affineInverse(eye_to_head[i]);
   }
 
 #ifdef USE_REVERSED_Z
@@ -128,7 +141,6 @@ app::app()
   glTextureImage2DMultisampleNV(display.render_texture, GL_TEXTURE_2D_MULTISAMPLE, msaa_samples, GL_RGBA16F, display.w * 2, display.h, true);
   glNamedFramebufferTexture(display.render_fbo, GL_COLOR_ATTACHMENT0, display.render_texture, 0);
  
-
   glCreateTextures(GL_TEXTURE_2D, 1, &display.resolve_texture);
   gl::label(GL_TEXTURE, display.resolve_texture, "resolve texture");
   glTextureParameteri(display.resolve_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -144,11 +156,13 @@ app::app()
   log("app")->info("desktop window refresh rate: {}hz", wdm.refresh_rate); // TODO: compute frame skipping for gui and desktop display off this relative to the gpu rate.
 
   SDL_StartTextInput();
+  submit_uniforms(); // load up some data
 }
 
 app::~app() {
   SDL_StopTextInput();
 
+  glDeleteVertexArrays(1, &dummy_vao);
   glDeleteFramebuffers(countof(display.fbo), display.fbo);
   glDeleteRenderbuffers(1, &display.depth);
   glDeleteTextures(countof(display.texture), display.texture);
@@ -168,34 +182,83 @@ viewport_dim fit_viewport(float aspectRatio, int w, int h) {
   }
 }
 
+void app::update_controller_assignment() {
+//  if (controller_mask == 3) return; // once we get a stable assignment of hands, keep it.
+  auto hmd = vr::VRSystem();
+  controller_device[0] = hmd->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
+  controller_device[1] = hmd->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
+
+  controller_mask = 0;
+
+  for (int i = 0;i < 2;++i) {
+    int k = controller_device[i];
+    if (k == vr::k_unTrackedDeviceIndexInvalid) continue;
+    if (!hmd->IsTrackedDeviceConnected(k)) continue;
+    if (hmd->GetTrackedDeviceClass(k) != vr::TrackedDeviceClass_Controller) continue; // sanity check
+    controller_mask |= (1 << i);
+  }
+  log("CONTROLLER")->info("devices: {} {} {}", controller_device[0], controller_device[1], controller_mask);
+}
+
 void app::tonemap() {
   // time to downsample into the bloom filter 
 
-  // copy the msaa render target to a lower quality 'resolve' texture for display
+  // for now just copy the msaa render target to a lower quality 'resolve' texture for display
   glBlitNamedFramebuffer(display.render_fbo, display.resolve_fbo, 0, 0, display.w * 2, display.h, 0, 0, display.w * 2, display.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 void app::present() {
   vr::Texture_t eyeTexture{ (void*)(intptr_t)(display.resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
   for (int i = 0;i < 2;++i) {
     vr::VRTextureBounds_t eyeBounds = { 0.5f * i, 0, 0.5f + 0.5f * i , 1 };
-    vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds);
+    vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds); // NB: if we do the distortion ourselves we could do it in hdr
   }
   // let the compositor know we handed off a frame
   compositor.PostPresentHandoff();
+}
+
+void app::get_poses() {
+  vr::TrackedDevicePose_t physical_pose[vr::k_unMaxTrackedDeviceCount]; // current poses
+  vr::TrackedDevicePose_t predicted_pose[vr::k_unMaxTrackedDeviceCount]; // poses 2 frames out
+
+  compositor.WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, 1);
+
+  for (int i = 0;i < vr::k_unMaxTrackedDeviceCount; ++i) {
+    current_device_to_world[i] = openvr::hmd_mat3x4(physical_pose[i].mDeviceToAbsoluteTracking);
+    predicted_device_to_world[i] = openvr::hmd_mat3x4(physical_pose[i].mDeviceToAbsoluteTracking);
+  }
+
+  update_controller_assignment();
+
+  for (int i = 0;i < 2;++i) {
+    if (controller_mask & (1 << i)) {
+      current_controller_to_world[i] = current_device_to_world[controller_device[i]];
+      predicted_controller_to_world[i] = predicted_device_to_world[controller_device[i]];
+    } else {
+      log("app")->warn("Unable to update controller position {}", i);
+    }
+  }
+
+  current_world_to_head = affineInverse(current_device_to_world[vr::k_unTrackedDeviceIndex_Hmd]);
+  predicted_world_to_head = affineInverse(predicted_device_to_world[vr::k_unTrackedDeviceIndex_Hmd]);
+
+  for (int i = 0; i < 2; ++i) {
+    current_pmv[i] = projection[i] * head_to_eye[i] * current_world_to_head;
+    predicted_pmv[i] = projection[i] * head_to_eye[i] * predicted_world_to_head;
+  }
 }
 
 void app::run() {
   while (!vr.poll() && !window.poll()) {
     // clear the display window  
     glClearColor(0.0f, 0.f, 0.f, 1.f);
+    glStencilMask(1);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // start a new imgui frame
     gui.new_frame();
 
+    // hmd
     glEnable(GL_MULTISAMPLE);
-
-    // switch to the hmd
     glBindFramebuffer(GL_FRAMEBUFFER, display.render_fbo);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -206,20 +269,13 @@ void app::run() {
     glViewportIndexedf(0, 0, 0, (float)display.w, (float)display.h);                // viewport 0 left eye
     glViewportIndexedf(1, (float)display.w, 0, (float)display.w, (float)display.h); // viewport 1 right eye
     
-    // compute stuff that can deal with approximate pose info, such as most of the shadow maps here
-    compositor.WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, 0);    
-    mat4 hmdToWorld = openvr::hmd_mat3x4(physical_pose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
-    mat4 model_view[2];
-    mat4 eyes[2];
-    for (int i = 0;i < 2;++i) {
-      model_view[i] = inverse(hmdToWorld * eyePoseMatrix[i]);
-      eyes[i] = eyeProjectionMatrix[i] * model_view[i];
-    }
+    get_poses();
+    submit_uniforms();
 
-    if (skybox_visible)
-      sky.render(eyeProjectionMatrix, model_view);
-    controllers.render(physical_pose, eyes); // draw controller rays
+    glBindVertexArray(dummy_vao);
+    if (skybox_visible) sky.render();
 
+    controllers.render(controller_mask);
     tonemap();
     present();
 

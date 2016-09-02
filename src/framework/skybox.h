@@ -3,6 +3,7 @@
 #include "framework/spherical_harmonics.h"
 #include "framework/glm.h"
 #include "framework/shader.h"
+#include "uniforms.h" 
 
 struct ArHosekSkyModelState;
 
@@ -11,12 +12,12 @@ namespace framework {
   static const float fp16_scale = 0.0009765625f; // 2^-10 scaling factor to allow storing physical lights in fp16 floats
 
   struct sky {
-    sky(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity);
+    sky(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms);
     ~sky();
 
-    void update(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity);
+    void update(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms);
     vec3 sample(const vec3 & dir) const;
-    void render(const mat4 perspective[2], const mat4 model_view[2]) const;
+    void render() const;
 
     vec3 sun_direction, sun_radiance, sun_irradiance;
     float sun_size;
@@ -28,7 +29,5 @@ namespace framework {
     GLuint cubemap;
     GLuint64 cubemap_handle;
     gl::shader program;
-    GLuint ubo;
-    GLuint vao;
   };
 }

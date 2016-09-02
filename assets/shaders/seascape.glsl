@@ -1,5 +1,5 @@
 vec2 iResolution = vec2(1024.,768.);
-layout (location=4) uniform float iGlobalTime = 0.0f;
+layout (location=4) uniform float global_time = 0.0f;
 
 // based on https://www.shadertoy.com/view/Ms2SD1
 
@@ -20,7 +20,7 @@ const float SEA_SPEED = 0.8;
 const float SEA_FREQ = 0.16;
 const vec3 SEA_BASE = vec3(0.1,0.19,0.22);
 const vec3 SEA_WATER_COLOR = vec3(0.8,0.9,0.6);
-float SEA_TIME = iGlobalTime * SEA_SPEED;
+float SEA_TIME = global_time * SEA_SPEED;
 mat2 octave_m = mat2(1.6,1.2,-1.2,1.6);
 
 // math
@@ -137,7 +137,8 @@ vec3 getNormal(vec3 p, float eps) {
     return normalize(n);
 }
 
-float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {
+vec3 heightMapTracing(vec3 ori, vec3 dir) {
+    vec3 p;
     float tm = 0.0;
     float tx = 1000.0;
     float hx = map(ori + dir * tx);
@@ -156,6 +157,6 @@ float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {
             hm = hmid;
         }
     }
-    return tmid;
+    return p;
 }
 
