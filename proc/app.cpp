@@ -611,7 +611,7 @@ bool app::show_gui(bool * open) {
   }
 
 
-  if (gui::Button(suspended_rendering ? "resume rendering" : "suspend rendering")) {
+  if (gui::Button(suspended_rendering ? "Resume VR" : "Suspend VR")) {
     suspended_rendering = !suspended_rendering;
     vr::VRCompositor()->SuspendRendering(suspended_rendering);
   }

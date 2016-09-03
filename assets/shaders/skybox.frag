@@ -10,6 +10,18 @@ in vec3 coord;
 
 out vec4 outputColor;
 
+float A = 0.15;
+float B = 0.50;
+float C = 0.10;
+float D = 0.20;
+float E = 0.02;
+float F = 0.30;
+float W = 11.2;
+ 
+vec3 uncharted2_tonemap(vec3 x) {
+  return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+}
+
 void main() {
   vec3 color = texture(sky_cubemap, coord).xyz;
   vec3 dir = normalize(coord);
@@ -28,7 +40,8 @@ void main() {
     color = mix(color, ground_albedo, pow(smoothstep(-0.00,-0.15,dir.y),0.3));
   }
   if (enable_tonemap != 0) {
-    color = color / (color + 1);
+    color = uncharted2_tonemap(color);
+    // color = color / (color + 1);
     color = pow(color,vec3(1/2.2));
   }
   outputColor = vec4(color,1);
