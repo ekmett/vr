@@ -368,6 +368,7 @@ void app::tonemap() {
 
 void app::present() {
   if (suspended_rendering) return;
+  glFinish();
   for (int i = 0;i < 2;++i) {
     vr::Texture_t eyeTexture { 
      (void*)intptr_t(resolve_view_texture[i]), 
