@@ -78,4 +78,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\worker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gui.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\third-party\glm\util\glm.natvis" />
+  </ItemGroup>
 </Project>

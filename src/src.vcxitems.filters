@@ -149,4 +149,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gl.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\third-party\glm\util\glm.natvis" />
+  </ItemGroup>
 </Project>

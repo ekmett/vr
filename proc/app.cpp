@@ -250,13 +250,13 @@ app::~app() {
 }
 
 
-viewport_dim fit_viewport(float aspectRatio, int w, int h) {
+viewport_dim fit_viewport(float aspectRatio, int w, int h, bool bottom_justified = true, bool left_justified = false) {
   GLint x = GLint(h * aspectRatio);
   if (x <= w) {
-    return viewport_dim { (w-x)/2, 0, x, h };
+    return viewport_dim { left_justified ? 0 : (w-x)/2, 0, x, h };
   } else {
     GLint y = GLint(w / aspectRatio);
-    return viewport_dim { 0, (h-y)/2, w, y };
+    return viewport_dim { 0, bottom_justified ? 0 : (h-y)/2, w, y };
   }
 }
 
@@ -513,7 +513,7 @@ bool app::show_gui(bool * open) {
     gui::Checkbox("wireframe hidden area", &debug_wireframe_hidden_area);
     gui::Checkbox("wireframe distortion", &debug_wireframe_distortion);
     bool tonemap = enable_tonemap; gui::Checkbox("tonemap", &tonemap); enable_tonemap = tonemap;
-    bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;
+    bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;   
     gui::End();
   }
 
