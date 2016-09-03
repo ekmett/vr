@@ -1,17 +1,21 @@
 #version 450 core
 
-layout(location = 0) in vec4 position;
-layout(location = 1) in vec2 v2UVredIn;
-layout(location = 2) in vec2 v2UVGreenIn;
-layout(location = 3) in vec2 v2UVblueIn;
 
-noperspective out vec2 v2UVred;
-noperspective out vec2 v2UVgreen;
-noperspective out vec2 v2UVblue;
+layout(location = 0) in vec4 position;
+layout(location = 1) in vec2 redIn;
+layout(location = 2) in vec2 greenIn;
+layout(location = 3) in vec2 blueIn;
+layout(location = 4) in int eyeIn;
+
+noperspective out vec2 red;
+noperspective out vec2 green;
+noperspective out vec2 blue;
+flat out int eye;
 
 void main() {
-  v2UVred = v2UVredIn;
-  v2UVgreen = v2UVGreenIn;
-  v2UVblue = v2UVblueIn;
+  red = redIn;
+  green = greenIn;
+  blue = blueIn;
+  eye = eyeIn;
   gl_Position = position;
 }

@@ -19,8 +19,43 @@
 using namespace framework;
 using namespace filesystem;
 
-static const float super_sampling_factor = 1.0;
-static const int msaa_samples = 8;
+// valve-style adaptive rendering quality
+
+static const struct render_target_meta {
+  int msaa_level;
+  float max_supersampling_factor;
+} render_target_metas[] {
+  { 4, 1.1 },
+  { 8, 1.4 }
+};
+
+static const int render_target_count = countof(render_target_metas);
+static const float max_supersampling_factor = 1.4; 
+
+static const struct quality_level {
+  int render_target;
+  float resolution_scale;
+} quality_levels[] = {
+  { 0, 0.4 },
+  { 0, 0.5 },
+  { 0, 0.65 }, // 0, valve's -4 
+  { 0, 0.73 }, // 1, valve -3
+  { 0, 0.81 }, // 2, valve -2
+  { 0, 0.9 },  // 3, valve -1
+  { 0, 1.0 },
+  { 0, 1.1 },  // largest 4x supersampling factor = 1.1
+  { 1, 1.0 },
+  { 1, 1.1 },
+  { 1, 1.2 },
+  { 1, 1.3 },
+  { 1, 1.4 }   // largest 8x supersampling factor = 1.4
+};
+
+static const int quality_level_count = countof(quality_levels);
+
+struct viewport_dim {
+  GLint x, y, w, h;
+};
 
 // used reversed [1..0] floating point z rather than the classic [-1..1] mapping
 #define USE_REVERSED_Z
@@ -39,13 +74,19 @@ struct app : app_uniforms {
     global_time = SDL_GetTicks() / 1000.0f;
     glNamedBufferSubData(ubo, 0, sizeof(app_uniforms), static_cast<app_uniforms*>(this));
   }
-
+ 
   sdl::window window; // must come before anything that needs opengl support in this object
   gl::compiler compiler;
   GLuint ubo;
   GLuint dummy_vao;
   openvr::system vr;
   framework::sky sky;
+
+  bool debug_wireframe_hidden_area = false;
+  bool debug_wireframe_distortion = false;
+  bool show_debug_window = true;
+  bool show_demo_window = false;
+
   gui::system gui;
   //overlay dashboard;
   controllers controllers;
@@ -56,23 +97,33 @@ struct app : app_uniforms {
   int desktop_view;
   bool skybox_visible = true;
   int controller_mask;
+  int quality_tick;
+  uint32_t recommended_w, recommended_h;
+  uint32_t resolve_buffer_w, resolve_buffer_h;
 
-  struct {
-    uint32_t w, h;
-    union {
-      GLuint fbo[2];
-      struct {
-        GLuint render_fbo, resolve_fbo;
-      };
+    //uint32_t w, h;
+  union {
+    GLuint fbo[render_target_count + 1];
+    struct {
+      GLuint render_fbo[render_target_count], resolve_fbo;
     };
-    GLuint depth;  // renderbuffer for render framebuffer
-    union {
-      GLuint texture[2];
-      struct {
-        GLuint render_texture, resolve_texture;
-      };
+  };
+  GLuint depth_target[render_target_count];  // renderbuffer for render framebuffer
+  union {
+    GLuint texture[render_target_count + 1];
+    struct {
+      GLuint render_texture[render_target_count], resolve_texture;
     };
-  } display;
+  };
+
+  viewport_dim viewports[2];
+  
+  inline const ::quality_level & current_quality_level() const {
+    return quality_levels[quality_level];
+  }
+  inline GLuint current_render_fbo() const {
+    return render_fbo[quality_levels[quality_level].render_target];
+  }
 };
 
 #ifdef USE_REVERSED_Z
@@ -80,24 +131,27 @@ static float reverseZ_contents[16] = {
    1.f, 0.f, 0.f, 0.f,
    0.f, 1.f, 0.f, 0.f,
    0.f, 0.f, -1.f, 1.f,
-   0.f, 0.f, 1.f, 0.f };
+   0.f, 0.f, 1.f, 0.f 
+};
 
 static mat4 reverseZ = glm::make_mat4(reverseZ_contents);
 #endif
 
-app::app() 
-  : window("proc", { 4, 5, gl::profile::core }, true,50, 50, 1280,1024)
+app::app()
+  : window("proc", { 4, 5, gl::profile::core }, true, 50, 50, 1280, 1024)
   , compiler(path("shaders"))
   , vr()
   , compositor(*vr::VRCompositor())
   , gui(window)
-  , distorted() 
+  , distorted()
   , desktop_view(1)
-  , sky(vec3(0.0,0.1,0.8), 2.0_degrees, vec3(0.2,0.2,0.4), 6.f, *this) 
+  , sky(vec3(0.0, 0.1, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
+  , debug_wireframe_hidden_area(false)
   {
 
   nearClip = 0.1f;
   farClip = 10000.f;
+  quality_level = 6;
 
   glCreateVertexArrays(1, &dummy_vao);
   glCreateBuffers(1, &ubo);
@@ -123,31 +177,58 @@ app::app()
   glClearDepth(0.f);
 #endif
 
-  // set up rendering targets  
-  vr.handle->GetRecommendedRenderTargetSize(&display.w, &display.h);
-  display.w *= super_sampling_factor;
-  display.h *= super_sampling_factor;
-  glCreateFramebuffers(countof(display.fbo), display.fbo);
-  gl::label(GL_FRAMEBUFFER, display.render_fbo, "render fbo");
-  gl::label(GL_FRAMEBUFFER, display.resolve_fbo, "resolve fbo");
+  // set up all the rendering targets  
+  vr.handle->GetRecommendedRenderTargetSize(&recommended_w, &recommended_h);
+  glCreateFramebuffers(countof(fbo), fbo);
+  glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 2, render_texture);
+  glCreateRenderbuffers(countof(depth_target), depth_target);
+  for (int i = 0;i < render_target_count; ++i) {
+    auto meta = render_target_metas[i];
+    gl::label(GL_FRAMEBUFFER, render_fbo[i], "render fbo {}", i);
+    gl::label(GL_RENDERBUFFER, depth_target[i], "render depth/stencil {}", i);
+    gl::label(GL_TEXTURE, render_texture[i], "render texture {}", i);
 
-  // i can't use a render buffer if i want to use layered rendering
-  glCreateRenderbuffers(1, &display.depth);
-  gl::label(GL_RENDERBUFFER, display.depth, "render depth");
-  glNamedRenderbufferStorageMultisample(display.depth, msaa_samples, GL_DEPTH32F_STENCIL8, display.w * 2, display.h); // ask for a floating point z buffer
-  glNamedFramebufferRenderbuffer(display.render_fbo, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, display.depth);
+    glNamedRenderbufferStorageMultisample(
+      depth_target[i],
+      meta.msaa_level,
+      GL_DEPTH32F_STENCIL8,
+      recommended_w * 2 * meta.max_supersampling_factor,
+      recommended_h * meta.max_supersampling_factor
+    );
 
-  glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &display.render_texture);
-  gl::label(GL_TEXTURE, display.render_texture, "render texture");
-  glTextureImage2DMultisampleNV(display.render_texture, GL_TEXTURE_2D_MULTISAMPLE, msaa_samples, GL_RGBA16F, display.w * 2, display.h, true);
-  glNamedFramebufferTexture(display.render_fbo, GL_COLOR_ATTACHMENT0, display.render_texture, 0);
+    glNamedFramebufferRenderbuffer(render_fbo[i], GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth_target[i]);
+
+    glTextureImage2DMultisampleNV(
+      render_texture[i],
+      GL_TEXTURE_2D_MULTISAMPLE,
+      meta.msaa_level,
+      GL_RGBA16F,
+      recommended_w * 2 * meta.max_supersampling_factor,
+      recommended_h * meta.max_supersampling_factor,
+      true
+    );
+
+    glTextureParameteri(render_texture[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(render_texture[i], GL_TEXTURE_MAX_LEVEL, 0);
+    glNamedFramebufferTexture(render_fbo[i], GL_COLOR_ATTACHMENT0, render_texture[i], 0);
+  }
  
-  glCreateTextures(GL_TEXTURE_2D, 1, &display.resolve_texture);
-  gl::label(GL_TEXTURE, display.resolve_texture, "resolve texture");
-  glTextureParameteri(display.resolve_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTextureParameteri(display.resolve_texture, GL_TEXTURE_MAX_LEVEL, 0);
-  glTextureImage2DEXT(display.resolve_texture, GL_TEXTURE_2D, 0, GL_RGBA8, display.w * 2, display.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-  glNamedFramebufferTexture(display.resolve_fbo, GL_COLOR_ATTACHMENT0, display.resolve_texture, 0);
+  gl::label(GL_FRAMEBUFFER, resolve_fbo, "resolve fbo");
+  glCreateTextures(GL_TEXTURE_2D, 1, &resolve_texture);
+
+  gl::label(GL_TEXTURE, resolve_texture, "resolve texture");
+  glTextureParameteri(resolve_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTextureParameteri(resolve_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTextureParameteri(resolve_texture, GL_TEXTURE_MAX_LEVEL, 0);
+  glTextureParameteri(resolve_texture, GL_TEXTURE_WRAP_S, GL_REPEAT); // CLAMP_TO_EDGE);
+  glTextureParameteri(resolve_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // todo: grab a handle
+
+  resolve_buffer_w = recommended_w * 2 * max_supersampling_factor;
+  resolve_buffer_h = recommended_h * max_supersampling_factor;
+  
+  glTextureImage2DEXT(resolve_texture, GL_TEXTURE_2D, 0, GL_RGBA8, resolve_buffer_w, resolve_buffer_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  glNamedFramebufferTexture(resolve_fbo, GL_COLOR_ATTACHMENT0, resolve_texture, 0);
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     die("Unable to allocate frame buffer");
@@ -162,16 +243,12 @@ app::app()
 
 app::~app() {
   SDL_StopTextInput();
-
   glDeleteVertexArrays(1, &dummy_vao);
-  glDeleteFramebuffers(countof(display.fbo), display.fbo);
-  glDeleteRenderbuffers(1, &display.depth);
-  glDeleteTextures(countof(display.texture), display.texture);
+  glDeleteFramebuffers(countof(fbo), fbo);
+  glDeleteRenderbuffers(countof(depth_target), depth_target);
+  glDeleteTextures(countof(texture), texture);
 }
 
-struct viewport_dim {
-  GLint x, y, w, h;
-};
 
 viewport_dim fit_viewport(float aspectRatio, int w, int h) {
   GLint x = GLint(h * aspectRatio);
@@ -184,13 +261,11 @@ viewport_dim fit_viewport(float aspectRatio, int w, int h) {
 }
 
 void app::update_controller_assignment() {
-//  if (controller_mask == 3) return; // once we get a stable assignment of hands, keep it.
+  if (controller_mask == 3) return;
   auto hmd = vr::VRSystem();
   controller_device[0] = hmd->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
   controller_device[1] = hmd->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
-
   controller_mask = 0;
-
   for (int i = 0;i < 2;++i) {
     int k = controller_device[i];
     if (k == vr::k_unTrackedDeviceIndexInvalid) continue;
@@ -198,22 +273,36 @@ void app::update_controller_assignment() {
     if (hmd->GetTrackedDeviceClass(k) != vr::TrackedDeviceClass_Controller) continue; // sanity check
     controller_mask |= (1 << i);
   }
-  log("CONTROLLER")->info("devices: {} {} {}", controller_device[0], controller_device[1], controller_mask);
 }
 
 void app::tonemap() {
-  // time to downsample into the bloom filter 
+  auto q = quality_levels[quality_level];
+  for (int i = 0;i < 2;++i) {
+    auto v = viewports[i];
+    glBlitNamedFramebuffer(
+      render_fbo[q.render_target],
+      resolve_fbo,
+      v.x, v.y, v.x + v.w, v.y + v.h,
+      v.x, v.y, v.x + v.w, v.y + v.h,
+      GL_COLOR_BUFFER_BIT,
+      GL_LINEAR
+    );
+    log("debug")->info("tonemap {}: {},{},{},{} render buffer usage: {}, resolve: {}", i, v.x, v.y, v.x + v.w, v.y + v.h, render_buffer_usage, resolve_buffer_usage );
 
-  // for now just copy the msaa render target to a lower quality 'resolve' texture for display
-  glBlitNamedFramebuffer(display.render_fbo, display.resolve_fbo, 0, 0, display.w * 2, display.h, 0, 0, display.w * 2, display.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+  }
 }
 void app::present() {
-  vr::Texture_t eyeTexture{ (void*)(intptr_t)(display.resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
+  vr::Texture_t eyeTexture{ (void*)(intptr_t)(resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
   for (int i = 0;i < 2;++i) {
-    vr::VRTextureBounds_t eyeBounds = { 0.5f * i, 0, 0.5f + 0.5f * i , 1 };
+    auto v = viewports[i];    
+    vr::VRTextureBounds_t eyeBounds = { 
+       v.x / float(resolve_buffer_w), 
+       1 - (v.y + v.h) / float(resolve_buffer_h),
+       (v.x + v.w) / float(resolve_buffer_w), 
+       1 - v.y / float(resolve_buffer_h)
+    };
     vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds); // NB: if we do the distortion ourselves we could do it in hdr
   }
-  // let the compositor know we handed off a frame
   compositor.PostPresentHandoff();
 }
 
@@ -221,11 +310,11 @@ void app::get_poses() {
   vr::TrackedDevicePose_t physical_pose[vr::k_unMaxTrackedDeviceCount]; // current poses
   vr::TrackedDevicePose_t predicted_pose[vr::k_unMaxTrackedDeviceCount]; // poses 2 frames out
 
-  compositor.WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, 1);
+  compositor.WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, vr::k_unMaxTrackedDeviceCount);
 
   for (int i = 0;i < vr::k_unMaxTrackedDeviceCount; ++i) {
     current_device_to_world[i] = openvr::hmd_mat3x4(physical_pose[i].mDeviceToAbsoluteTracking);
-    predicted_device_to_world[i] = openvr::hmd_mat3x4(physical_pose[i].mDeviceToAbsoluteTracking);
+    predicted_device_to_world[i] = openvr::hmd_mat3x4(predicted_pose[i].mDeviceToAbsoluteTracking);
   }
 
   update_controller_assignment();
@@ -251,24 +340,38 @@ void app::get_poses() {
 void app::run() {
   while (!vr.poll() && !window.poll()) {
     // clear the display window  
-    glClearColor(0.0f, 0.f, 0.f, 1.f);
-    glStencilMask(1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glClearColor(0.18f, 0.18f, 0.18f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT);
 
     // start a new imgui frame
     gui.new_frame();
 
     // hmd
     glEnable(GL_MULTISAMPLE);
-    glBindFramebuffer(GL_FRAMEBUFFER, display.render_fbo);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    auto q = quality_levels[quality_level];
+    glBindFramebuffer(GL_FRAMEBUFFER, render_fbo[q.render_target]);
+    glStencilMask(1);
+    glClearColor(0.18f, 0.18f, 0.18f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    glViewport(0, 0, display.w * 2, display.h);
+    GLint viewport_w = recommended_w * q.resolution_scale,
+          viewport_h = recommended_h * q.resolution_scale;
+    float aspect_ratio = float(viewport_w) / viewport_h;
+
+    // % of the width and height of the render and resolve buffer we're using. squared this yields our actual memory efficiency
+    render_buffer_usage = q.resolution_scale / render_target_metas[q.render_target].max_supersampling_factor;
+    resolve_buffer_usage = q.resolution_scale / max_supersampling_factor ;
+
+    glViewport(0, 0, viewport_w * 2, viewport_h);
+    if (debug_wireframe_hidden_area) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     distorted.render_stencil();
+    if (debug_wireframe_hidden_area) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    glViewportIndexedf(0, 0, 0, (float)display.w, (float)display.h);                // viewport 0 left eye
-    glViewportIndexedf(1, (float)display.w, 0, (float)display.w, (float)display.h); // viewport 1 right eye
+    glViewportIndexedf(0, 0, 0, (float)viewport_w, (float)viewport_h);                // viewport 0 left eye
+    viewports[0] = { 0, 0, viewport_w, viewport_h };
+
+    glViewportIndexedf(1, (float)viewport_w, 0, (float)viewport_w, (float)viewport_h); // viewport 1 right eye
+    viewports[1] = { viewport_w, 0, viewport_w, viewport_h };
     
     get_poses();
     submit_uniforms();
@@ -295,31 +398,33 @@ void app::run() {
       int w, h;
       SDL_GetWindowSize(window.sdl_window, &w, &h);
 
+      if (debug_wireframe_distortion) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
       // lets find an aspect ratio preserving viewport
       switch (desktop_view) {
         case 0: break;
         case 1: {
-          auto dim = fit_viewport(float(display.w) * 2 / display.h, w, h);
+          auto dim = fit_viewport(aspect_ratio * 2, w, h);
           glViewport(dim.x, dim.y, dim.w, dim.h);
-          distorted.render(display.resolve_texture);
-          break; // paint over the entire sdl window
+          distorted.render(resolve_texture);
+          break;
         }
         case 2: 
         case 3: {
-          auto dim = fit_viewport(float(display.w) / display.h, w, h);
+          auto dim = fit_viewport(aspect_ratio, w, h);
           glViewport(dim.x - (desktop_view - 2) * dim.w, dim.y, dim.w * 2, dim.h);
           glScissor(dim.x, dim.y, dim.w, dim.h);
           glEnable(GL_SCISSOR_TEST);
-          distorted.render(display.resolve_texture);
+          distorted.render(resolve_texture);
           glDisable(GL_SCISSOR_TEST);
           break;
         }
         case 4: {
-          auto dim = fit_viewport(float(display.w) * 2 / display.h, w, h);
+          auto dim = fit_viewport(aspect_ratio * 2, w, h);
           glBlitNamedFramebuffer(
-            display.resolve_fbo, 0,
+            resolve_fbo, 0,
             0, 0,
-            display.w*2, display.h,
+            viewport_w*2, viewport_h,
             dim.x, dim.y,
             dim.x + dim.w, dim.y + dim.h,
             GL_COLOR_BUFFER_BIT,
@@ -329,12 +434,12 @@ void app::run() {
         }
         case 5: 
         case 6: {
-          auto dim = fit_viewport(float(display.w) / display.h, w, h);
-          auto display_shift = (desktop_view - 5) * display.w;
+          auto dim = fit_viewport(aspect_ratio, w, h);
+          auto display_shift = (desktop_view - 5) * viewport_w;
           glBlitNamedFramebuffer(
-            display.resolve_fbo, 0, 
+            resolve_fbo, 0, 
             display_shift, 0, 
-            display_shift + display.w, display.h, 
+            display_shift + viewport_w, viewport_h,
             dim.x, dim.y, 
             dim.x + dim.w, dim.y + dim.h, 
             GL_COLOR_BUFFER_BIT, 
@@ -343,6 +448,9 @@ void app::run() {
           break;
         }
       }
+
+      if (debug_wireframe_distortion) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     }
 
     if (show_gui()) return;
@@ -353,7 +461,7 @@ void app::run() {
 
 bool app::show_gui(bool * open) {
 
-  static bool show_debug_window = false, show_demo_window = false;
+
   if (gui::BeginMainMenuBar()) {
     if (gui::BeginMenu("File")) {
       if (gui::MenuItem("New")) {}
@@ -400,7 +508,12 @@ bool app::show_gui(bool * open) {
 
   if (show_debug_window) {
     gui::Begin("Debug", &show_debug_window);
-    gui::Text("Hello World");
+    gui::SliderInt("quality", &quality_level, 0, quality_level_count - 1); 
+    gui::SliderInt("desktop view", &desktop_view, 0, 6);
+    gui::Checkbox("wireframe hidden area", &debug_wireframe_hidden_area);
+    gui::Checkbox("wireframe distortion", &debug_wireframe_distortion);
+    bool tonemap = enable_tonemap; gui::Checkbox("tonemap", &tonemap); enable_tonemap = tonemap;
+    bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;
     gui::End();
   }
 

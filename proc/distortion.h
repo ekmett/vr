@@ -5,10 +5,10 @@
 
 // generates a preview of the warped display looks like
 struct distortion {
-  distortion(GLushort segmentsH = 43, GLushort segmentsV = 43);
+  distortion(GLushort segmentsH = 83, GLushort segmentsV = 83);
   ~distortion();
   void render_stencil();
-  void render(GLuint resolutionTexture);
+  void render(GLuint resolveTexture);
 private:
   union {
     GLuint array[2];

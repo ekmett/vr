@@ -52,18 +52,21 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(16) vec3 sun_color;
   UNIFORM_ALIGN(16) samplerCube sky_cubemap;
   UNIFORM_ALIGN(8)  float cos_sun_angular_radius;
+  UNIFORM_ALIGN(4) float render_buffer_usage;  //  how much of the render buffer is being used? max_supersampling_factor / current_supersampling_factor
+  UNIFORM_ALIGN(4) float resolve_buffer_usage; // 
 
   // camera
-  float bloom_exposure;
-  float bloom_magnitude;
-  float exposure;
-  float global_time;
-  float nearClip;
-  float farClip;
+  UNIFORM_ALIGN(4) float bloom_exposure;
+  UNIFORM_ALIGN(4) float bloom_magnitude;
+  UNIFORM_ALIGN(4) float exposure;
+  UNIFORM_ALIGN(4) float global_time;
+  UNIFORM_ALIGN(4) float nearClip, farClip;
+  UNIFORM_ALIGN(4) int enable_seascape, enable_tonemap;
 
   // pose info, shuffled down here by size
-  int controller_mask;
-  int controller_device[MAX_CONTROLLERS];
+  UNIFORM_ALIGN(4) int controller_mask;
+  UNIFORM_ALIGN(4) int controller_device[MAX_CONTROLLERS];
+  UNIFORM_ALIGN(4) int quality_level;
 };
 
 #ifdef __cplusplus

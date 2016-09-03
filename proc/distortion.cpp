@@ -8,13 +8,56 @@ using namespace framework;
 using namespace glm;
 using namespace vr;
 
+
+static float sign(vec2 p1, vec2 p2, vec2 p3) {
+  return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+bool point_in_triangle(vec2 p, vec2 * v) {
+  bool b1, b2, b3;
+
+  b1 = sign(p, v[0], v[1]) < 0.0f;
+  b2 = sign(p, v[1], v[2]) < 0.0f;
+  b3 = sign(p, v[2], v[0]) < 0.0f;
+
+  return (b1 == b2) && (b2 == b3);
+}
+
+bool point_in_mesh(vec2 p, vec2 * mesh, int vertices) {
+  for (int i = 0; i < vertices; i += 3) {
+    if (point_in_triangle(p, mesh + i)) return true;
+  }
+  return false;
+}
+
 distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortion_mask"), warp("distortion_warp") {
+  glUniformBlockBinding(warp.programId, 0, 0);
 
   float w = (float)(1.0 / float(segmentsH - 1)),
         h = (float)(1.0 / float(segmentsV - 1));
 
   struct vertex {
-    vec2 p, r, g, b;
+    vec2 p, r, g, b; 
+    GLushort eye;
+  };
+
+  vector<vec2> hidden_verts;
+  for (int i = 0;i < 2;++i) {
+    auto mesh = VRSystem()->GetHiddenAreaMesh(EVREye(i));
+    if (mesh.unTriangleCount == 0) continue;
+    for (int j = 0; j < mesh.unTriangleCount * 3; ++j) {
+      auto v = mesh.pVertexData[j].v;
+      hidden_verts.push_back(vec2(i - 1 + v[0], 1 - 2 * v[1]));
+    }
+  }
+
+  n_hidden = int(hidden_verts.size());
+
+  auto want = [&hidden_verts](float v[2]) -> bool {
+    return 0.02 < min(v[0], v[1])
+      && max(v[0], v[1]) <= 0.98
+      //&& !point_in_mesh(vec2(v[0], v[1]), hidden_verts.data(), hidden_verts.size())
+      ;
   };
 
   vector<bool> good;
@@ -22,10 +65,7 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortio
     for (int y = 0; y < segmentsV; ++y) {
       for (int x = 0; x < segmentsH; ++x) {
         DistortionCoordinates_t dc = VRSystem()->ComputeDistortion(vr::EVREye(i), x*w, 1-y*h);
-        good.push_back(
-          0.00 <= min(dc.rfGreen[0], dc.rfGreen[1]) && 
-          max(dc.rfGreen[0], dc.rfGreen[1]) <= 1
-        );
+        good.push_back(want(dc.rfGreen) || want(dc.rfBlue) || want(dc.rfRed) );
       }
     }
   }
@@ -50,7 +90,7 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortio
   vector<int> ranks;
   {
     int j = 0, r = 0;
-    for (int i = 0;i < 2;++i) {
+    for (GLushort i = 0;i < 2;++i) {
       float o = float(i) - 1; // -1 for left eye, 0 for right
       for (int y = 0; y < segmentsV; ++y) {
         for (int x = 0; x < segmentsH; ++x) {
@@ -59,10 +99,11 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortio
           if (keep[j++]) {
             DistortionCoordinates_t dc = VRSystem()->ComputeDistortion(vr::EVREye(i), u, v);
             verts.push_back(vertex{
-              vec2(o + u, 2 * y*h - 1),
-              vec2(0.5 * (i + dc.rfRed[0]),   1 - dc.rfRed[1]),
-              vec2(0.5 * (i + dc.rfGreen[0]), 1 - dc.rfGreen[1]),
-              vec2(0.5 * (i + dc.rfBlue[0]),  1 - dc.rfBlue[1])
+              vec2(o + u, 2*y*h - 1),
+              vec2(dc.rfRed[0],   1 - dc.rfRed[1]),
+              vec2(dc.rfGreen[0], 1 - dc.rfGreen[1]),
+              vec2(dc.rfBlue[0],  1 - dc.rfBlue[1]),
+              i
             });
             ++r;
           }
@@ -96,18 +137,6 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortio
 
   n_indices = int(indices.size());
 
-  vector<vec2> hidden_verts;
-  for (int i = 0;i < 2;++i) {
-    auto mesh = VRSystem()->GetHiddenAreaMesh(EVREye(i));
-    if (mesh.unTriangleCount == 0) continue;
-    for (int j = 0; j < mesh.unTriangleCount * 3; ++j) {
-      auto v = mesh.pVertexData[j].v;
-     
-      hidden_verts.push_back(vec2(i - 1 + v[0], 1 - 2*v[1]));
-    }
-  }
-
-  n_hidden = int(hidden_verts.size());
 
   glCreateVertexArrays(2, array);
   gl::label(GL_VERTEX_ARRAY, vao, "distortion vao");
@@ -124,17 +153,17 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortio
   gl::label(GL_BUFFER, ibo, "distortion ibo");
   glNamedBufferData(ibo, indices.size() * sizeof(GLushort), indices.data(), GL_STATIC_DRAW);
 
-  for (int i = 0;i < 4;++i)
+  for (int i = 0;i < 5;++i) {
     glEnableVertexArrayAttrib(vao, i);
+    glVertexArrayAttribBinding(vao, i, 0);
+  }
     
   glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, p));
   glVertexArrayAttribFormat(vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, r));
   glVertexArrayAttribFormat(vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, g));
   glVertexArrayAttribFormat(vao, 3, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, b));
-
-  for (int i = 0;i < 4;++i)
-    glVertexArrayAttribBinding(vao, i, 0);
-
+  glVertexArrayAttribIFormat(vao, 4, 1, GL_UNSIGNED_SHORT, offsetof(vertex, eye));
+   
   glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(vertex)); // bind the data
 
   glEnableVertexArrayAttrib(hidden_vao, 0);
@@ -162,9 +191,7 @@ void distortion::render_stencil() {
 
   glBindVertexArray(hidden_vao);
   glUseProgram(mask.programId);
-  //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glDrawArrays(GL_TRIANGLES, 0, n_hidden); // put 1 in the stencil mask everywhere the hidden mesh lies
-                                           //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   glStencilFunc(GL_EQUAL, 0, 1);
   glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // use the stencil mask to disable writes
@@ -174,25 +201,22 @@ void distortion::render_stencil() {
   glBindVertexArray(0);
 }
 
-void distortion::render(GLuint resolutionTexture) {
+void distortion::render(GLuint resolveTexture) {
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_STENCIL_TEST);
+  glStencilMask(1);
   glBindVertexArray(vao);
   glUseProgram(warp.programId);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, resolutionTexture); // TODO: move this into a uniform so we can bake it into the program?
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glBindTexture(GL_TEXTURE_2D, resolveTexture); // TODO: move this into a uniform so we can bake it into the program?
+ // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, 0);
-  //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glBindVertexArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindTexture(GL_TEXTURE_2D, 0);
   glUseProgram(0);
-  glEnable(GL_DEPTH_TEST);
-  glDisable(GL_STENCIL_TEST);
-  glStencilMask(1);
+  
 }
  

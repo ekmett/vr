@@ -58,10 +58,11 @@ void controllers::render(int controller_mask) {
   glBindVertexArray(vao);
   glLineWidth(6);
   glUseProgram(program.programId);
-  glDrawArraysInstanced(GL_LINES, 0, 16, 2);    
-    /*  switch (controller_mask) {
+  switch (controller_mask) {
     case 1: glDrawArraysInstanced(GL_LINES, 0, 8, 2); break;
     case 2: glDrawArraysInstanced(GL_LINES, 8, 8, 2); break;
-  }*/
+    case 3: glDrawArraysInstanced(GL_LINES, 0, 16, 2); break;
+  }
+  glLineWidth(1);
   glUseProgram(0);
 }

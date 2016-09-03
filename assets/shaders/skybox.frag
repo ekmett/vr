@@ -19,14 +19,14 @@ void main() {
       color = sun_color;
   }
 
-#ifdef HACK_SEASCAPE
-  vec3 p = heightMapTracing(origin,dir);
-  vec3 dist = p - origin;
-  vec3 n = getNormal(p, dot(dist,dist) * EPSILON_NRM);
-  color = mix(color, getSeaColor(p,n,sun_dir,dir,dist), pow(smoothstep(-0.00,-0.15,dir.y),0.3));
-#endif
-
-  color = color / (color + 1);
+  if (enable_seascape != 0) {
+    vec3 p = heightMapTracing(origin,dir);
+    vec3 dist = p - origin;
+    vec3 n = getNormal(p, dot(dist,dist) * EPSILON_NRM);
+    color = mix(color, getSeaColor(p,n,sun_dir,dir,dist), pow(smoothstep(-0.00,-0.15,dir.y),0.3));
+  }
+  if (enable_tonemap != 0) 
+    color = color / (color + 1);
   outputColor = vec4(color,1);
 }
 
