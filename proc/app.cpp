@@ -26,32 +26,37 @@ static const struct render_target_meta {
   int msaa_level;
   float max_supersampling_factor;
 } render_target_metas[] {
-  { 4, 1.1 },
-  { 8, 1.4 }
+  { 2, 1.4 },
+  { 4, 1.4 }
+  //{ 8, 1.4 }
 };
 
 static const int render_target_count = countof(render_target_metas);
-static const float max_supersampling_factor = 1.4; 
 
 static const struct quality_level {
   int render_target;
   float resolution_scale;
   bool force_interleaved_reprojection;
 } quality_levels[] = {
-  //{ 0, 0.4,  true },
-  //{ 0, 0.5,  true },
-  { 0, 0.65, true },   // 0, valve's -4 
-  { 0, 0.81, true },   // 1, valve -3
-  { 0, 0.81, false },  // 2, valve -2
-  { 0, 0.9,  false },  // 3, valve -1
+  { 0, 0.65, true },   
+  { 0, 0.81, true },   
+  { 0, 0.81, false },
   { 0, 1.0,  false },
-  { 0, 1.1,  false },  // largest 4x supersampling factor = 1.1
-  { 1, 1.0,  false },
+  { 0, 1.1,  false },
+  { 0, 1.4,  false },
+  { 1, 0.9,  false },  
+  { 1, 1.0,  false },  // valve 0
   { 1, 1.1,  false },
-  { 1, 1.2,  false },
-  { 1, 1.3,  false },
-  { 1, 1.4,  false }   // largest 8x supersampling factor = 1.4
+  { 1, 1.22,  false }, // largest 4x supersampling factor = 1.4
+  { 1, 1.4,   false }
+  //{ 2, 0.9,   false },
+  //{ 2, 1.0,   false },
+  //{ 2, 1.1,   false },
+  //{ 2, 1.22,  false }
 };
+
+static const float max_supersampling_factor = 1.4;
+
 
 static const int quality_level_count = countof(quality_levels);
 
@@ -86,10 +91,11 @@ struct app : app_uniforms {
 
   bool debug_wireframe_hidden_area = false;
   bool debug_wireframe_distortion = false;
-  bool show_debug_window = true;
+  bool show_settings_window = true;
   bool show_demo_window = false;
+  bool show_timing_window = true;
   bool suspended_rendering = false;
-
+  float desired_supersampling = 1.0f;
 
   gui::system gui;
   //overlay dashboard;
@@ -189,7 +195,7 @@ app::app()
   // set up all the rendering targets  
   vr.handle->GetRecommendedRenderTargetSize(&recommended_w, &recommended_h);
   glCreateFramebuffers(countof(fbo), fbo);
-  glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 2, render_texture);
+  glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, countof(render_texture), render_texture);
   glCreateRenderbuffers(countof(depth_target), depth_target);
   for (int i = 0;i < render_target_count; ++i) {
     auto meta = render_target_metas[i];
@@ -301,6 +307,7 @@ void app::tonemap() {
 
 void app::present() {
   if (suspended_rendering) return;
+  // would i do less work to submit each eye separately to reduce copying?
   vr::Texture_t eyeTexture{ (void*)(intptr_t)(resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
   for (int i = 0;i < 2;++i) {
     auto v = viewports[i];
@@ -310,7 +317,7 @@ void app::present() {
       (v.x + v.w) / float(resolve_buffer_w),
       1 - v.y / float(resolve_buffer_h)
     };
-    vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds);
+    vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds, vr::Submit_Default);
   }
   compositor.PostPresentHandoff();
 }
@@ -352,10 +359,13 @@ void app::run() {
   int happy_frames = 0;  
   float last_update_time;
   float old_utilization = 0.8, old_old_utilization = 0.8, utilization = 0.8;
+  int interleaved_until = 0;
   while (!vr.poll() && !window.poll()) {
     // start a new imgui frame before we think of doing anything else
     gui.new_frame();
+    get_poses();
 
+    // adapt quality level
     vr::Compositor_FrameTiming frame_timing{};
     frame_timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
     bool have_frame_timing = vr::VRCompositor()->GetFrameTiming(&frame_timing, 0);
@@ -363,23 +373,24 @@ void app::run() {
     old_old_utilization = old_utilization;
     old_utilization = utilization;
     bool low_quality = vr::VRCompositor()->ShouldAppRenderWithLowResources();
+    
     utilization = duration<float, std::milli>(frame_timing.m_flClientFrameIntervalMs) / (vr.frame_duration * (low_quality ? 0.75f : 1.f) * (force_interleaved_reprojection ? 2 : 1));
     if (frame_timing.m_nNumDroppedFrames != 0) {
       utilization = std::max(2.0f, utilization);
-      //old_utilization = 2.0f; // spank it hard
     }
     int quality_change = 0;      
-    if (last_adapted < frame_timing.m_nFrameIndex - 1) {
+    if (last_adapted < frame_timing.m_nFrameIndex - 2) {
       if (frame_timing.m_nNumDroppedFrames != 0) {
-        quality_change = -2;
+        quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
         last_adapted = frame_timing.m_nFrameIndex;
         log("app")->warn("lowering quality due to dropped frame");
+        // interleaved_until = frame_timing.m_nFrameIndex + 10 * log(total_dropped_frames);
       } else if (utilization >= 0.9) {
-        quality_change = -2;
+        quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
         last_adapted = frame_timing.m_nFrameIndex;
         log("app")->info("lowering quality due to long frame");
       } else if (utilization >= 0.85 && utilization + std::max(utilization - old_utilization, (utilization - old_old_utilization) * 0.5f) >= 0.9) {
-        quality_change = -2;
+        quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
         last_adapted = frame_timing.m_nFrameIndex;
         log("app")->info("lowering quality due to predicted long frame");
       }
@@ -389,18 +400,12 @@ void app::run() {
       if (utilization < 0.7 && old_utilization < 0.7 && old_old_utilization < 0.7) { // we have had a good run
         quality_change = +1;
         last_adapted = frame_timing.m_nFrameIndex;
-        log("app")->info("increasing quality due to short frames");
+        log("app")->info("increasing quality due to short frames");        
       }
     }
-
    
     quality_level += quality_change;    
 
-    gui::Text("utilization: %.02f", utilization);
-    gui::Text("headroom: %.2fms", frame_timing.m_nNumDroppedFrames ? 0.0f : frame_timing.m_flCompositorIdleCpuMs);
-    gui::Text("time waiting for present: %.2fms", frame_timing.m_flWaitForPresentCpuMs);
-    gui::Text("pre-submit GPU: %.2fms", frame_timing.m_flPreSubmitGpuMs);
-    gui::Text("post-submit GPU: %.2fms", frame_timing.m_flPostSubmitGpuMs);
 
     /* gui::Text("total dropped frames: %d", total_dropped_frames);
     gui::Text("frame: %d", frame_timing.m_nFrameIndex);
@@ -410,7 +415,18 @@ void app::run() {
     gui::Text("compositor render CPU: %.2fms", frame_timing.m_flCompositorRenderCpuMs); */
 
     quality_level = clamp(quality_level, minimum_quality_level, maximum_quality_level);
-    vr::VRCompositor()->ForceInterleavedReprojectionOn(force_interleaved_reprojection || quality_levels[quality_level].force_interleaved_reprojection);
+    bool interleaved_reprojection = force_interleaved_reprojection || quality_levels[quality_level].force_interleaved_reprojection || (frame_timing.m_nFrameIndex < interleaved_until);
+    vr::VRCompositor()->ForceInterleavedReprojectionOn(interleaved_reprojection);
+
+    if (gui::Begin("Timing", &show_timing_window)) {
+      gui::Text("utilization: %.02f", utilization);
+      gui::Text("headroom: %.2fms", frame_timing.m_nNumDroppedFrames ? 0.0f : frame_timing.m_flCompositorIdleCpuMs);
+      gui::Text("time waiting for present: %.2fms", frame_timing.m_flWaitForPresentCpuMs);
+      gui::Text("pre-submit GPU: %.2fms", frame_timing.m_flPreSubmitGpuMs);
+      gui::Text("post-submit GPU: %.2fms", frame_timing.m_flPostSubmitGpuMs);
+      if (interleaved_reprojection) gui::Text("Using interleaved reprojection");
+      gui::End();
+    }
 
     // clear the display window  
     glClearColor(0.18f, 0.18f, 0.18f, 1.f);
@@ -427,13 +443,17 @@ void app::run() {
     glClearColor(0.18f, 0.18f, 0.18f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    GLint viewport_w = recommended_w * q.resolution_scale,
-          viewport_h = recommended_h * q.resolution_scale;
+
+    float actual_supersampling = std::min(q.resolution_scale * desired_supersampling, render_target_metas[q.render_target].max_supersampling_factor);
+    GLint viewport_w = recommended_w * actual_supersampling;
+    GLint viewport_h = recommended_h * actual_supersampling;
+    gui::Text("viewport: %d x %d (%.02fx supersampling)", viewport_w, viewport_h, actual_supersampling);
+
     float aspect_ratio = float(viewport_w) / viewport_h;
 
     // % of the width and height of the render and resolve buffer we're using. squared this yields our actual memory efficiency
-    render_buffer_usage = q.resolution_scale / render_target_metas[q.render_target].max_supersampling_factor;
-    resolve_buffer_usage = q.resolution_scale / max_supersampling_factor ;
+    render_buffer_usage = actual_supersampling / render_target_metas[q.render_target].max_supersampling_factor;
+    resolve_buffer_usage = actual_supersampling / max_supersampling_factor ;
 
     glViewport(0, 0, viewport_w * 2, viewport_h);
     if (debug_wireframe_hidden_area) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -446,7 +466,6 @@ void app::run() {
     glViewportIndexedf(1, (float)viewport_w, 0, (float)viewport_w, (float)viewport_h); // viewport 1 right eye
     viewports[1] = { viewport_w, 0, viewport_w, viewport_h };
     
-    get_poses();
     submit_uniforms();
 
     glBindVertexArray(dummy_vao);
@@ -533,7 +552,6 @@ void app::run() {
 
 bool app::show_gui(bool * open) {
 
-
   if (gui::BeginMainMenuBar()) {
     if (gui::BeginMenu("File")) {
       if (gui::MenuItem("New")) {}
@@ -571,25 +589,27 @@ bool app::show_gui(bool * open) {
       gui::EndMenu();
     }
     if (gui::BeginMenu("Window")) {      
-      if (gui::MenuItem("Debug", nullptr, &show_debug_window)) {}
+      if (gui::MenuItem("Settings", nullptr, &show_settings_window)) {}
+      if (gui::MenuItem("Timing", nullptr, &show_timing_window)) {}
       if (gui::MenuItem("Demo", nullptr, &show_demo_window)) {}
       gui::EndMenu();
     }
     gui::EndMainMenuBar();
   }
 
-  if (show_debug_window) {
-    gui::Begin("Debug", &show_debug_window);
+  if (show_settings_window) {
+    gui::Begin("Settings", &show_settings_window);
     
-    gui::SliderInt("minimum quality", &minimum_quality_level, 0, quality_level_count - 1);
-    gui::SliderInt("quality", &quality_level, 0, quality_level_count - 1);
-    gui::SliderInt("maximum quality", &maximum_quality_level, 0, quality_level_count - 1);
     gui::SliderInt("desktop view", &desktop_view, 0, 6);
+    gui::SliderInt("min quality", &minimum_quality_level, 0, quality_level_count - 1);
+    gui::SliderInt("quality", &quality_level, 0, quality_level_count - 1);
+    gui::SliderInt("max quality", &maximum_quality_level, 0, quality_level_count - 1);
+    gui::SliderFloat("super-sampling", &desired_supersampling, 0.3, ::max_supersampling_factor);
     gui::Checkbox("force interleaved reprojection", &force_interleaved_reprojection);
-    gui::Checkbox("wireframe hidden area", &debug_wireframe_hidden_area);
+    gui::Checkbox("wireframe hidden area", &debug_wireframe_hidden_area);  ImGui::SameLine();
     gui::Checkbox("wireframe distortion", &debug_wireframe_distortion);
-    bool tonemap = enable_tonemap; gui::Checkbox("tonemap", &tonemap); enable_tonemap = tonemap;
-    bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;   
+    bool tonemap = enable_tonemap; gui::Checkbox("tonemap", &tonemap); enable_tonemap = tonemap;  ImGui::SameLine();
+    bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;
     gui::End();
   }
 
