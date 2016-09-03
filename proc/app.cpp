@@ -86,6 +86,8 @@ struct app : app_uniforms {
   bool debug_wireframe_distortion = false;
   bool show_debug_window = true;
   bool show_demo_window = false;
+  bool suspended_rendering = false;
+
 
   gui::system gui;
   //overlay dashboard;
@@ -100,6 +102,7 @@ struct app : app_uniforms {
   int quality_tick;
   uint32_t recommended_w, recommended_h;
   uint32_t resolve_buffer_w, resolve_buffer_h;
+  bool force_interleaved_reprojection;
 
     //uint32_t w, h;
   union {
@@ -152,6 +155,7 @@ app::app()
   nearClip = 0.1f;
   farClip = 10000.f;
   quality_level = 6;
+  force_interleaved_reprojection = false;
 
   glCreateVertexArrays(1, &dummy_vao);
   glCreateBuffers(1, &ubo);
@@ -291,15 +295,17 @@ void app::tonemap() {
 
   }
 }
+
 void app::present() {
+  if (suspended_rendering) return;
   vr::Texture_t eyeTexture{ (void*)(intptr_t)(resolve_texture), vr::API_OpenGL, vr::ColorSpace_Gamma };
   for (int i = 0;i < 2;++i) {
-    auto v = viewports[i];    
-    vr::VRTextureBounds_t eyeBounds = { 
-       v.x / float(resolve_buffer_w), 
-       1 - (v.y + v.h) / float(resolve_buffer_h),
-       (v.x + v.w) / float(resolve_buffer_w), 
-       1 - v.y / float(resolve_buffer_h)
+    auto v = viewports[i];
+    vr::VRTextureBounds_t eyeBounds = {
+      v.x / float(resolve_buffer_w),
+      1 - (v.y + v.h) / float(resolve_buffer_h),
+      (v.x + v.w) / float(resolve_buffer_w),
+      1 - v.y / float(resolve_buffer_h)
     };
     vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds); // NB: if we do the distortion ourselves we could do it in hdr
   }
@@ -342,6 +348,19 @@ void app::run() {
     // clear the display window  
     glClearColor(0.18f, 0.18f, 0.18f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    static int old_quality_level = -1;
+    static bool old_force_interleaved_reprojection = false;
+
+    if (quality_level != old_quality_level) {
+      force_interleaved_reprojection = quality_level <= 2;
+      old_quality_level = quality_level;
+    }
+    
+    if (force_interleaved_reprojection != old_force_interleaved_reprojection) {
+      vr::VRCompositor()->ForceInterleavedReprojectionOn(force_interleaved_reprojection);
+      old_force_interleaved_reprojection = force_interleaved_reprojection;
+    }
 
     // start a new imgui frame
     gui.new_frame();
@@ -510,11 +529,18 @@ bool app::show_gui(bool * open) {
     gui::Begin("Debug", &show_debug_window);
     gui::SliderInt("quality", &quality_level, 0, quality_level_count - 1); 
     gui::SliderInt("desktop view", &desktop_view, 0, 6);
+    gui::Checkbox("force interleaved reprojection", &force_interleaved_reprojection);
     gui::Checkbox("wireframe hidden area", &debug_wireframe_hidden_area);
     gui::Checkbox("wireframe distortion", &debug_wireframe_distortion);
     bool tonemap = enable_tonemap; gui::Checkbox("tonemap", &tonemap); enable_tonemap = tonemap;
     bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;   
     gui::End();
+  }
+
+
+  if (gui::Button(suspended_rendering ? "resume rendering" : "suspend rendering")) {
+    suspended_rendering = !suspended_rendering;
+    vr::VRCompositor()->SuspendRendering(suspended_rendering);
   }
 
   if (show_demo_window)

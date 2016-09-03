@@ -28,6 +28,7 @@ namespace framework {
     ArHosekSkyModelState * rgb[3];
     GLuint cubemap;
     GLuint64 cubemap_handle;
+    GLuint cubemap_views[6];
     gl::shader program;
   };
 }

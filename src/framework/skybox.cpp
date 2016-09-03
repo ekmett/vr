@@ -113,17 +113,29 @@ namespace framework {
 
     static const int N = 128;
     alloca_array<tvec4<half>> cubemap_data(6 * N * N);
-    for (int s = 0 ; s < 6; ++s)
-      for (int y = 0; y < N; ++y)
+    alloca_array<tvec4<uint8_t>> tonemapped_cubemap_data(6 * N*N);
+    for (int s = 0; s < 6; ++s) {
+      for (int y = 0; y < N; ++y) {
         for (int x = 0; x < N; ++x) {
           vec3 dir = xys_to_direction(x, y, s, N, N);
           vec3 radiance = sample(dir);
           int i = s*N*N + y*N + x;
-          cubemap_data[i] = tvec4<half> { 
-            half(radiance.r), 
-            half(radiance.g), 
-            half(radiance.b), 
+          cubemap_data[i] = tvec4<half>{
+            half(radiance.r),
+            half(radiance.g),
+            half(radiance.b),
             1.0_half
+          };
+
+          bool flip[] = { false, false, true, true, false, false };
+
+          if (flip[s]) i = (s + 1) * N*N - 1 - y*N - x;
+            
+          tonemapped_cubemap_data[i] = tvec4<uint8_t>{
+            uint8_t(clamp<float>(128.0 * radiance.r / (radiance.r + 1),0.f, 255.f)),
+            uint8_t(clamp<float>(128.0 * radiance.g / (radiance.g + 1),0.f, 255.f)),
+            uint8_t(clamp<float>(128.0 * radiance.b / (radiance.b + 1),0.f, 255.f)),
+            255
           };
 
           float u = (x + 0.5f) / N;
@@ -139,6 +151,8 @@ namespace framework {
 
           sh += project_onto_sh9(dir, radiance) * weight;
           weights += weight;
+        }
+      }
     }
     sh *= (4.0f * float(M_PI)) / weights;
 
@@ -158,6 +172,29 @@ namespace framework {
     glTextureStorage2D(cubemap, 7, GL_RGBA16F, N, N);
     glTextureSubImage3D(cubemap, 0, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
     glGenerateTextureMipmap(cubemap);
+
+    // copy the data for openvr
+    glCreateTextures(GL_TEXTURE_2D, 6, cubemap_views);   
+    
+    // right left top bottom back front - opengl order
+    // front back left right top bottom - openvr order
+    vr::Texture_t vr_skybox[6];
+    // int swizzle[6] = { 5, 4, 1, 0, 2, 3 };
+    int swizzle[6] = { 2, 3, 4, 5, 1, 0 };
+    //int swizzle[6] = { 1, 0, 3, 2, 5, 4}; //
+    for (int i = 0;i < 6; ++i) {
+      glTextureParameteri(cubemap_views[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTextureParameteri(cubemap_views[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+      glTextureParameteri(cubemap_views[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTextureParameteri(cubemap_views[i], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      glTextureStorage2D(cubemap_views[i], 7, GL_RGBA8, N, N);
+      glTextureSubImage2D(cubemap_views[i], 0, 0, 0, N, N, GL_RGBA, GL_UNSIGNED_BYTE, tonemapped_cubemap_data.data() + (N*N*i));
+      glGenerateTextureMipmap(cubemap_views[i]);
+      vr_skybox[swizzle[i]].handle = (void*)(intptr_t)cubemap_views[i];
+      vr_skybox[swizzle[i]].eColorSpace = vr::ColorSpace_Gamma; // well, not really
+      vr_skybox[swizzle[i]].eType = vr::API_OpenGL;
+    }
+    vr::VRCompositor()->SetSkyboxOverride(vr_skybox, 6);
 
     cubemap_handle = glGetTextureHandleARB(cubemap);
     glMakeTextureHandleResidentARB(cubemap_handle);
@@ -184,6 +221,7 @@ namespace framework {
     for (auto m : rgb) arhosekskymodelstate_free(m);
     glMakeTextureHandleNonResidentARB(cubemap_handle);
     glDeleteTextures(1, &cubemap);
+    glDeleteTextures(6, cubemap_views);
   }
 
   void sky::render() const {
