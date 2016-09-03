@@ -1,5 +1,6 @@
 #version 450 core
-#extension GL_ARB_shader_viewport_layer_array : require
+#extension GL_AMD_vertex_shader_layer : enable
+// #extension GL_ARB_shader_viewport_layer_array : require
 #extension GL_ARB_bindless_texture : require
 #extension GL_ARB_shading_language_include : require
 #include "uniforms.h"
@@ -24,6 +25,7 @@ void main() {
   origin.y -= 3;
 #endif
   coord = mat3(inverse_model_view) * (inverse_projection[gl_InstanceID] * position).xyz;
-  gl_ViewportIndex = gl_InstanceID;
+  gl_Layer = gl_InstanceID;
+  // gl_ViewportIndex = gl_InstanceID;
   gl_Position = position;
 }

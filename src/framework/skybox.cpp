@@ -127,7 +127,7 @@ namespace framework {
             1.0_half
           };
 
-          bool flip[] = { false, false, true, true, false, false };
+          bool flip[] = { false, false, true, true, false, false }; // openvr uses a different cubemap face order, apparently, with different windings
 
           if (flip[s]) i = (s + 1) * N*N - 1 - y*N - x;
             
@@ -179,9 +179,7 @@ namespace framework {
     // right left top bottom back front - opengl order
     // front back left right top bottom - openvr order
     vr::Texture_t vr_skybox[6];
-    // int swizzle[6] = { 5, 4, 1, 0, 2, 3 };
     int swizzle[6] = { 2, 3, 4, 5, 1, 0 };
-    //int swizzle[6] = { 1, 0, 3, 2, 5, 4}; //
     for (int i = 0;i < 6; ++i) {
       glTextureParameteri(cubemap_views[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       glTextureParameteri(cubemap_views[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);

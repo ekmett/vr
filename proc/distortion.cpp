@@ -47,9 +47,11 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortio
     if (mesh.unTriangleCount == 0) continue;
     for (int j = 0; j < mesh.unTriangleCount * 3; ++j) {
       auto v = mesh.pVertexData[j].v;
-      hidden_verts.push_back(vec2(i - 1 + v[0], 1 - 2 * v[1]));
+      hidden_verts.push_back(vec2(v[0]*2-1, 1 - 2 * v[1]));
     }
+    if (i == 0) n_hidden_left = int(hidden_verts.size());
   }
+  glProgramUniform1i(mask.programId, 0, n_hidden_left);
 
   n_hidden = int(hidden_verts.size());
 
@@ -137,7 +139,6 @@ distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortio
 
   n_indices = int(indices.size());
 
-
   glCreateVertexArrays(2, array);
   gl::label(GL_VERTEX_ARRAY, vao, "distortion vao");
   gl::label(GL_VERTEX_ARRAY, hidden_vao, "distortion hidden vao");
@@ -183,16 +184,13 @@ void distortion::render_stencil() {
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   glEnable(GL_STENCIL_TEST);
-
   glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
   glStencilMask(1);
   glStencilFunc(GL_ALWAYS, 1, 1);
   glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
-
   glBindVertexArray(hidden_vao);
   glUseProgram(mask.programId);
   glDrawArrays(GL_TRIANGLES, 0, n_hidden); // put 1 in the stencil mask everywhere the hidden mesh lies
-
   glStencilFunc(GL_EQUAL, 0, 1);
   glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // use the stencil mask to disable writes
   glStencilMask(0);
@@ -201,7 +199,7 @@ void distortion::render_stencil() {
   glBindVertexArray(0);
 }
 
-void distortion::render(GLuint resolveTexture) {
+void distortion::render(GLuint resolveTexture, int view_mask) {
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_STENCIL_TEST);
   glStencilMask(1);
@@ -209,10 +207,8 @@ void distortion::render(GLuint resolveTexture) {
   glUseProgram(warp.programId);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, resolveTexture); // TODO: move this into a uniform so we can bake it into the program?
- // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glBindTexture(GL_TEXTURE_2D_ARRAY, resolveTexture); // TODO: move this into a uniform so we can bake it into the program?
   glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, 0);
-//  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glBindVertexArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindTexture(GL_TEXTURE_2D, 0);
