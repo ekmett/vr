@@ -203,6 +203,7 @@ namespace framework {
     uniforms.sun_color = sun_radiance;
     uniforms.sky_cubemap = cubemap_handle;
     uniforms.cos_sun_angular_radius = cos(sun_size);
+    uniforms.ground_albedo = ground_albedo;
   }
 
   vec3 sky::sample(const vec3 & dir) const {

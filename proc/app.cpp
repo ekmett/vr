@@ -74,6 +74,7 @@ struct app : app_uniforms {
   void run();
   bool show_gui(bool * open = nullptr);
   void get_poses();
+  void adapt_quality();
   void tonemap();
   void present();
   void update_controller_assignment();
@@ -96,7 +97,7 @@ struct app : app_uniforms {
   bool show_timing_window = true;
   bool suspended_rendering = false;
   float desired_supersampling = 1.0f;
-
+  
   gui::system gui;
   //overlay dashboard;
   controllers controllers;
@@ -157,6 +158,7 @@ app::app()
   , distorted()
   , desktop_view(1)
   , sky(vec3(0.0, 0.1, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
+  //, sky(vec3(0.252, 0.955, -.155), 2.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
   , debug_wireframe_hidden_area(false)
   {
 
@@ -353,87 +355,83 @@ void app::get_poses() {
   }
 }
 
-void app::run() { 
+void app::adapt_quality() {
   int total_dropped_frames = 0;
   int last_adapted = 0;
-  int happy_frames = 0;  
-  float last_update_time;
-  float old_utilization = 0.8, old_old_utilization = 0.8, utilization = 0.8;
-  int interleaved_until = 0;
+  static float old_utilization = 0.8, old_old_utilization = 0.8, utilization = 0.8;
+
+  // adapt quality level
+  vr::Compositor_FrameTiming frame_timing{};
+  frame_timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
+  bool have_frame_timing = vr::VRCompositor()->GetFrameTiming(&frame_timing, 0);
+
+  old_old_utilization = old_utilization;
+  old_utilization = utilization;
+  bool low_quality = vr::VRCompositor()->ShouldAppRenderWithLowResources();
+
+  utilization = duration<float, std::milli>(frame_timing.m_flClientFrameIntervalMs) / (vr.frame_duration * (low_quality ? 0.75f : 1.f) * (force_interleaved_reprojection ? 2 : 1));
+  if (frame_timing.m_nNumDroppedFrames != 0) {
+    utilization = std::max(2.0f, utilization);
+  }
+  int quality_change = 0;
+  if (last_adapted < frame_timing.m_nFrameIndex - 2) {
+    if (frame_timing.m_nNumDroppedFrames != 0) {
+      quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
+      last_adapted = frame_timing.m_nFrameIndex;
+      log("app")->warn("lowering quality due to dropped frame");
+      // interleaved_until = frame_timing.m_nFrameIndex + 10; // try to avoid hiccuping on the screen? * log(total_dropped_frames);
+    } else if (utilization >= 0.9) {
+      quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
+      last_adapted = frame_timing.m_nFrameIndex;
+      log("app")->info("lowering quality due to long frame");
+    } else if (utilization >= 0.85 && utilization + std::max(utilization - old_utilization, (utilization - old_old_utilization) * 0.5f) >= 0.9) {
+      quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
+      last_adapted = frame_timing.m_nFrameIndex;
+      log("app")->info("lowering quality due to predicted long frame");
+    } else if (utilization < 0.7 && old_utilization < 0.7 && old_old_utilization < 0.7) { // we have had a good run
+      quality_change = +1;
+      last_adapted = frame_timing.m_nFrameIndex;
+      log("app")->info("increasing quality due to short frames");
+    }
+  }
+
+  quality_level += quality_change;
+
+
+
+  quality_level = clamp(quality_level, minimum_quality_level, maximum_quality_level);
+  bool interleaved_reprojection = force_interleaved_reprojection || quality_levels[quality_level].force_interleaved_reprojection; //  || (frame_timing.m_nFrameIndex < interleaved_until);
+  vr::VRCompositor()->ForceInterleavedReprojectionOn(interleaved_reprojection);
+
+  if (gui::Begin("Timing", &show_timing_window)) {
+    gui::Text("dropped frames: %d", total_dropped_frames);
+    gui::Text("utilization: %.02f", utilization);
+    gui::Text("headroom: %.2fms", frame_timing.m_nNumDroppedFrames ? 0.0f : frame_timing.m_flCompositorIdleCpuMs);
+    gui::Text("time waiting for present: %.2fms", frame_timing.m_flWaitForPresentCpuMs);
+    gui::Text("pre-submit GPU: %.2fms", frame_timing.m_flPreSubmitGpuMs);
+    gui::Text("post-submit GPU: %.2fms", frame_timing.m_flPostSubmitGpuMs);
+    // gui::Text("frame: %d", frame_timing.m_nFrameIndex);
+    // gui::Text("client frame interval %.2fms", frame_timing.m_flClientFrameIntervalMs);
+    // gui::Text("total render GPU: %.2fms", frame_timing.m_flTotalRenderGpuMs);
+    // gui::Text("compositor render GPU: %.2fms", frame_timing.m_flCompositorRenderGpuMs);
+    // gui::Text("compositor render CPU: %.2fms", frame_timing.m_flCompositorRenderCpuMs);
+    if (interleaved_reprojection) gui::Text("Using interleaved reprojection");
+    gui::End();
+  }
+}
+
+void app::run() { 
   while (!vr.poll() && !window.poll()) {
     // start a new imgui frame before we think of doing anything else
     gui.new_frame();
+    adapt_quality();
     get_poses();
 
-    // adapt quality level
-    vr::Compositor_FrameTiming frame_timing{};
-    frame_timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
-    bool have_frame_timing = vr::VRCompositor()->GetFrameTiming(&frame_timing, 0);
-    
-    old_old_utilization = old_utilization;
-    old_utilization = utilization;
-    bool low_quality = vr::VRCompositor()->ShouldAppRenderWithLowResources();
-    
-    utilization = duration<float, std::milli>(frame_timing.m_flClientFrameIntervalMs) / (vr.frame_duration * (low_quality ? 0.75f : 1.f) * (force_interleaved_reprojection ? 2 : 1));
-    if (frame_timing.m_nNumDroppedFrames != 0) {
-      utilization = std::max(2.0f, utilization);
-    }
-    int quality_change = 0;      
-    if (last_adapted < frame_timing.m_nFrameIndex - 2) {
-      if (frame_timing.m_nNumDroppedFrames != 0) {
-        quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
-        last_adapted = frame_timing.m_nFrameIndex;
-        log("app")->warn("lowering quality due to dropped frame");
-        // interleaved_until = frame_timing.m_nFrameIndex + 10 * log(total_dropped_frames);
-      } else if (utilization >= 0.9) {
-        quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
-        last_adapted = frame_timing.m_nFrameIndex;
-        log("app")->info("lowering quality due to long frame");
-      } else if (utilization >= 0.85 && utilization + std::max(utilization - old_utilization, (utilization - old_old_utilization) * 0.5f) >= 0.9) {
-        quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
-        last_adapted = frame_timing.m_nFrameIndex;
-        log("app")->info("lowering quality due to predicted long frame");
-      }
-    } 
-
-    if (last_adapted < frame_timing.m_nFrameIndex - 2) { // if we haven't adjusted in a while
-      if (utilization < 0.7 && old_utilization < 0.7 && old_old_utilization < 0.7) { // we have had a good run
-        quality_change = +1;
-        last_adapted = frame_timing.m_nFrameIndex;
-        log("app")->info("increasing quality due to short frames");        
-      }
-    }
-   
-    quality_level += quality_change;    
-
-
-    /* gui::Text("total dropped frames: %d", total_dropped_frames);
-    gui::Text("frame: %d", frame_timing.m_nFrameIndex);
-    gui::Text("client frame interval %.2fms", frame_timing.m_flClientFrameIntervalMs);
-    gui::Text("total render GPU: %.2fms", frame_timing.m_flTotalRenderGpuMs);
-    gui::Text("compositor render GPU: %.2fms", frame_timing.m_flCompositorRenderGpuMs);
-    gui::Text("compositor render CPU: %.2fms", frame_timing.m_flCompositorRenderCpuMs); */
-
-    quality_level = clamp(quality_level, minimum_quality_level, maximum_quality_level);
-    bool interleaved_reprojection = force_interleaved_reprojection || quality_levels[quality_level].force_interleaved_reprojection || (frame_timing.m_nFrameIndex < interleaved_until);
-    vr::VRCompositor()->ForceInterleavedReprojectionOn(interleaved_reprojection);
-
-    if (gui::Begin("Timing", &show_timing_window)) {
-      gui::Text("utilization: %.02f", utilization);
-      gui::Text("headroom: %.2fms", frame_timing.m_nNumDroppedFrames ? 0.0f : frame_timing.m_flCompositorIdleCpuMs);
-      gui::Text("time waiting for present: %.2fms", frame_timing.m_flWaitForPresentCpuMs);
-      gui::Text("pre-submit GPU: %.2fms", frame_timing.m_flPreSubmitGpuMs);
-      gui::Text("post-submit GPU: %.2fms", frame_timing.m_flPostSubmitGpuMs);
-      if (interleaved_reprojection) gui::Text("Using interleaved reprojection");
-      gui::End();
-    }
-
+  
     // clear the display window  
     glClearColor(0.18f, 0.18f, 0.18f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    static int old_quality_level = -1;
-   
 
     // hmd
     glEnable(GL_MULTISAMPLE);
@@ -443,10 +441,9 @@ void app::run() {
     glClearColor(0.18f, 0.18f, 0.18f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-
     float actual_supersampling = std::min(q.resolution_scale * desired_supersampling, render_target_metas[q.render_target].max_supersampling_factor);
-    GLint viewport_w = recommended_w * actual_supersampling;
-    GLint viewport_h = recommended_h * actual_supersampling;
+    GLint viewport_w = GLint(recommended_w * actual_supersampling) & ~1;
+    GLint viewport_h = GLint(recommended_h * actual_supersampling) & ~1;
     gui::Text("viewport: %d x %d (%.02fx supersampling)", viewport_w, viewport_h, actual_supersampling);
 
     float aspect_ratio = float(viewport_w) / viewport_h;

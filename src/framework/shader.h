@@ -16,6 +16,7 @@ namespace framework {
 
     // use a simplistic shader compiler for now
     struct shader : noncopyable {
+      shader(GLuint type, const char * name) : programId(compile(type, name)) {}
       shader(const char * name) : programId(compile(name)) {}
       shader(const char * name, const char * vertexShader, const char * fragmentShader) : programId(compile(name, vertexShader, fragmentShader)) {}
       shader(GLuint type, const char * name, const char * body) : programId(compile(type, name, body)) {}

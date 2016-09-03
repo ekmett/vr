@@ -24,9 +24,13 @@ void main() {
     vec3 dist = p - origin;
     vec3 n = getNormal(p, dot(dist,dist) * EPSILON_NRM);
     color = mix(color, getSeaColor(p,n,sun_dir,dir,dist), pow(smoothstep(-0.00,-0.15,dir.y),0.3));
+  } else {
+    color = mix(color, ground_albedo, pow(smoothstep(-0.00,-0.15,dir.y),0.3));
   }
-  if (enable_tonemap != 0) 
+  if (enable_tonemap != 0) {
     color = color / (color + 1);
+    color = pow(color,vec3(1/2.2));
+  }
   outputColor = vec4(color,1);
 }
 
