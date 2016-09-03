@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <random>
 #include <functional>
+#include <algorithm>
 #include "framework/worker.h"
 #include "framework/gl.h"
 #include "framework/signal.h"
@@ -35,20 +36,21 @@ static const float max_supersampling_factor = 1.4;
 static const struct quality_level {
   int render_target;
   float resolution_scale;
+  bool force_interleaved_reprojection;
 } quality_levels[] = {
-  { 0, 0.4 },
-  { 0, 0.5 },
-  { 0, 0.65 }, // 0, valve's -4 
-  { 0, 0.73 }, // 1, valve -3
-  { 0, 0.81 }, // 2, valve -2
-  { 0, 0.9 },  // 3, valve -1
-  { 0, 1.0 },
-  { 0, 1.1 },  // largest 4x supersampling factor = 1.1
-  { 1, 1.0 },
-  { 1, 1.1 },
-  { 1, 1.2 },
-  { 1, 1.3 },
-  { 1, 1.4 }   // largest 8x supersampling factor = 1.4
+  //{ 0, 0.4,  true },
+  //{ 0, 0.5,  true },
+  { 0, 0.65, true },   // 0, valve's -4 
+  { 0, 0.81, true },   // 1, valve -3
+  { 0, 0.81, false },  // 2, valve -2
+  { 0, 0.9,  false },  // 3, valve -1
+  { 0, 1.0,  false },
+  { 0, 1.1,  false },  // largest 4x supersampling factor = 1.1
+  { 1, 1.0,  false },
+  { 1, 1.1,  false },
+  { 1, 1.2,  false },
+  { 1, 1.3,  false },
+  { 1, 1.4,  false }   // largest 8x supersampling factor = 1.4
 };
 
 static const int quality_level_count = countof(quality_levels);
@@ -154,8 +156,11 @@ app::app()
 
   nearClip = 0.1f;
   farClip = 10000.f;
+  minimum_quality_level = 0;
   quality_level = 6;
+  maximum_quality_level = quality_level_count - 1;
   force_interleaved_reprojection = false;
+  enable_seascape = false;
 
   glCreateVertexArrays(1, &dummy_vao);
   glCreateBuffers(1, &ubo);
@@ -291,8 +296,6 @@ void app::tonemap() {
       GL_COLOR_BUFFER_BIT,
       GL_LINEAR
     );
-    log("debug")->info("tonemap {}: {},{},{},{} render buffer usage: {}, resolve: {}", i, v.x, v.y, v.x + v.w, v.y + v.h, render_buffer_usage, resolve_buffer_usage );
-
   }
 }
 
@@ -307,7 +310,7 @@ void app::present() {
       (v.x + v.w) / float(resolve_buffer_w),
       1 - v.y / float(resolve_buffer_h)
     };
-    vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds); // NB: if we do the distortion ourselves we could do it in hdr
+    vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds);
   }
   compositor.PostPresentHandoff();
 }
@@ -343,27 +346,78 @@ void app::get_poses() {
   }
 }
 
-void app::run() {
+void app::run() { 
+  int total_dropped_frames = 0;
+  int last_adapted = 0;
+  int happy_frames = 0;  
+  float last_update_time;
+  float old_utilization = 0.8, old_old_utilization = 0.8, utilization = 0.8;
   while (!vr.poll() && !window.poll()) {
+    // start a new imgui frame before we think of doing anything else
+    gui.new_frame();
+
+    vr::Compositor_FrameTiming frame_timing{};
+    frame_timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
+    bool have_frame_timing = vr::VRCompositor()->GetFrameTiming(&frame_timing, 0);
+    
+    old_old_utilization = old_utilization;
+    old_utilization = utilization;
+    bool low_quality = vr::VRCompositor()->ShouldAppRenderWithLowResources();
+    utilization = duration<float, std::milli>(frame_timing.m_flClientFrameIntervalMs) / (vr.frame_duration * (low_quality ? 0.75f : 1.f) * (force_interleaved_reprojection ? 2 : 1));
+    if (frame_timing.m_nNumDroppedFrames != 0) {
+      utilization = std::max(2.0f, utilization);
+      //old_utilization = 2.0f; // spank it hard
+    }
+    int quality_change = 0;      
+    if (last_adapted < frame_timing.m_nFrameIndex - 1) {
+      if (frame_timing.m_nNumDroppedFrames != 0) {
+        quality_change = -2;
+        last_adapted = frame_timing.m_nFrameIndex;
+        log("app")->warn("lowering quality due to dropped frame");
+      } else if (utilization >= 0.9) {
+        quality_change = -2;
+        last_adapted = frame_timing.m_nFrameIndex;
+        log("app")->info("lowering quality due to long frame");
+      } else if (utilization >= 0.85 && utilization + std::max(utilization - old_utilization, (utilization - old_old_utilization) * 0.5f) >= 0.9) {
+        quality_change = -2;
+        last_adapted = frame_timing.m_nFrameIndex;
+        log("app")->info("lowering quality due to predicted long frame");
+      }
+    } 
+
+    if (last_adapted < frame_timing.m_nFrameIndex - 2) { // if we haven't adjusted in a while
+      if (utilization < 0.7 && old_utilization < 0.7 && old_old_utilization < 0.7) { // we have had a good run
+        quality_change = +1;
+        last_adapted = frame_timing.m_nFrameIndex;
+        log("app")->info("increasing quality due to short frames");
+      }
+    }
+
+   
+    quality_level += quality_change;    
+
+    gui::Text("utilization: %.02f", utilization);
+    gui::Text("headroom: %.2fms", frame_timing.m_nNumDroppedFrames ? 0.0f : frame_timing.m_flCompositorIdleCpuMs);
+    gui::Text("time waiting for present: %.2fms", frame_timing.m_flWaitForPresentCpuMs);
+    gui::Text("pre-submit GPU: %.2fms", frame_timing.m_flPreSubmitGpuMs);
+    gui::Text("post-submit GPU: %.2fms", frame_timing.m_flPostSubmitGpuMs);
+
+    /* gui::Text("total dropped frames: %d", total_dropped_frames);
+    gui::Text("frame: %d", frame_timing.m_nFrameIndex);
+    gui::Text("client frame interval %.2fms", frame_timing.m_flClientFrameIntervalMs);
+    gui::Text("total render GPU: %.2fms", frame_timing.m_flTotalRenderGpuMs);
+    gui::Text("compositor render GPU: %.2fms", frame_timing.m_flCompositorRenderGpuMs);
+    gui::Text("compositor render CPU: %.2fms", frame_timing.m_flCompositorRenderCpuMs); */
+
+    quality_level = clamp(quality_level, minimum_quality_level, maximum_quality_level);
+    vr::VRCompositor()->ForceInterleavedReprojectionOn(force_interleaved_reprojection || quality_levels[quality_level].force_interleaved_reprojection);
+
     // clear the display window  
     glClearColor(0.18f, 0.18f, 0.18f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     static int old_quality_level = -1;
-    static bool old_force_interleaved_reprojection = false;
-
-    if (quality_level != old_quality_level) {
-      force_interleaved_reprojection = quality_level <= 2;
-      old_quality_level = quality_level;
-    }
-    
-    if (force_interleaved_reprojection != old_force_interleaved_reprojection) {
-      vr::VRCompositor()->ForceInterleavedReprojectionOn(force_interleaved_reprojection);
-      old_force_interleaved_reprojection = force_interleaved_reprojection;
-    }
-
-    // start a new imgui frame
-    gui.new_frame();
+   
 
     // hmd
     glEnable(GL_MULTISAMPLE);
@@ -409,7 +463,6 @@ void app::run() {
     auto flags = SDL_GetWindowFlags(window.sdl_window);
     if (flags & SDL_WINDOW_MINIMIZED) continue; // drop gui on the floor?
 
-    //ImGui::Text("HMD Position: %3.2f %3.2f %3.2f", hmdToWorld[3][0], hmdToWorld[3][1], hmdToWorld[3][2]);
 
     // ImGui::Image(ImTextureID(sky.testmap), ImVec2(128, 128));
 
@@ -527,7 +580,10 @@ bool app::show_gui(bool * open) {
 
   if (show_debug_window) {
     gui::Begin("Debug", &show_debug_window);
-    gui::SliderInt("quality", &quality_level, 0, quality_level_count - 1); 
+    
+    gui::SliderInt("minimum quality", &minimum_quality_level, 0, quality_level_count - 1);
+    gui::SliderInt("quality", &quality_level, 0, quality_level_count - 1);
+    gui::SliderInt("maximum quality", &maximum_quality_level, 0, quality_level_count - 1);
     gui::SliderInt("desktop view", &desktop_view, 0, 6);
     gui::Checkbox("force interleaved reprojection", &force_interleaved_reprojection);
     gui::Checkbox("wireframe hidden area", &debug_wireframe_hidden_area);
