@@ -189,7 +189,7 @@ namespace framework {
       glTextureSubImage2D(cubemap_views[i], 0, 0, 0, N, N, GL_RGBA, GL_UNSIGNED_BYTE, tonemapped_cubemap_data.data() + (N*N*i));
       glGenerateTextureMipmap(cubemap_views[i]);
       vr_skybox[swizzle[i]].handle = (void*)(intptr_t)cubemap_views[i];
-      vr_skybox[swizzle[i]].eColorSpace = vr::ColorSpace_Gamma; // well, not really
+      vr_skybox[swizzle[i]].eColorSpace = vr::ColorSpace_Linear;
       vr_skybox[swizzle[i]].eType = vr::API_OpenGL;
     }
     vr::VRCompositor()->SetSkyboxOverride(vr_skybox, 6);

@@ -55,9 +55,9 @@ static const struct render_target_meta {
   int msaa_level;
   float max_supersampling_factor;
 } render_target_metas[] {
-  { 2, 1.5 },
-  { 4, 1.5 }
-  //{ 8, 1.4 }
+  { 2, 1.4 },
+  { 4, 1.1 },
+  { 8, 1.22 }
 };
 
 static const int render_target_count = countof(render_target_metas);
@@ -76,15 +76,15 @@ static const struct quality_level {
   { 1, 0.9,  false },  
   { 1, 1.0,  false },  // valve 0
   { 1, 1.1,  false },
-  { 1, 1.22,  false }, // largest 4x supersampling factor = 1.4
-  { 1, 1.4,   false }
-  //{ 2, 0.9,   false },
-  //{ 2, 1.0,   false },
-  //{ 2, 1.1,   false },
-  //{ 2, 1.22,  false }
+  //{ 1, 1.22,  false }, // largest 4x supersampling factor = 1.4
+  //{ 1, 1.4,   false }
+  { 2, 0.9,   false },
+  { 2, 1.0,   false },
+  { 2, 1.1,   false },
+  { 2, 1.22,  false }
 };
 
-static const float max_supersampling_factor = 1.5;
+static const float max_supersampling_factor = 1.4;
 
 
 static const int quality_level_count = countof(quality_levels);
@@ -368,7 +368,7 @@ void app::tonemap() {
 
 void app::present() {
   if (suspended_rendering) return;
-  glFinish();
+  glFinish(); // drastic
   for (int i = 0;i < 2;++i) {
     vr::Texture_t eyeTexture { 
      (void*)intptr_t(resolve_view_texture[i]), 
@@ -426,22 +426,19 @@ void app::adapt_quality() {
   vr::Compositor_FrameTiming frame_timing{};
   frame_timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
   bool have_frame_timing = vr::VRCompositor()->GetFrameTiming(&frame_timing, 0);
+  total_dropped_frames += frame_timing.m_nNumDroppedFrames;
 
   old_old_utilization = old_utilization;
   old_utilization = utilization;
   bool low_quality = vr::VRCompositor()->ShouldAppRenderWithLowResources();
 
   utilization = duration<float, std::milli>(frame_timing.m_flClientFrameIntervalMs) / (vr.frame_duration * (low_quality ? 0.75f : 1.f) * (force_interleaved_reprojection ? 2 : 1));
-  if (frame_timing.m_nNumDroppedFrames != 0) {
-    utilization = std::max(2.0f, utilization);
-  }
   int quality_change = 0;
   if (last_adapted < frame_timing.m_nFrameIndex - 2) {
     if (frame_timing.m_nNumDroppedFrames != 0) {
       quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
       last_adapted = frame_timing.m_nFrameIndex;
-      log("app")->warn("lowering quality due to dropped frame");
-      // interleaved_until = frame_timing.m_nFrameIndex + 10; // try to avoid hiccuping on the screen? * log(total_dropped_frames);
+      log("app")->info("lowering quality due to dropped frame");      
     } else if (utilization >= 0.9) {
       quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
       last_adapted = frame_timing.m_nFrameIndex;
@@ -514,7 +511,7 @@ void app::run() {
 
     log("frame")->info("establishing viewport: {} x {}", viewport_w, viewport_h);
 
-    gui::Text("viewport: %d x %d (%.02fx supersampling)", viewport_w, viewport_h, actual_supersampling);
+    gui::Text("viewport: %d x %d (%dx msaa) (%.02fx supersampling)", viewport_w, viewport_h, render_target_metas[q.render_target].msaa_level, actual_supersampling);
 
     float aspect_ratio = float(viewport_w) / viewport_h;
 
@@ -564,7 +561,11 @@ void app::run() {
 
     // check if window is minimized here.
     auto flags = SDL_GetWindowFlags(window.sdl_window);
-    if (flags & SDL_WINDOW_MINIMIZED) continue; // drop gui on the floor?
+    if (flags & SDL_WINDOW_MINIMIZED) {
+      glFlush();
+      continue; // drop gui on the floor?
+
+    }
 
     log("frame")->info("screen is visible, rendering");
 
@@ -658,6 +659,7 @@ void app::run() {
 
     log("frame")->info("swapping window");
 
+    glFlush();
     window.swap();
   }
 }
