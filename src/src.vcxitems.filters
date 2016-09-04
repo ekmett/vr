@@ -88,6 +88,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\shader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glew.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\quality.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\distortion.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cds">
@@ -148,6 +150,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\quality.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\distortion.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\third-party\glm\util\glm.natvis" />

@@ -24,6 +24,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\cds.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\circular_array.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\composition.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\distortion.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\epoch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\filesystem.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\fmt.h" />
@@ -35,6 +36,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openal.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\quality.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sampling.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h" />
@@ -60,12 +62,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\distortion.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\epoch.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\filesystem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gl.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openal.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_system.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\quality.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_window.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_system.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp" />

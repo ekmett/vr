@@ -1,3 +1,4 @@
+#include "framework/stdafx.h"
 #include "framework/std.h"
 #include "framework/gui.h"
 #include "framework/error.h"
@@ -84,7 +85,7 @@ namespace framework {
       gui::Text("dropped frames: %d", total_dropped_frames);
       gui::Text("utilization: %.02f", utilization);
       gui::Text("headroom: %.2fms", frame_timing.m_nNumDroppedFrames ? 0.0f : frame_timing.m_flCompositorIdleCpuMs);
-      gui::Text("time waiting for present: %.2fms", frame_timing.m_flWaitForPresentCpuMs);
+      //gui::Text("time waiting for present: %.2fms", frame_timing.m_flWaitForPresentCpuMs);
       gui::Text("pre-submit GPU: %.2fms", frame_timing.m_flPreSubmitGpuMs);
       gui::Text("post-submit GPU: %.2fms", frame_timing.m_flPostSubmitGpuMs);
       // gui::Text("frame: %d", frame_timing.m_nFrameIndex);

@@ -11,12 +11,12 @@
 #include "imgui_internal.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "framework/openal.h"
-#include "distortion.h"
+#include "framework/distortion.h"
 #include "overlay.h"
 #include "framework/skybox.h"
 #include "framework/spectrum.h"
+#include "framework/quality.h"
 #include "uniforms.h"
-#include "quality.h"
 
 using namespace framework;
 using namespace filesystem;
@@ -70,11 +70,8 @@ struct app : app_uniforms {
   framework::sky sky;
   distortion distorted;
 
-  bool debug_wireframe_hidden_area = false;
-  bool debug_wireframe_distortion = false;
   bool show_settings_window = true;
   bool show_demo_window = false;
-  bool suspended_rendering = false;
   
   gui::system gui;
   controllers controllers;
@@ -205,7 +202,7 @@ void app::run() {
 
     submit_uniforms();
 
-    distorted.render_stencil(debug_wireframe_hidden_area);
+    distorted.render_stencil();
 
     if (skybox_visible) {
       glBindVertexArray(dummy_vao);
@@ -229,14 +226,13 @@ void app::desktop_display() {
     return; // drop gui on the floor?
   }
 
-  // clear the display window  
   glClearColor(0.18f, 0.18f, 0.18f, 1.f);
+  // glClearColor(0.f, 0.f, 0.f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
 
   int w, h;
   SDL_GetWindowSize(window.sdl_window, &w, &h);
 
-  if (debug_wireframe_distortion) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   // lets find an aspect ratio preserving viewport
   switch (desktop_view) {
     case 0: break;
@@ -309,8 +305,6 @@ void app::desktop_display() {
     }
   }
 
-  if (debug_wireframe_distortion) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
   if (show_gui()) return;
 
   glFlush();
@@ -337,11 +331,6 @@ bool app::show_gui(bool * open) {
       if (gui::MenuItem("Paste", "^V")) {}
       gui::EndMenu();
     }
-    if (gui::BeginMenu("Scene")) {
-      if (gui::MenuItem("Skybox Enabled", nullptr, &skybox_visible)) {}
-      gui::EndMenu();
-
-    }
     if (gui::BeginMenu("View")) {
       static const char * view_name[] = {\
         "None",
@@ -357,21 +346,31 @@ bool app::show_gui(bool * open) {
           desktop_view = i;              
       gui::EndMenu();
     }
-    if (gui::BeginMenu("Window")) {
+    if (gui::BeginMenu("Debug")) {
+      if (gui::BeginMenu("Wireframe")) {
+        if (gui::BeginMenu("Distortion")) {
+          gui::MenuItem("Render", nullptr, &distorted.debug_wireframe_render);
+          gui::MenuItem("Render Stencil", nullptr, &distorted.debug_wireframe_render_stencil);
+          gui::EndMenu();
+        }
+        gui::EndMenu();
+      }
+      gui::Separator();
+      gui::MenuItem("Skybox Enabled", nullptr, &skybox_visible);
+      gui::Separator();
       if (gui::MenuItem("Settings", nullptr, &show_settings_window)) {}
       if (gui::MenuItem("Quality", nullptr, &quality.show_quality_window)) {}
       if (gui::MenuItem("Timing", nullptr, &quality.show_timing_window)) {}
       if (gui::MenuItem("Demo", nullptr, &show_demo_window)) {}
       gui::EndMenu();
     }
+
     gui::EndMainMenuBar();
   }
 
   if (show_settings_window) {
     gui::Begin("Settings", &show_settings_window);    
     gui::SliderInt("desktop view", &desktop_view, 0, 6);
-    gui::Checkbox("wireframe hidden area", &debug_wireframe_hidden_area);  ImGui::SameLine();
-    gui::Checkbox("wireframe distortion", &debug_wireframe_distortion);
     bool tonemap = enable_tonemap; gui::Checkbox("tonemap", &tonemap); enable_tonemap = tonemap;  ImGui::SameLine();
     bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;
     gui::End();
@@ -392,11 +391,20 @@ bool app::show_gui(bool * open) {
 int SDL_main(int argc, char ** argv) {
   auto test = sampled_spectrum::from_rgb(vec3(1, 0.5, 0.5));
   spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
+
+  shared_ptr<spdlog::logger> ignore_logs[] {
+    spdlog::create<spdlog::sinks::null_sink_mt>("vr"),
+    spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
+    spdlog::create<spdlog::sinks::null_sink_mt>("al"),
+    spdlog::create<spdlog::sinks::null_sink_mt>("main"),
+    spdlog::create<spdlog::sinks::null_sink_mt>("app"),
+    spdlog::create<spdlog::sinks::null_sink_mt>("quality")
+  };
 #ifdef _WIN32
   SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96
 #endif
 
-  log("app")->info("pid: {}", GetCurrentProcessId());
+  log("main")->info("pid: {}", GetCurrentProcessId());
 
   path exe = executable_path();
   path asset_dir = path(exe.parent_path().parent_path().parent_path()).append("assets");

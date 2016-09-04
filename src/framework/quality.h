@@ -19,18 +19,22 @@ namespace framework {
     int render_target;
     float resolution_scale;
     bool force_interleaved_reprojection;
-  } quality_levels[] = {
-    { 0, 0.81,  true },
-    { 0, 0.81, false },
-    { 0, 0.9,  false },
-    { 0, 1.0,  false },  // valve 0
-    { 0, 1.1,  false },
-    { 1, 0.9,  false },
-    { 1, 1.0,  false },
-    { 1, 1.1,  false },
-    { 1, 1.2,  false },
-    { 1, 1.3,  false },
-    { 1, 1.4,  false }
+  } quality_levels[] {
+      { 0, 0.81,  true }
+    , { 0, 0.81, false }
+    , { 0, 0.9,  false }
+    , { 0, 1.0,  false }  // valve 0
+    , { 0, 1.1,  false }
+    , { 1, 0.9,  false }
+    , { 1, 1.0,  false }
+    , { 1, 1.1,  false }
+    , { 1, 1.2,  false }
+    , { 1, 1.3,  false }
+    , { 1, 1.4,  false }    
+    //, { 1, 1.5,  false }
+    //, { 1, 1.6,  false }
+    //, { 1, 1.7,  false }
+    //, { 1, 1.8,  false }
   };
 
   static const float max_supersampling_factor = 1.4;

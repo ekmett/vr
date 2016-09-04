@@ -218,9 +218,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
   <ItemGroup>
     <ClCompile Include="app.cpp" />
     <ClCompile Include="controllers.cpp" />
-    <ClCompile Include="distortion.cpp" />
     <ClCompile Include="overlay.cpp" />
-    <ClCompile Include="quality.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -239,9 +237,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
   <ItemGroup>
     <ClInclude Include="post.h" />
     <ClInclude Include="controllers.h" />
-    <ClInclude Include="distortion.h" />
     <ClInclude Include="overlay.h" />
-    <ClInclude Include="quality.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

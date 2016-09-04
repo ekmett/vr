@@ -17,8 +17,8 @@ void main() {
   vec2 lo = min(min(red, green), blue);
   vec2 hi = max(max(red, green), blue);
   float fBoundsCheck = ( 
-     (dot( vec2( lessThan( lo.xy, vec2(0.02, 0.02) ) ), vec2(1.0, 1.0))
-    + dot( vec2( greaterThan( hi.xy, vec2( 0.98, 0.98) ) ), vec2(1.0, 1.0))) );
+     (dot( vec2( lessThan( lo.xy, vec2(0.05, 0.05) ) ), vec2(1.0, 1.0))
+    + dot( vec2( greaterThan( hi.xy, vec2( 0.95, 0.95) ) ), vec2(1.0, 1.0))) );
   if (fBoundsCheck >= 1.0f) outputColor = vec4(0.18f,0.18f,0.18f,1);
   else {
     float r = texture(resolve, vec3(red * resolve_buffer_usage, eye)).r;
