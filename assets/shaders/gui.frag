@@ -1,6 +1,7 @@
 #version 450
+#extension GL_ARB_bindless_texture : require
 
-uniform sampler2D Texture;
+layout (bindless_sampler, location = 0)  uniform sampler2D Texture;
 
 in vec2 Frag_UV;
 in vec4 Frag_Color;

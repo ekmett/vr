@@ -1,5 +1,4 @@
 #version 450
-
 uniform mat4 ProjMtx;
 
 in vec2 Position;

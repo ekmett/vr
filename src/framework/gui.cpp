@@ -12,6 +12,7 @@ static double       g_Time = 0.0f;
 static bool         g_MousePressed[3] = { false, false, false };
 static float        g_MouseWheel = 0.0f;
 static GLuint       g_FontTexture = 0;
+static GLuint64     g_FontTextureHandle = 0;
 static int          g_ShaderHandle = 0;
 static int          g_UniformLocationTex = 0, g_UniformLocationProjMtx = 0;
 static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
@@ -29,7 +30,7 @@ void render_draw_lists(ImDrawData* draw_data) {
   // Backup GL state
   GLint last_program; glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
   GLint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-  GLint last_active_texture; glGetIntegerv(GL_ACTIVE_TEXTURE, &last_active_texture);
+  //GLint last_active_texture; glGetIntegerv(GL_ACTIVE_TEXTURE, &last_active_texture);
   GLint last_element_array_buffer; glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
   GLint last_vertex_array; glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
   GLint last_blend_src; glGetIntegerv(GL_BLEND_SRC, &last_blend_src);
@@ -49,7 +50,7 @@ void render_draw_lists(ImDrawData* draw_data) {
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
-  glActiveTexture(GL_TEXTURE0);
+  //glActiveTexture(GL_TEXTURE0);
 
   // Setup orthographic projection matrix
   glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
@@ -78,7 +79,7 @@ void render_draw_lists(ImDrawData* draw_data) {
       if (pcmd->UserCallback) {
         pcmd->UserCallback(cmd_list, pcmd);
       } else {
-        glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
+        glProgramUniformHandleui64ARB(g_ShaderHandle, 0, (GLuint64)(intptr_t)pcmd->TextureId);
         glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
         glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)idx_buffer_offset);
       }
@@ -88,8 +89,8 @@ void render_draw_lists(ImDrawData* draw_data) {
 
   // Restore modified GL state
   glUseProgram(last_program);
-  glActiveTexture(last_active_texture);
-  glBindTexture(GL_TEXTURE_2D, last_texture);
+  //glActiveTexture(last_active_texture);
+  //glBindTexture(GL_TEXTURE_2D, last_texture);
   glBindVertexArray(last_vertex_array);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_element_array_buffer);
   glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
@@ -165,9 +166,12 @@ void create_fonts_texture() {
   glTextureStorage2D(g_FontTexture, 1, GL_RGBA8, width, height);
   glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
   glTextureSubImage2D(g_FontTexture, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  g_FontTextureHandle = glGetTextureHandleARB(g_FontTexture);
+  glMakeTextureHandleResidentARB(g_FontTextureHandle);
+  glProgramUniform1i64ARB(g_ShaderHandle, 0, g_FontTextureHandle);
 
   // Store our identifier
-  io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
+  io.Fonts->TexID = (void *)(intptr_t)g_FontTextureHandle;
 }
 
 namespace framework {
@@ -319,7 +323,10 @@ namespace framework {
 
       glDeleteProgram(g_ShaderHandle);
       g_ShaderHandle = 0;
-
+      if (g_FontTextureHandle) {
+        glMakeTextureHandleNonResidentARB(g_FontTextureHandle);
+        g_FontTextureHandle = 0;
+      }
       if (g_FontTexture) {
         glDeleteTextures(1, &g_FontTexture);
         ImGui::GetIO().Fonts->TexID = 0;
