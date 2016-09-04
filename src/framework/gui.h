@@ -1,5 +1,6 @@
 #pragma once
 
+#include "framework/sdl_window.h"
 #include "imgui.h"
 #include "imgui_table.h"
 #include "IconsFontAwesome.h"

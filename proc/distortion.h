@@ -7,7 +7,7 @@
 struct distortion {
   distortion(GLushort segmentsH = 83, GLushort segmentsV = 83);
   ~distortion();
-  void render_stencil();
+  void render_stencil(bool debug_wireframe = false);
   void render(GLuint resolveTexture, int view_mask);
 private:
   union {

@@ -1,5 +1,6 @@
 #include "framework/stdafx.h"
 #include "framework/spdlog.h"
+#include "framework/error.h"
 #include "framework/gl.h"
 
 namespace framework {
@@ -97,6 +98,40 @@ namespace framework {
         case GL_DEBUG_TYPE_OTHER: return "other";
         default: return "unknown";
       }
+    }
+    void label(GLenum id, GLuint name, const char * label) noexcept {
+      glObjectLabel(id, name, (GLsizei)strlen(label), label);
+      log("gl")->info("{} {}: {}", show_object_label_type(id), name, label);
+    }
+    string get_label(GLenum id, GLuint name) noexcept {
+      GLsizei len;
+      glGetObjectLabel(id, name, 0, &len, nullptr);
+      string label;
+      if (!len) return label;
+      label.resize(len + 1);
+      GLsizei final_len;
+      glGetObjectLabel(id, name, len, &final_len, const_cast<GLchar*>(label.c_str()));
+      label.resize(len);
+      return label;
+    }
+    const char * show_framebuffer_status_result(GLenum e) noexcept {
+      switch (e) {
+        case GL_FRAMEBUFFER_COMPLETE: return "complete";
+        case GL_FRAMEBUFFER_UNDEFINED: return "undefined";
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: return "incomplete attachment";
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: return "incomplete missing attachment";
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: return "incomplete draw buffer";
+        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: return "incomplete read buffer";
+        case GL_FRAMEBUFFER_UNSUPPORTED: return "unsupported";
+        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: return "incomplete multisample";
+        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: return "incomplete layer targets";
+        default: return "unknown";
+      }
+    }
+    void check_framebuffer(GLuint framebuffer, GLenum role) {
+      GLenum result = glCheckNamedFramebufferStatus(framebuffer, role);
+      if (result != GL_FRAMEBUFFER_COMPLETE)
+        die("bad framebuffer: {} ({}): {}", gl::get_label(GL_FRAMEBUFFER, framebuffer), framebuffer, show_framebuffer_status_result(result));
     }
   }
 }

@@ -67,7 +67,6 @@ UNIFORM_STRUCT(1) app_uniforms {
   // pose info, shuffled down here by size
   UNIFORM_ALIGN(4) int controller_mask;
   UNIFORM_ALIGN(4) int controller_device[MAX_CONTROLLERS];
-  UNIFORM_ALIGN(4) int minimum_quality_level, quality_level, maximum_quality_level;
 };
 
 #ifdef __cplusplus

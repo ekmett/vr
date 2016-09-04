@@ -22,14 +22,18 @@
     <None Include="$(MSBuildThisFileDirectory)shaders\distortion_mask.vert" />
     <None Include="$(MSBuildThisFileDirectory)shaders\gui.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\gui.vert" />
+    <None Include="$(MSBuildThisFileDirectory)shaders\oct.glsl" />
+    <None Include="$(MSBuildThisFileDirectory)shaders\post_blur.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\post_blur_h.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\post_downsample.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\post_pass.vert" />
     <None Include="$(MSBuildThisFileDirectory)shaders\post_tonemap.frag" />
+    <None Include="$(MSBuildThisFileDirectory)shaders\seascape.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\skybox.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\skybox.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)shaders\post_blur_v.frag" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)shaders\uniforms.h" />
   </ItemGroup>
 </Project>

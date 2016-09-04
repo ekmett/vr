@@ -180,7 +180,7 @@ distortion::~distortion() {
   glDeleteVertexArrays(2, array);
 }
 
-void distortion::render_stencil() {
+void distortion::render_stencil(bool debug) {
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   glEnable(GL_STENCIL_TEST);
@@ -190,7 +190,9 @@ void distortion::render_stencil() {
   glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
   glBindVertexArray(hidden_vao);
   glUseProgram(mask.programId);
+  if (debug) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glDrawArrays(GL_TRIANGLES, 0, n_hidden); // put 1 in the stencil mask everywhere the hidden mesh lies
+  if (debug) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glStencilFunc(GL_EQUAL, 0, 1);
   glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // use the stencil mask to disable writes
   glStencilMask(0);
