@@ -6,7 +6,7 @@
 uniform sampler2D render;
 uniform sampler2D bloom;
 
-in vec2 coord;
+in vec3 coord;
 
 out vec4 outputColor;
 

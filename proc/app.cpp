@@ -55,9 +55,8 @@ static const struct render_target_meta {
   int msaa_level;
   float max_supersampling_factor;
 } render_target_metas[] {
-  { 2, 1.4 },
   { 4, 1.1 },
-  { 8, 1.22 }
+  { 8, 1.4 }
 };
 
 static const int render_target_count = countof(render_target_metas);
@@ -67,21 +66,17 @@ static const struct quality_level {
   float resolution_scale;
   bool force_interleaved_reprojection;
 } quality_levels[] = {
-  { 0, 0.65, true },   
-  { 0, 0.81, true },   
+  { 0, 0.81,  true },
   { 0, 0.81, false },
-  { 0, 1.0,  false },
+  { 0, 0.9,  false },  
+  { 0, 1.0,  false },  // valve 0
   { 0, 1.1,  false },
-  { 0, 1.4,  false },
-  { 1, 0.9,  false },  
-  { 1, 1.0,  false },  // valve 0
+  { 1, 0.9,  false },
+  { 1, 1.0,  false },
   { 1, 1.1,  false },
-  //{ 1, 1.22,  false }, // largest 4x supersampling factor = 1.4
-  //{ 1, 1.4,   false }
-  { 2, 0.9,   false },
-  { 2, 1.0,   false },
-  { 2, 1.1,   false },
-  { 2, 1.22,  false }
+  { 1, 1.2,  false },
+  { 1, 1.3,  false },
+  { 1, 1.4,  false }
 };
 
 static const float max_supersampling_factor = 1.4;
@@ -101,12 +96,6 @@ struct app : app_uniforms {
   ~app();
 
   void run();
-  bool show_gui(bool * open = nullptr);
-  void get_poses();
-  void adapt_quality();
-  void tonemap();
-  void present();
-  void update_controller_assignment();
   void submit_uniforms() {
     global_time = SDL_GetTicks() / 1000.0f;
     glNamedBufferSubData(ubo, 0, sizeof(app_uniforms), static_cast<app_uniforms*>(this));
@@ -126,10 +115,10 @@ struct app : app_uniforms {
   bool show_timing_window = true;
   bool suspended_rendering = false;
   float desired_supersampling = 1.0f;
-  GLint viewport_w, viewport_h;
   
   gui::system gui;
   controllers controllers;
+  GLint viewport_w, viewport_h;
   std::mt19937 rng; // for the main thread  
   vr::IVRCompositor & compositor;
   distortion distorted;
@@ -167,6 +156,15 @@ struct app : app_uniforms {
   inline GLuint current_render_fbo() const {
     return render_fbo[quality_levels[quality_level].render_target];
   }
+
+private: 
+  void initialize_framebuffers();
+  void get_poses();
+  void adapt_quality();
+  void tonemap();
+  void present();
+  void update_controller_assignment();
+  bool show_gui(bool * open = nullptr);
 };
 
 #ifdef USE_REVERSED_Z
@@ -188,8 +186,8 @@ app::app()
   , gui(window)
   , distorted()
   , desktop_view(1)
-  //, sky(vec3(0.0, 0.1, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
-  , sky(vec3(0.252, 0.955, -.155), 2.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
+  , sky(vec3(0.0, 0.1, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
+  //, sky(vec3(0.252, 0.955, -.155), 2.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
   , debug_wireframe_hidden_area(false)
   {
 
@@ -225,85 +223,7 @@ app::app()
   glClearDepth(0.f);
 #endif
 
-  vr.handle->GetRecommendedRenderTargetSize(&recommended_w, &recommended_h);
-  glCreateFramebuffers(countof(fbo), fbo);
-  glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, countof(render_texture), render_texture);
-  glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, countof(render_depth_stencil), render_depth_stencil);
-  glGenTextures(countof(render_view_texture), render_view_texture);
-
-  // generate render target fbos
-  for (int i = 0;i < render_target_count; ++i) {
-    auto meta = render_target_metas[i];
-    gl::label(GL_FRAMEBUFFER, render_fbo[i], "render fbo {} ({}x msaa)", i, meta.msaa_level);
-    gl::label(GL_TEXTURE, render_texture[i], "render texture array {} ({}x msaa)", i, meta.msaa_level);
-    gl::label(GL_TEXTURE, render_depth_stencil[i], "render depth/stencil array {} ({}x msaa)", i, meta.msaa_level);
-    glTextureStorage3DMultisample(
-      render_texture[i],
-      meta.msaa_level,
-      GL_RGBA16F,
-      recommended_w * meta.max_supersampling_factor,
-      recommended_h * meta.max_supersampling_factor,
-      2,
-      true
-    );
-
-    glTextureParameteri(render_texture[i], GL_TEXTURE_MAX_LEVEL, 0);
-    glNamedFramebufferTexture(render_fbo[i], GL_COLOR_ATTACHMENT0, render_texture[i], 0);
-       
-    glTextureStorage3DMultisample(
-      render_depth_stencil[i],
-      meta.msaa_level,
-      GL_DEPTH32F_STENCIL8,
-      recommended_w * meta.max_supersampling_factor,
-      recommended_h * meta.max_supersampling_factor,
-      2,
-      true
-    );
-
-    glTextureParameteri(render_depth_stencil[i], GL_TEXTURE_MAX_LEVEL, 0);
-    glNamedFramebufferTexture(render_fbo[i], GL_DEPTH_STENCIL_ATTACHMENT, render_depth_stencil[i], 0);
-
-    check_framebuffer(render_fbo[i], GL_FRAMEBUFFER);
-
-    // Needed to glBlitFrameBuffer the right hand eye, but I don't blit the depth buffer, so I don't need a copy of that
-    gl::label(GL_FRAMEBUFFER, render_view_fbo[i], "render view fbo {}", i);    
-    glTextureView(render_view_texture[i], GL_TEXTURE_2D_MULTISAMPLE, render_texture[i], GL_RGBA16F, 0, 1, 1, 1);
-    gl::label(GL_TEXTURE, render_view_texture[i], "render view texture {}", i);
-    glTextureParameteri(render_view_texture[i], GL_TEXTURE_MAX_LEVEL, 0);
-    glNamedFramebufferTexture(render_view_fbo[i], GL_COLOR_ATTACHMENT0, render_view_texture[i], 0);
-
-    check_framebuffer(render_view_fbo[i], GL_FRAMEBUFFER);
-  }
- 
-  gl::label(GL_FRAMEBUFFER, resolve_fbo, "resolve fbo");
-  gl::label(GL_FRAMEBUFFER, resolve_view_fbo, "resolve view fbo");
-
-  glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &resolve_texture);
-  gl::label(GL_TEXTURE, resolve_texture, "resolve texture");
-  resolve_buffer_w = GLsizei(recommended_w * max_supersampling_factor) & ~1;
-  resolve_buffer_h = GLsizei(recommended_h * max_supersampling_factor) & ~1;
-  glTextureStorage3D(resolve_texture, 1, GL_RGBA8, resolve_buffer_w, resolve_buffer_h, 2);
-  glTextureParameteri(resolve_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTextureParameteri(resolve_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTextureParameteri(resolve_texture, GL_TEXTURE_MAX_LEVEL, 0);
-  glTextureParameteri(resolve_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTextureParameteri(resolve_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);  
-  glNamedFramebufferTexture(resolve_fbo, GL_COLOR_ATTACHMENT0, resolve_texture, 0);
-
-  check_framebuffer(resolve_fbo, GL_FRAMEBUFFER);
-
-  log("app")->info("creating resolve views");
-  glGenTextures(countof(resolve_view_texture), resolve_view_texture);
-  for (int i = 0;i < 2;++i) {
-    glTextureView(resolve_view_texture[i], GL_TEXTURE_2D, resolve_texture, GL_RGBA8, 0, 1, i, 1);
-    glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  }
-  glNamedFramebufferTexture(resolve_view_fbo, GL_COLOR_ATTACHMENT0, resolve_view_texture[1], 0); // bind the right hand resolve texture to our 'view' fbo for blitting
-
-  check_framebuffer(resolve_view_fbo, GL_FRAMEBUFFER);
+  initialize_framebuffers();
 
   SDL_DisplayMode wdm;
   SDL_GetWindowDisplayMode(window.sdl_window, &wdm);
@@ -368,7 +288,8 @@ void app::tonemap() {
 
 void app::present() {
   if (suspended_rendering) return;
-  glFinish(); // drastic
+  //::Sleep(4);
+  glFinish(); // drastic -- start using only when we start dropping frames?
   for (int i = 0;i < 2;++i) {
     vr::Texture_t eyeTexture { 
      (void*)intptr_t(resolve_view_texture[i]), 
@@ -383,7 +304,7 @@ void app::present() {
     };
     vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds, vr::Submit_Default);
   }
-  compositor.PostPresentHandoff();
+  //compositor.PostPresentHandoff();
 }
 
 void app::get_poses() {
@@ -418,8 +339,8 @@ void app::get_poses() {
 }
 
 void app::adapt_quality() {
-  int total_dropped_frames = 0;
-  int last_adapted = 0;
+  static int total_dropped_frames = 0;
+  static int last_adapted = 0;
   static float old_utilization = 0.8, old_old_utilization = 0.8, utilization = 0.8;
 
   // adapt quality level
@@ -434,7 +355,7 @@ void app::adapt_quality() {
 
   utilization = duration<float, std::milli>(frame_timing.m_flClientFrameIntervalMs) / (vr.frame_duration * (low_quality ? 0.75f : 1.f) * (force_interleaved_reprojection ? 2 : 1));
   int quality_change = 0;
-  if (last_adapted < frame_timing.m_nFrameIndex - 2) {
+  if (last_adapted <= frame_timing.m_nFrameIndex - 2) {
     if (frame_timing.m_nNumDroppedFrames != 0) {
       quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
       last_adapted = frame_timing.m_nFrameIndex;
@@ -461,6 +382,8 @@ void app::adapt_quality() {
   vr::VRCompositor()->ForceInterleavedReprojectionOn(interleaved_reprojection);
 
   if (gui::Begin("Timing", &show_timing_window)) {
+
+    gui::Text("frame rate: %2.02f", 1000.0f / frame_timing.m_flClientFrameIntervalMs);
     gui::Text("dropped frames: %d", total_dropped_frames);
     gui::Text("utilization: %.02f", utilization);
     gui::Text("headroom: %.2fms", frame_timing.m_nNumDroppedFrames ? 0.0f : frame_timing.m_flCompositorIdleCpuMs);
@@ -658,9 +581,9 @@ void app::run() {
     if (show_gui()) return;
 
     log("frame")->info("swapping window");
-
+    static int frame = 0;
     glFlush();
-    window.swap();
+    if (frame++ % 3 == 0) window.swap();
   }
 }
 
@@ -766,4 +689,86 @@ int SDL_main(int argc, char ** argv) {
   spdlog::details::registry::instance().apply_all([](shared_ptr<logger> logger) { logger->flush(); }); // make sure the logs are flushed before shutting down
   spdlog::details::registry::instance().drop_all(); // allow any dangling logs with no references to more gracefully shutdown
   return 0;
+}
+
+void app::initialize_framebuffers() {
+  vr.handle->GetRecommendedRenderTargetSize(&recommended_w, &recommended_h);
+  glCreateFramebuffers(countof(fbo), fbo);
+  glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, countof(render_texture), render_texture);
+  glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, countof(render_depth_stencil), render_depth_stencil);
+  glGenTextures(countof(render_view_texture), render_view_texture);
+
+  // generate render target fbos
+  for (int i = 0;i < render_target_count; ++i) {
+    auto meta = render_target_metas[i];
+    gl::label(GL_FRAMEBUFFER, render_fbo[i], "render fbo {} ({}x msaa)", i, meta.msaa_level);
+    gl::label(GL_TEXTURE, render_texture[i], "render texture array {} ({}x msaa)", i, meta.msaa_level);
+    gl::label(GL_TEXTURE, render_depth_stencil[i], "render depth/stencil array {} ({}x msaa)", i, meta.msaa_level);
+    glTextureStorage3DMultisample(
+      render_texture[i],
+      meta.msaa_level,
+      GL_RGBA16F,
+      recommended_w * meta.max_supersampling_factor,
+      recommended_h * meta.max_supersampling_factor,
+      2,
+      true
+    );
+
+    glTextureParameteri(render_texture[i], GL_TEXTURE_MAX_LEVEL, 0);
+    glNamedFramebufferTexture(render_fbo[i], GL_COLOR_ATTACHMENT0, render_texture[i], 0);
+
+    glTextureStorage3DMultisample(
+      render_depth_stencil[i],
+      meta.msaa_level,
+      GL_DEPTH32F_STENCIL8,
+      recommended_w * meta.max_supersampling_factor,
+      recommended_h * meta.max_supersampling_factor,
+      2,
+      true
+    );
+
+    glTextureParameteri(render_depth_stencil[i], GL_TEXTURE_MAX_LEVEL, 0);
+    glNamedFramebufferTexture(render_fbo[i], GL_DEPTH_STENCIL_ATTACHMENT, render_depth_stencil[i], 0);
+
+    check_framebuffer(render_fbo[i], GL_FRAMEBUFFER);
+
+    // Needed to glBlitFrameBuffer the right hand eye, but I don't blit the depth buffer, so I don't need a copy of that
+    gl::label(GL_FRAMEBUFFER, render_view_fbo[i], "render view fbo {}", i);
+    glTextureView(render_view_texture[i], GL_TEXTURE_2D_MULTISAMPLE, render_texture[i], GL_RGBA16F, 0, 1, 1, 1);
+    gl::label(GL_TEXTURE, render_view_texture[i], "render view texture {}", i);
+    glTextureParameteri(render_view_texture[i], GL_TEXTURE_MAX_LEVEL, 0);
+    glNamedFramebufferTexture(render_view_fbo[i], GL_COLOR_ATTACHMENT0, render_view_texture[i], 0);
+
+    check_framebuffer(render_view_fbo[i], GL_FRAMEBUFFER);
+  }
+
+  gl::label(GL_FRAMEBUFFER, resolve_fbo, "resolve fbo");
+  gl::label(GL_FRAMEBUFFER, resolve_view_fbo, "resolve view fbo");
+
+  glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &resolve_texture);
+  gl::label(GL_TEXTURE, resolve_texture, "resolve texture");
+  resolve_buffer_w = GLsizei(recommended_w * max_supersampling_factor) & ~1;
+  resolve_buffer_h = GLsizei(recommended_h * max_supersampling_factor) & ~1;
+  glTextureStorage3D(resolve_texture, 1, GL_RGBA8, resolve_buffer_w, resolve_buffer_h, 2);
+  glTextureParameteri(resolve_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTextureParameteri(resolve_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTextureParameteri(resolve_texture, GL_TEXTURE_MAX_LEVEL, 0);
+  glTextureParameteri(resolve_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTextureParameteri(resolve_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glNamedFramebufferTexture(resolve_fbo, GL_COLOR_ATTACHMENT0, resolve_texture, 0);
+
+  check_framebuffer(resolve_fbo, GL_FRAMEBUFFER);
+
+  log("app")->info("creating resolve views");
+  glGenTextures(countof(resolve_view_texture), resolve_view_texture);
+  for (int i = 0;i < 2;++i) {
+    glTextureView(resolve_view_texture[i], GL_TEXTURE_2D, resolve_texture, GL_RGBA8, 0, 1, i, 1);
+    glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  }
+  glNamedFramebufferTexture(resolve_view_fbo, GL_COLOR_ATTACHMENT0, resolve_view_texture[1], 0); // bind the right hand resolve texture to our 'view' fbo for blitting
+
+  check_framebuffer(resolve_view_fbo, GL_FRAMEBUFFER);
 }
