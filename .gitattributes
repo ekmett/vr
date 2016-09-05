@@ -3,10 +3,19 @@
 *.cpp text
 *.h text
 *.hpp text
+*.glsl text
+*.frag text
+*.geom text
+*.vert text
+*.tesc text
+*.tese text
+*.comp text
 *.png binary
 *.jpg binary
 *.ttf binary
 *.obj binary
+*.db binary
+*.opendb binary
 *.sln text eol=crlf
 *.vcxproj text eol=crlf
 
