@@ -90,6 +90,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glew.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\quality.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\distortion.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\stereo_fbo.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cds">

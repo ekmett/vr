@@ -104,6 +104,8 @@ namespace framework {
       log("gl")->info("{} {}: {}", show_object_label_type(id), name, label);
     }
     string get_label(GLenum id, GLuint name) noexcept {
+      return fmt::format("{}", name);
+      /*
       GLsizei len;
       glGetObjectLabel(id, name, 0, &len, nullptr);
       string label;
@@ -113,6 +115,7 @@ namespace framework {
       glGetObjectLabel(id, name, len, &final_len, const_cast<GLchar*>(label.c_str()));
       label.resize(len);
       return label;
+      */
     }
     const char * show_framebuffer_status_result(GLenum e) noexcept {
       switch (e) {

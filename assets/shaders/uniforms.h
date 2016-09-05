@@ -59,6 +59,7 @@ UNIFORM_STRUCT(1) app_uniforms {
   // camera
   UNIFORM_ALIGN(4) float bloom_exposure;
   UNIFORM_ALIGN(4) float bloom_magnitude;
+  UNIFORM_ALIGN(4) float blur_sigma;
   UNIFORM_ALIGN(4) float exposure;
   UNIFORM_ALIGN(4) float global_time;
   UNIFORM_ALIGN(4) float nearClip, farClip;
@@ -67,6 +68,7 @@ UNIFORM_STRUCT(1) app_uniforms {
   // pose info, shuffled down here by size
   UNIFORM_ALIGN(4) int controller_mask;
   UNIFORM_ALIGN(4) int controller_device[MAX_CONTROLLERS];
+  // UNIFORM_ALIGN(4) int render_target;
 };
 
 #ifdef __cplusplus

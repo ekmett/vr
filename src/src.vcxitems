@@ -59,6 +59,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\chase_lev_deque.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\worker.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\stereo_fbo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp" />

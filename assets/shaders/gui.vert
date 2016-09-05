@@ -1,15 +1,16 @@
 #version 450
-uniform mat4 ProjMtx;
 
-in vec2 Position;
-in vec2 UV;
-in vec4 Color;
+layout(location = 0) uniform mat4 projection;
 
-noperspective out vec2 Frag_UV;
-noperspective out vec4 Frag_Color;
+layout (location = 0) in vec2 positionIn;
+layout (location = 1) in vec2 uvIn;
+layout (location = 2) in vec4 colorIn;
+
+noperspective out vec2 uv;
+noperspective out vec4 color;
 
 void main() {
-  Frag_UV = UV;
-  Frag_Color = Color;
-  gl_Position = ProjMtx * vec4(Position.xy,0,1);
+  uv = uvIn;
+  color = colorIn;
+  gl_Position = projection * vec4(positionIn.xy,0,1);
 }

@@ -2,6 +2,7 @@
 
 #include "framework/gl.h"
 #include "framework/openvr.h"
+#include "framework/stereo_fbo.h"
 
 namespace framework {
 
@@ -9,8 +10,8 @@ namespace framework {
     int msaa_level;
     float max_supersampling_factor;
   } render_target_metas[]{
-    { 4, 1.1 },
-    { 8, 1.4 }
+    { 4, 1.1f },
+    { 8, 1.4f }
   };
 
   static const int render_target_count = countof(render_target_metas);
@@ -20,17 +21,17 @@ namespace framework {
     float resolution_scale;
     bool force_interleaved_reprojection;
   } quality_levels[] {
-      { 0, 0.81,  true }
-    , { 0, 0.81, false }
-    , { 0, 0.9,  false }
-    , { 0, 1.0,  false }  // valve 0
-    , { 0, 1.1,  false }
-    , { 1, 0.9,  false }
-    , { 1, 1.0,  false }
-    , { 1, 1.1,  false }
-    , { 1, 1.2,  false }
-    , { 1, 1.3,  false }
-    , { 1, 1.4,  false }    
+      { 0, 0.81f,  true }
+    , { 0, 0.81f, false }
+    , { 0, 0.9f,  false }
+    , { 0, 1.0f,  false }  // valve 0
+    , { 0, 1.1f,  false }
+    , { 1, 0.9f,  false }
+    , { 1, 1.0f,  false }
+    , { 1, 1.1f,  false }
+    , { 1, 1.2f,  false }
+    , { 1, 1.3f,  false }
+    , { 1, 1.4f,  false }    
     //, { 1, 1.5,  false }
     //, { 1, 1.6,  false }
     //, { 1, 1.7,  false }
@@ -42,22 +43,28 @@ namespace framework {
   static const int quality_level_count = countof(quality_levels);
 
   struct quality {
-    quality(int quality_level);
+    quality(int quality_level = 4);
     ~quality();
 
-    void new_frame(openvr::system & vr, float * render_buffer_usage = nullptr, float * resolve_buffer_usage = nullptr);
+    void new_frame(openvr::system & vr, float * render_buffer_usage = nullptr, float * resolve_buffer_usage = nullptr, int * render_target = nullptr);
+    void resolve() { resolve(resolve_target); }
+    void resolve(stereo_fbo & to);
     void present();
 
   private:
     void delete_framebuffers();
     void create_framebuffers();
     inline const quality_level & current_quality_level() const { return quality_levels[quality_level]; }
-    inline GLuint current_render_fbo() const { return render_fbo[quality_levels[quality_level].render_target]; }
+
+    inline stereo_render_fbo & current_render_fbo() { return render_target[quality_levels[quality_level].render_target]; }
+    inline const stereo_render_fbo & current_render_fbo() const { return render_target[quality_levels[quality_level].render_target]; }
 
   public:
     float desired_supersampling = 1.0f;
+
     int minimum_quality_level = 0;
     int maximum_quality_level = quality_level_count - 1;
+
     bool show_timing_window = true;
     bool show_quality_window = true;
     bool force_interleaved_reprojection = false;    
@@ -65,26 +72,14 @@ namespace framework {
 
     int quality_level;
     float aspect_ratio, actual_supersampling;
+
     uint32_t recommended_w, recommended_h;
     GLsizei viewport_w, viewport_h;
     GLsizei resolve_buffer_w, resolve_buffer_h;
+
     bool using_interleaved_reprojection;
 
-    union {
-      GLuint fbo[render_target_count * 2 + 2];
-      struct {
-        GLuint render_fbo[render_target_count], render_view_fbo[render_target_count], resolve_fbo, resolve_view_fbo;
-      };
-    };
-    union {
-      GLuint texture[render_target_count * 3 + 3];
-      struct {
-        GLuint render_texture[render_target_count],
-          render_depth_stencil[render_target_count],
-          render_view_texture[render_target_count],
-          resolve_texture,
-          resolve_view_texture[2];
-      };
-    };
+    stereo_render_fbo render_target[render_target_count];
+    stereo_fbo resolve_target;
   };
 }

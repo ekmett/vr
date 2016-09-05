@@ -1,13 +1,13 @@
 #version 450
-#extension GL_ARB_bindless_texture : require
+// #extension GL_ARB_bindless_texture : require
 
-layout (bindless_sampler, location = 0)  uniform sampler2D Texture;
+layout (binding = 0) uniform sampler2D tex;
 
-in vec2 Frag_UV;
-in vec4 Frag_Color;
+in vec2 uv;
+in vec4 color;
 
 out vec4 outputColor;
 
 void main() {
-  outputColor = Frag_Color * texture(Texture, Frag_UV.st);
+  outputColor = color * texture(tex, uv.st);
 }

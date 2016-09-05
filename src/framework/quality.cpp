@@ -11,7 +11,8 @@ namespace framework {
   static float old_utilization = 0.8, old_old_utilization = 0.8, utilization = 0.8;
   static vr::Compositor_FrameTiming frame_timing{};
 
-  quality::quality(int quality_level) : quality_level(quality_level) {
+  quality::quality(int quality_level)
+  : quality_level(quality_level) {
     create_framebuffers();
   }
 
@@ -19,7 +20,7 @@ namespace framework {
     delete_framebuffers();
   }
 
-  void quality::new_frame(openvr::system & vr, float * render_buffer_usage, float * resolve_buffer_usage) {
+  void quality::new_frame(openvr::system & vr, float * render_buffer_usage, float * resolve_buffer_usage, int * render_target) {
 
     if (!suspended_rendering) {
       // adapt quality level
@@ -85,21 +86,14 @@ namespace framework {
       gui::Text("dropped frames: %d", total_dropped_frames);
       gui::Text("utilization: %.02f", utilization);
       gui::Text("headroom: %.2fms", frame_timing.m_nNumDroppedFrames ? 0.0f : frame_timing.m_flCompositorIdleCpuMs);
-      //gui::Text("time waiting for present: %.2fms", frame_timing.m_flWaitForPresentCpuMs);
       gui::Text("pre-submit GPU: %.2fms", frame_timing.m_flPreSubmitGpuMs);
       gui::Text("post-submit GPU: %.2fms", frame_timing.m_flPostSubmitGpuMs);
-      // gui::Text("frame: %d", frame_timing.m_nFrameIndex);
-      // gui::Text("client frame interval %.2fms", frame_timing.m_flClientFrameIntervalMs);
-      // gui::Text("total render GPU: %.2fms", frame_timing.m_flTotalRenderGpuMs);
-      // gui::Text("compositor render GPU: %.2fms", frame_timing.m_flCompositorRenderGpuMs);
-      // gui::Text("compositor render CPU: %.2fms", frame_timing.m_flCompositorRenderCpuMs);
       if (using_interleaved_reprojection) gui::Text("Using interleaved reprojection");
       gui::End();
     }
 
-
     glEnable(GL_MULTISAMPLE);
-    glBindFramebuffer(GL_FRAMEBUFFER, render_fbo[q.render_target]);
+    current_render_fbo().bind();
     glStencilMask(1);
     glClearColor(0.18f, 0.18f, 0.18f, 1.0f); // clearing a layered framebuffer clears all layers.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -107,33 +101,29 @@ namespace framework {
 
     if (render_buffer_usage) *render_buffer_usage = actual_supersampling / render_target_metas[q.render_target].max_supersampling_factor;
     if (resolve_buffer_usage) *resolve_buffer_usage = actual_supersampling / max_supersampling_factor;
+    if (render_target) *render_target = q.render_target;
+  }
+
+  void quality::resolve(stereo_fbo & to) {
+    auto & from  = current_render_fbo();
+    glDisable(GL_MULTISAMPLE);
+    for (int i=0;i<2;++i)
+      glBlitNamedFramebuffer(
+        from.fbo_view[i],
+        to.fbo_view[i],
+        0, 0, viewport_w, viewport_h,
+        0, 0, viewport_w, viewport_h,
+        GL_COLOR_BUFFER_BIT,
+        GL_NEAREST
+      );
   }
 
   void quality::present() {
-    auto q = quality_levels[quality_level];
-    glDisable(GL_MULTISAMPLE);
-    glBlitNamedFramebuffer(
-      render_fbo[q.render_target],
-      resolve_fbo,
-      0, 0, viewport_w, viewport_h,
-      0, 0, viewport_w, viewport_h,
-      GL_COLOR_BUFFER_BIT,
-      GL_LINEAR
-    );
-    glBlitNamedFramebuffer(
-      render_view_fbo[q.render_target],
-      resolve_view_fbo,
-      0, 0, viewport_w, viewport_h,
-      0, 0, viewport_w, viewport_h,
-      GL_COLOR_BUFFER_BIT,
-      GL_LINEAR
-    );
     if (suspended_rendering) return;
-    //::Sleep(4);
-    glFinish(); // drastic -- start using only when we start dropping frames?
+    glFinish();
     for (int i = 0;i < 2;++i) {
       vr::Texture_t eyeTexture{
-        (void*)intptr_t(resolve_view_texture[i]),
+        (void*)intptr_t(resolve_target.texture_view[i]),
         vr::API_OpenGL,
         vr::ColorSpace_Gamma
       };
@@ -149,88 +139,29 @@ namespace framework {
   }
 
   void quality::delete_framebuffers() {
-    glDeleteFramebuffers(countof(fbo), fbo);
-    glDeleteTextures(countof(texture), texture);
+    resolve_target.finalize();
+    for (auto & t : render_target) t.finalize();
   }
 
   void quality::create_framebuffers() {
     vr::VRSystem()->GetRecommendedRenderTargetSize(&recommended_w, &recommended_h);
-    glCreateFramebuffers(countof(fbo), fbo);
-    glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, countof(render_texture), render_texture);
-    glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, countof(render_depth_stencil), render_depth_stencil);
-    glGenTextures(countof(render_view_texture), render_view_texture);
 
-    // generate render target fbos
-    for (int i = 0;i < render_target_count; ++i) {
+    resolve_buffer_w = GLsizei(recommended_w * max_supersampling_factor + 1) & ~1;
+    resolve_buffer_h = GLsizei(recommended_h * max_supersampling_factor + 1) & ~1;
+
+    resolve_target.format = { resolve_buffer_w, resolve_buffer_h };
+    resolve_target.initialize("resolve", GL_RGBA8);
+
+    for (int i = 0;i < render_target_count;++i) {
       auto meta = render_target_metas[i];
-      gl::label(GL_FRAMEBUFFER, render_fbo[i], "render fbo {} ({}x msaa)", i, meta.msaa_level);
-      gl::label(GL_TEXTURE, render_texture[i], "render texture array {} ({}x msaa)", i, meta.msaa_level);
-      gl::label(GL_TEXTURE, render_depth_stencil[i], "render depth/stencil array {} ({}x msaa)", i, meta.msaa_level);
-      glTextureStorage3DMultisample(
-        render_texture[i],
+      render_target[i].format = {
+        GLsizei(recommended_w * meta.max_supersampling_factor + 1) & ~1,
+        GLsizei(recommended_h * meta.max_supersampling_factor + 1) & ~1,
         meta.msaa_level,
-        GL_RGBA16F,
-        recommended_w * meta.max_supersampling_factor,
-        recommended_h * meta.max_supersampling_factor,
-        2,
-        true
-      );
-
-      glTextureParameteri(render_texture[i], GL_TEXTURE_MAX_LEVEL, 0);
-      glNamedFramebufferTexture(render_fbo[i], GL_COLOR_ATTACHMENT0, render_texture[i], 0);
-
-      glTextureStorage3DMultisample(
-        render_depth_stencil[i],
-        meta.msaa_level,
-        GL_DEPTH32F_STENCIL8,
-        recommended_w * meta.max_supersampling_factor,
-        recommended_h * meta.max_supersampling_factor,
-        2,
-        true
-      );
-
-      glTextureParameteri(render_depth_stencil[i], GL_TEXTURE_MAX_LEVEL, 0);
-      glNamedFramebufferTexture(render_fbo[i], GL_DEPTH_STENCIL_ATTACHMENT, render_depth_stencil[i], 0);
-
-      gl::check_framebuffer(render_fbo[i], GL_FRAMEBUFFER);
-
-      // Needed to glBlitFrameBuffer the right hand eye, but I don't blit the depth buffer, so I don't need a copy of that
-      gl::label(GL_FRAMEBUFFER, render_view_fbo[i], "render view fbo {}", i);
-      glTextureView(render_view_texture[i], GL_TEXTURE_2D_MULTISAMPLE, render_texture[i], GL_RGBA16F, 0, 1, 1, 1);
-      gl::label(GL_TEXTURE, render_view_texture[i], "render view texture {}", i);
-      glTextureParameteri(render_view_texture[i], GL_TEXTURE_MAX_LEVEL, 0);
-      glNamedFramebufferTexture(render_view_fbo[i], GL_COLOR_ATTACHMENT0, render_view_texture[i], 0);
-
-      gl::check_framebuffer(render_view_fbo[i], GL_FRAMEBUFFER);
+        false
+      };
+      string name = fmt::format("render target {} ({}x msaa)", i, meta.msaa_level);
+      render_target[i].initialize(name, GL_RGBA16F);
     }
-
-    gl::label(GL_FRAMEBUFFER, resolve_fbo, "resolve fbo");
-    gl::label(GL_FRAMEBUFFER, resolve_view_fbo, "resolve view fbo");
-
-    glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &resolve_texture);
-    gl::label(GL_TEXTURE, resolve_texture, "resolve texture");
-    resolve_buffer_w = GLsizei(recommended_w * max_supersampling_factor) & ~1;
-    resolve_buffer_h = GLsizei(recommended_h * max_supersampling_factor) & ~1;
-    glTextureStorage3D(resolve_texture, 1, GL_RGBA8, resolve_buffer_w, resolve_buffer_h, 2);
-    glTextureParameteri(resolve_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameteri(resolve_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(resolve_texture, GL_TEXTURE_MAX_LEVEL, 0);
-    glTextureParameteri(resolve_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(resolve_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glNamedFramebufferTexture(resolve_fbo, GL_COLOR_ATTACHMENT0, resolve_texture, 0);
-
-    gl::check_framebuffer(resolve_fbo, GL_FRAMEBUFFER);
-
-    glGenTextures(countof(resolve_view_texture), resolve_view_texture);
-    for (int i = 0;i < 2;++i) {
-      glTextureView(resolve_view_texture[i], GL_TEXTURE_2D, resolve_texture, GL_RGBA8, 0, 1, i, 1);
-      glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTextureParameteri(resolve_view_texture[i], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    }
-    glNamedFramebufferTexture(resolve_view_fbo, GL_COLOR_ATTACHMENT0, resolve_view_texture[1], 0); // bind the right hand resolve texture to our 'view' fbo for blitting
-
-    gl::check_framebuffer(resolve_view_fbo, GL_FRAMEBUFFER);
   }
 }

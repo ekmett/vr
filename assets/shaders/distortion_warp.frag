@@ -3,7 +3,7 @@
 #extension GL_ARB_bindless_texture : require
 #include "uniforms.h"
 
-uniform sampler2DArray resolve;
+layout (bindless_sampler, location = 0) uniform sampler2DArray resolve;
 
 noperspective in vec2 red;
 noperspective in vec2 green;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "framework/std.h"
 #include "framework/sdl_window.h"
 #include "imgui.h"
 #include "imgui_table.h"

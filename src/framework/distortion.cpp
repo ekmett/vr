@@ -206,22 +206,21 @@ namespace framework {
     glBindVertexArray(0);
   }
 
-  void distortion::render(GLuint resolveTexture, int view_mask) {
+  void distortion::render(int view_mask) {
+    log("distortion")->info("rendering {}", view_mask);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
     glStencilMask(1);
     glBindVertexArray(vao);
     glUseProgram(warp.programId);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, resolveTexture); // TODO: move this into a uniform so we can bake it into the program?
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, 0);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
     glUseProgram(0);
+    log("distortion")->info("rendering complete");
   }
 
 }

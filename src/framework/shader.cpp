@@ -54,7 +54,6 @@ namespace framework {
     GLuint compile(const char * name, const char * vertexShader, const char * fragmentShader) {
 
       int programId = glCreateProgram();
-      label(GL_PROGRAM, programId, "{} program", name);
 
 
       GLuint v = glCreateShader(GL_VERTEX_SHADER);
@@ -73,6 +72,8 @@ namespace framework {
       }
       glAttachShader(programId, v);
       glDeleteShader(v); // the program hangs onto this once it's attached
+
+      label(GL_PROGRAM, programId, "{} program", name);
 
       GLuint  f = glCreateShader(GL_FRAGMENT_SHADER);
       glShaderSource(f, 1, &fragmentShader, NULL);
@@ -104,7 +105,7 @@ namespace framework {
     }
 
     GLuint compile(const char * name) {
-      path p = path("shaders").append(name);
+      path p = path("d:\\vr\\assets\\shaders").append(name);
       p.replace_extension("vert");
       string vs = read_file(p);
       p.replace_extension("frag");
@@ -127,7 +128,7 @@ namespace framework {
 
     // variadic template so we can link complex shader programs? type, name, type, name... ?
     GLuint compile(GLuint type, const char * name) {
-      auto p = path("shaders").append(name).replace_extension(shader_extension(type));
+      auto p = path("d:\\vr\\assets\\shaders").append(name).replace_extension(shader_extension(type));
       string s = read_file(p);
       return compile(type, name, s.c_str());      
     }
@@ -178,7 +179,8 @@ namespace framework {
           log("gl")->info("include {} as {}", real.string(), imaginary.generic_string());
           string contents = read_file(real);
           string imaginary_name = imaginary.generic_string();
-          glNamedStringARB(GL_SHADER_INCLUDE_ARB, imaginary_name.size(), imaginary_name.c_str(), contents.size(), contents.c_str());
+          string terminated_contents = contents + "\n"; // the spec is a little literal minded
+          glNamedStringARB(GL_SHADER_INCLUDE_ARB, imaginary_name.size(), imaginary_name.c_str(), terminated_contents.size(), terminated_contents.c_str());
         }
       } else {
         log("gl")->warn("ignoring file {}", real.string());

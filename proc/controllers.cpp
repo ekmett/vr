@@ -63,6 +63,7 @@ void controllers::render(int controller_mask) {
     case 2: glDrawArraysInstanced(GL_LINES, 8, 8, 2); break;
     case 3: glDrawArraysInstanced(GL_LINES, 0, 16, 2); break;
   }
+  glBindVertexArray(0);
   glLineWidth(1);
   glUseProgram(0);
 }

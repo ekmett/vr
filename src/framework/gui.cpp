@@ -12,10 +12,7 @@ static double       g_Time = 0.0f;
 static bool         g_MousePressed[3] = { false, false, false };
 static float        g_MouseWheel = 0.0f;
 static GLuint       g_FontTexture = 0;
-static GLuint64     g_FontTextureHandle = 0;
 static int          g_ShaderHandle = 0;
-static int          g_UniformLocationTex = 0, g_UniformLocationProjMtx = 0;
-static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
 static unsigned int g_VboHandle = 0, g_VaoHandle = 0, g_ElementsHandle = 0;
 
 void render_draw_lists(ImDrawData* draw_data) {
@@ -27,22 +24,6 @@ void render_draw_lists(ImDrawData* draw_data) {
     return;
   draw_data->ScaleClipRects(io.DisplayFramebufferScale);
 
-  // Backup GL state
-  GLint last_program; glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
-  GLint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-  //GLint last_active_texture; glGetIntegerv(GL_ACTIVE_TEXTURE, &last_active_texture);
-  GLint last_element_array_buffer; glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
-  GLint last_vertex_array; glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
-  GLint last_blend_src; glGetIntegerv(GL_BLEND_SRC, &last_blend_src);
-  GLint last_blend_dst; glGetIntegerv(GL_BLEND_DST, &last_blend_dst);
-  GLint last_blend_equation_rgb; glGetIntegerv(GL_BLEND_EQUATION_RGB, &last_blend_equation_rgb);
-  GLint last_blend_equation_alpha; glGetIntegerv(GL_BLEND_EQUATION_ALPHA, &last_blend_equation_alpha);
-  GLint last_viewport[4]; glGetIntegerv(GL_VIEWPORT, last_viewport);
-  GLboolean last_enable_blend = glIsEnabled(GL_BLEND);
-  GLboolean last_enable_cull_face = glIsEnabled(GL_CULL_FACE);
-  GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
-  GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
-
   // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled
   glEnable(GL_BLEND);
   glBlendEquation(GL_FUNC_ADD);
@@ -50,7 +31,6 @@ void render_draw_lists(ImDrawData* draw_data) {
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
-  //glActiveTexture(GL_TEXTURE0);
 
   // Setup orthographic projection matrix
   glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
@@ -61,13 +41,11 @@ void render_draw_lists(ImDrawData* draw_data) {
     { 0.0f,                    0.0f,                    -1.0f, 0.0f },
     { -1.0f,                   1.0f,                     0.0f, 1.0f },
   };
+  glProgramUniformMatrix4fv(g_ShaderHandle, 0, 1, GL_FALSE, &ortho_projection[0][0]);
   glUseProgram(g_ShaderHandle);
-  glUniform1i(g_UniformLocationTex, 0);
-  glUniformMatrix4fv(g_UniformLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
-
   glBindVertexArray(g_VaoHandle);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
-
+  glActiveTexture(GL_TEXTURE0);
   for (int n = 0; n < draw_data->CmdListsCount; n++) {
     const ImDrawList* cmd_list = draw_data->CmdLists[n];
     const ImDrawIdx* idx_buffer_offset = 0;
@@ -79,7 +57,8 @@ void render_draw_lists(ImDrawData* draw_data) {
       if (pcmd->UserCallback) {
         pcmd->UserCallback(cmd_list, pcmd);
       } else {
-        glProgramUniformHandleui64ARB(g_ShaderHandle, 0, (GLuint64)(intptr_t)pcmd->TextureId);
+        glBindTexture(GL_TEXTURE_2D, 0); // ensure we don't 'stutter' and keep the old texture if the new one is invalid
+        glBindTexture(GL_TEXTURE_2D, (GLuint)intptr_t(pcmd->TextureId));
         glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
         glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)idx_buffer_offset);
       }
@@ -87,19 +66,14 @@ void render_draw_lists(ImDrawData* draw_data) {
     }
   }
 
-  // Restore modified GL state
-  glUseProgram(last_program);
-  //glActiveTexture(last_active_texture);
-  //glBindTexture(GL_TEXTURE_2D, last_texture);
-  glBindVertexArray(last_vertex_array);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_element_array_buffer);
-  glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
-  glBlendFunc(last_blend_src, last_blend_dst);
-  if (last_enable_blend) glEnable(GL_BLEND); else glDisable(GL_BLEND);
-  if (last_enable_cull_face) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
-  if (last_enable_depth_test) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
-  if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST); else glDisable(GL_SCISSOR_TEST);
-  glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
+  glUseProgram(0);
+  glBindVertexArray(0);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  glDisable(GL_BLEND);
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_SCISSOR_TEST);
 }
 
 static const char* get_clipboard_text() {
@@ -166,12 +140,11 @@ void create_fonts_texture() {
   glTextureStorage2D(g_FontTexture, 1, GL_RGBA8, width, height);
   glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
   glTextureSubImage2D(g_FontTexture, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-  g_FontTextureHandle = glGetTextureHandleARB(g_FontTexture);
-  glMakeTextureHandleResidentARB(g_FontTextureHandle);
-  glProgramUniform1i64ARB(g_ShaderHandle, 0, g_FontTextureHandle);
+  //g_FontTextureHandle = glGetTextureHandleARB(g_FontTexture);
+  //glMakeTextureHandleResidentARB(g_FontTextureHandle);
 
   // Store our identifier
-  io.Fonts->TexID = (void *)(intptr_t)g_FontTextureHandle;
+  io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
 }
 
 namespace framework {
@@ -323,10 +296,6 @@ namespace framework {
 
       glDeleteProgram(g_ShaderHandle);
       g_ShaderHandle = 0;
-      if (g_FontTextureHandle) {
-        glMakeTextureHandleNonResidentARB(g_FontTextureHandle);
-        g_FontTextureHandle = 0;
-      }
       if (g_FontTexture) {
         glDeleteTextures(1, &g_FontTexture);
         ImGui::GetIO().Fonts->TexID = 0;
@@ -337,13 +306,6 @@ namespace framework {
     
       g_ShaderHandle = gl::compile("gui");
 
-      g_UniformLocationTex = glGetUniformLocation(g_ShaderHandle, "Texture");      
-      g_UniformLocationProjMtx = glGetUniformLocation(g_ShaderHandle, "ProjMtx");
-
-      g_AttribLocationPosition = glGetAttribLocation(g_ShaderHandle, "Position");
-      g_AttribLocationUV = glGetAttribLocation(g_ShaderHandle, "UV");
-      g_AttribLocationColor = glGetAttribLocation(g_ShaderHandle, "Color");
-
       glCreateBuffers(1, &g_VboHandle);
       gl::label(GL_BUFFER, g_VboHandle, "gui vbo");
 
@@ -353,17 +315,14 @@ namespace framework {
       glCreateVertexArrays(1, &g_VaoHandle);
       gl::label(GL_VERTEX_ARRAY, g_VaoHandle, "gui vao");
 
-      glEnableVertexArrayAttrib(g_VaoHandle, g_AttribLocationPosition);
-      glEnableVertexArrayAttrib(g_VaoHandle, g_AttribLocationUV);
-      glEnableVertexArrayAttrib(g_VaoHandle, g_AttribLocationColor);
+      for (int i = 0;i < 3;++i) {
+        glEnableVertexArrayAttrib(g_VaoHandle, i);
+        glVertexArrayAttribBinding(g_VaoHandle, i, 0);
+      }
 
-      glVertexArrayAttribFormat(g_VaoHandle, g_AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, offsetof(ImDrawVert, pos));
-      glVertexArrayAttribFormat(g_VaoHandle, g_AttribLocationUV, 2, GL_FLOAT, GL_FALSE, offsetof(ImDrawVert, uv));
-      glVertexArrayAttribFormat(g_VaoHandle, g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof(ImDrawVert, col));
-
-      glVertexArrayAttribBinding(g_VaoHandle, g_AttribLocationPosition, 0);
-      glVertexArrayAttribBinding(g_VaoHandle, g_AttribLocationUV, 0);
-      glVertexArrayAttribBinding(g_VaoHandle, g_AttribLocationColor, 0);
+      glVertexArrayAttribFormat(g_VaoHandle, 0, 2, GL_FLOAT, GL_FALSE, offsetof(ImDrawVert, pos));
+      glVertexArrayAttribFormat(g_VaoHandle, 1, 2, GL_FLOAT, GL_FALSE, offsetof(ImDrawVert, uv));
+      glVertexArrayAttribFormat(g_VaoHandle, 2, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof(ImDrawVert, col));
 
       glVertexArrayVertexBuffer(g_VaoHandle, 0, g_VboHandle, 0, sizeof(ImDrawVert));
 

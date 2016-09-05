@@ -6,17 +6,17 @@
 #include "framework/gl.h"
 #include "framework/signal.h"
 #include "framework/filesystem.h"
-#include "controllers.h"
 #include "framework/gui.h"
-#include "imgui_internal.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "framework/openal.h"
 #include "framework/distortion.h"
-#include "overlay.h"
+//#include "overlay.h"
 #include "framework/skybox.h"
 #include "framework/spectrum.h"
 #include "framework/quality.h"
+#include "post.h"
 #include "uniforms.h"
+#include "controllers.h"
 
 using namespace framework;
 using namespace filesystem;
@@ -50,7 +50,7 @@ viewport_dim fit_viewport(float aspectRatio, int w, int h, bool bottom_justified
 }
 
 struct app : app_uniforms {
-  app();
+  app(path assets);
   ~app();
 
   void run();
@@ -60,11 +60,12 @@ struct app : app_uniforms {
   }
  
   sdl::window window; // must come before anything that needs opengl support in this object, implicitly supplies gl context
+  gl::compiler compiler; // must come before anything that uses includes in opengl
   openvr::system vr;  // must come before anything that uses openvr in this object, implicitly supplies vr::VRSystem(), etc.
   openal::system al;  // must come before anything that uses sound
 
   quality quality;    // requires vr
-  gl::compiler compiler;
+  post post;          // post processor, requires quality
   GLuint ubo;
   GLuint dummy_vao;
   framework::sky sky;
@@ -89,23 +90,32 @@ private:
 };
 
 
-app::app()
+app::app(path assets)
   : window("proc", { 4, 5, gl::profile::core }, true, 50, 50, 1280, 1024)
   , vr()
-  , compiler(path("shaders"))
+  , compiler(path(assets).append("shaders"))
   , gui(window)
   , distorted()
   , sky(vec3(0.0, 0.1, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
   //, sky(vec3(0.252, 0.955, -.155), 2.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
   , quality(3)
+  , post(quality)
   {
 
   nearClip = 0.1f;
   farClip = 10000.f;
+  bloom_exposure = -4;
+  exposure = -14;
+  blur_sigma = 2.5;
+  bloom_magnitude = 0.000;
+
+  distorted.set_resolve_handle(quality.resolve_target.texture_handle);
   
   enable_seascape = false;
+  enable_tonemap = false;
 
   glCreateVertexArrays(1, &dummy_vao); // we'll load this as needed
+  gl::label(GL_VERTEX_ARRAY, dummy_vao, "dummy vao");
 
   glCreateBuffers(1, &ubo);
   gl::label(GL_BUFFER, ubo, "app ubo");
@@ -194,24 +204,49 @@ void app::get_poses() {
 void app::run() { 
   while (!vr.poll() && !window.poll()) {
 
+    auto l = log("app");
+
+    l->info("gui frame");
     gui.new_frame();
 
+    l->info("get_poses");
     // gather uniforms
     get_poses();
+    l->info("quality.new_frame");
     quality.new_frame(vr, &render_buffer_usage, &resolve_buffer_usage);
+    l->info("resolve buffer usage {}", resolve_buffer_usage);
 
+    l->info("submit_uniforms");
     submit_uniforms();
 
+    l->info("render_stencil");
     distorted.render_stencil();
 
+    l->info("skybox");
     if (skybox_visible) {
       glBindVertexArray(dummy_vao);
       sky.render();
     }
 
+    l->info("controllers");
     controllers.render(controller_mask);
 
+    l->info("post");
+    static bool use_post = true;
+    gui::Checkbox("Post", &use_post);
+
+    if (use_post) {
+      quality.resolve(post.presolve);
+      glBindVertexArray(dummy_vao);
+      post.process();
+    } else {
+      quality.resolve();
+    }
+
+    l->info("present");
     quality.present();
+
+    l->info("desktop");
     desktop_display();
   }
 }
@@ -239,7 +274,7 @@ void app::desktop_display() {
     case 1: {
       auto dim = fit_viewport(quality.aspect_ratio * 2, w, h);
       glViewport(dim.x, dim.y, dim.w, dim.h);
-      distorted.render(quality.resolve_texture, 3);
+      distorted.render(3);
       break;
     }
     case 2:
@@ -248,14 +283,14 @@ void app::desktop_display() {
       glViewport(dim.x - (desktop_view - 2) * dim.w, dim.y, dim.w * 2, dim.h);
       glScissor(dim.x, dim.y, dim.w, dim.h);
       glEnable(GL_SCISSOR_TEST);
-      distorted.render(quality.resolve_texture, desktop_view - 1);
+      distorted.render(desktop_view - 1);
       glDisable(GL_SCISSOR_TEST);
       break;
     }
     case 4: {
       auto dim = fit_viewport(quality.aspect_ratio * 2, w, h);
       glBlitNamedFramebuffer(
-        quality.resolve_fbo, 0,
+        quality.resolve_target.fbo_view[0], 0,
         0, 0,
         quality.viewport_w, quality.viewport_h,
         dim.x, dim.y,
@@ -264,7 +299,7 @@ void app::desktop_display() {
         GL_LINEAR
       );
       glBlitNamedFramebuffer(
-        quality.resolve_view_fbo, 0,
+        quality.resolve_target.fbo_view[1], 0,
         0, 0,
         quality.viewport_w, quality.viewport_h,
         dim.x + dim.w / 2, dim.y,
@@ -278,7 +313,7 @@ void app::desktop_display() {
     case 5: {
       auto dim = fit_viewport(quality.aspect_ratio, w, h);
       glBlitNamedFramebuffer(
-        quality.resolve_fbo, 0,
+        quality.resolve_target.fbo_view[0], 0,
         0, 0,
         quality.viewport_w, quality.viewport_h,
         dim.x, dim.y,
@@ -291,9 +326,8 @@ void app::desktop_display() {
 
     case 6: {
       auto dim = fit_viewport(quality.aspect_ratio, w, h);
-      auto display_shift = (desktop_view - 5) * quality.viewport_w;
       glBlitNamedFramebuffer(
-        quality.resolve_fbo, 0,
+        quality.resolve_target.fbo_view[1], 0,
         0, 0,
         quality.viewport_w, quality.viewport_h,
         dim.x, dim.y,
@@ -394,11 +428,11 @@ int SDL_main(int argc, char ** argv) {
 
   shared_ptr<spdlog::logger> ignore_logs[] {
     spdlog::create<spdlog::sinks::null_sink_mt>("vr"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
+    //spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
     spdlog::create<spdlog::sinks::null_sink_mt>("al"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("main"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("app"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("quality")
+    //spdlog::create<spdlog::sinks::null_sink_mt>("main"),
+    //spdlog::create<spdlog::sinks::null_sink_mt>("app"),
+    //spdlog::create<spdlog::sinks::null_sink_mt>("quality")
   };
 #ifdef _WIN32
   SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96
@@ -412,7 +446,7 @@ int SDL_main(int argc, char ** argv) {
 
   cds_main_thread_attachment<> main_thread; // Allow use of concurrent data structures in the main threads
 
-  app main;
+  app main(asset_dir);
   main.run();
 
   spdlog::details::registry::instance().apply_all([](shared_ptr<logger> logger) { logger->flush(); }); // make sure the logs are flushed before shutting down

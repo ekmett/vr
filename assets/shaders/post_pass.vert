@@ -1,13 +1,23 @@
 #version 450 core
-#extension GL_AMD_vertex_shader_layer : enable
 
-const vec2 positions[4] = vec2[](vec2(-1.0,1.0),vec2(-1.0,-1.0),vec2(1.0,1.0),vec2(1.0,-1.0));
+#extension GL_ARB_shading_language_include: require
+#extension GL_AMD_vertex_shader_layer : require
+#extension GL_ARB_bindless_texture : require
+
+#include "uniforms.h"
+
+const vec2 positions[4] = vec2[](vec2(-1,1),vec2(-1,-1),vec2(1,1),vec2(1,-1));
+const vec2 corners[4] = vec2[](vec2(0,1),vec2(0,0),vec2(1,1),vec2(1,0));
 
 noperspective out vec3 coord;
 
+out gl_PerVertex {
+  vec4 gl_Position;
+  int gl_Layer;
+};
+
 void main() {
-  vec2 p = positions[gl_VertexId];
-  gl_Position = vec4(p,0.0,1.0);
+  coord = vec3(corners[gl_VertexID] * resolve_buffer_usage,gl_InstanceID);
+  gl_Position = vec4(positions[gl_VertexID],0.0,1.0);
   gl_Layer = gl_InstanceID;
-  coord = clamp(p,0.0,1.0);
 }
