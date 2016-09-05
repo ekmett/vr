@@ -28,21 +28,14 @@ void main() {
   if (cos_sun_angular_radius > 0.0f) {
     float cos_sun_angle = dot(dir, sun_dir);
     if (cos_sun_angle >= cos_sun_angular_radius)
-      color = sun_color;
+      if (dir.y > 0) color = sun_color; //horizon. this doesn't properly account for loss of radiance.
   }
 
   if (enable_seascape != 0) {
     vec3 p = heightMapTracing(origin,dir);
     vec3 dist = p - origin;
     vec3 n = getNormal(p, dot(dist,dist) * EPSILON_NRM);
-    color = mix(color, getSeaColor(p,n,sun_dir,dir,dist), pow(smoothstep(-0.00,-0.15,dir.y),0.3));
-  //} else { color = mix(color, ground_albedo, pow(smoothstep(-0.00,-0.15,dir.y),0.3));
-  }
-  if (enable_tonemap != 0) {
-    color = uncharted2_tonemap(color * 2);
-    vec3 whiteScale = vec3(1)/uncharted2_tonemap(vec3(11.2));
-    color = color * whiteScale;
-    color = pow(color,vec3(1/2.2));
+    color = mix(color, getSeaColor(p,n,sun_dir,dir,dist), pow(smoothstep(0.00,-0.15,dir.y),0.3)); 
   }
   outputColor = vec4(color,1);
 }

@@ -73,21 +73,21 @@ namespace framework {
       log("post")->info("process() start");
       glDisable(GL_DEPTH_TEST);
       glDisable(GL_STENCIL_TEST);
+      glDisable(GL_SCISSOR_TEST);
       glDisable(GL_MULTISAMPLE);
       glDisable(GL_BLEND);
       glUseProgram(0); // programs trump pipelines
 
-
-      glDisable(GL_SCISSOR_TEST);
-      fbo[0].bind();
-      glClearColor(1, 0, 0.5, 1);
-      glClear(GL_COLOR_BUFFER_BIT);
+      glClearColor(0, 0, 0, 0); // we don't clear the presolve as we only sample it at points, but we blur in here
       fbo[1].bind();
       glClear(GL_COLOR_BUFFER_BIT);
+      fbo[0].bind();
+      glClear(GL_COLOR_BUFFER_BIT);
+
       glEnable(GL_SCISSOR_TEST);
+
       // downsample
       log("post")->info("downsampling");  
-
       glViewport(0, 0, w, h);
       glScissor(0, 0, pw, ph);
 
@@ -107,14 +107,8 @@ namespace framework {
         glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
       }
 
-      //glViewport(0, 0, vw, vh);
-      //glScissor(0, 0, vw, vh);
       glViewport(0, 0, quality.resolve_buffer_w, quality.resolve_buffer_h);
       glScissor(0, 0, vw, vh);
-
-      //glViewport(0, 0, quality.resolve_buffer_w, quality.resolve_buffer_h);
-      //glScissor(0, 0, quality.resolve_buffer_w, quality.resolve_buffer_h);
-      // glScissor(0, 0, quality.viewport_w, quality.viewport_h);
 
       log("post")->info("tonemap");
       glBindProgramPipeline(tone_pipeline);

@@ -110,8 +110,9 @@ app::app(path assets)
   , compiler(path(assets).append("shaders"))
   , gui(window)
   , distorted()
-  , sky(vec3(0.0, 0.1, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
-  //, sky(vec3(0.252, 0.955, -.155), 2.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
+ // , sky(vec3(0.0, 0.1, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
+  , sky(vec3(0.0, 0.01, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
+  // , sky(vec3(0.252, 0.955, -.155), 1.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
   , quality(3)
   , post(quality)
   {
@@ -121,7 +122,7 @@ app::app(path assets)
   bloom_exposure = -4;
   exposure = -14;
   blur_sigma = 2.5;
-  bloom_magnitude = 0.000;
+  bloom_magnitude = 1.000;
 
   distorted.set_resolve_handle(quality.resolve_target.texture_handle);
   
@@ -287,7 +288,6 @@ bool app::desktop_display() {
   glViewport(0, 0, w, h);
   glScissor(0, 0, w, h);
   glClearColor(0.18f, 0.18f, 0.18f, 1.f);
-  //glClearColor(1.f, 0.f, 1.f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 
