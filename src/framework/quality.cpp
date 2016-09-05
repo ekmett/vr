@@ -95,7 +95,9 @@ namespace framework {
     glEnable(GL_MULTISAMPLE);
     current_render_fbo().bind();
     glStencilMask(1);
-    glClearColor(0.18f, 0.18f, 0.18f, 1.0f); // clearing a layered framebuffer clears all layers.
+    glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    glClearColor(0.18f, 0.18f, 0.18f, 0.0f); // clearing a layered framebuffer clears all layers. Use 0 alpha to indicate edge stencil when finally rendering
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glViewport(0, 0, viewport_w, viewport_h);
 

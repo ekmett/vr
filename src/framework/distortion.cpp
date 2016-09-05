@@ -86,12 +86,16 @@ namespace framework {
       for (GLushort y = 0; y < segmentsV - 1; y++) {
         for (GLushort x = 0; x < segmentsH - 1; x++) {
           GLushort a = segmentsH*y + x + offset, b = a + 1, c = a + segmentsH, d = c + 1;
-          //keep[a] = keep[b] = keep[c] = keep[d] = true;
-          if (good[a] || good[b] || good[d]) keep[a] = keep[b] = keep[d] = true; // if any corner is good the triangle is
-          if (good[a] || good[d] || good[c]) keep[a] = keep[d] = keep[c] = true; // if any corner is good the triangle is
+          GLushort dc = i == 0 ? d : c;
+          GLushort ab = i == 0 ? a : b;
+          if (good[a] || good[b] || good[dc]) keep[a] = keep[b] = keep[dc] = true; // if any corner is good the triangle is
+          if (good[ab] || good[d] || good[c]) keep[ab] = keep[d] = keep[c] = true; // if any corner is good the triangle is
         }
       }
     }
+
+    // a b   a b d & a d c
+    // c d   a b c & b d c
 
     vector<vertex> verts;
     vector<int> ranks;
@@ -128,13 +132,17 @@ namespace framework {
         for (GLushort x = 0; x < segmentsH - 1; x++) {
           GLushort a = segmentsH*y + x + offset, b = a + 1, c = a + segmentsH, d = c + 1;
           GLushort ra = ranks[a], rb = ranks[b], rc = ranks[c], rd = ranks[d];
-          if (keep[a] && keep[b] && keep[d]) {
+          GLushort ab = i == 0 ? a : b;
+          GLushort dc = i == 0 ? d : c;
+          GLushort rab = i == 0 ? ra : rb;
+          GLushort rdc = i == 0 ? rd : rc;
+          if (keep[a] && keep[b] && keep[dc]) {
             indices.push_back(ra);
             indices.push_back(rb);
-            indices.push_back(rd);
+            indices.push_back(rdc);
           }
-          if (keep[a] && keep[d] && keep[c]) {
-            indices.push_back(ra);
+          if (keep[ab] && keep[d] && keep[c]) {
+            indices.push_back(rab);
             indices.push_back(rd);
             indices.push_back(rc);
           }
@@ -189,7 +197,8 @@ namespace framework {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glEnable(GL_STENCIL_TEST);
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glDisable(GL_BLEND);
+    //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glStencilMask(1);
     glStencilFunc(GL_ALWAYS, 1, 1);
     glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
@@ -201,7 +210,7 @@ namespace framework {
     glStencilFunc(GL_EQUAL, 0, 1);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // use the stencil mask to disable writes
     glStencilMask(0);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glUseProgram(0);
     glBindVertexArray(0);
   }

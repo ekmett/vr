@@ -9,23 +9,27 @@ float gaussian_weight(int sample_distance, float sigma) {
 }
 
 // Performs a Gaussian blur in one direction
-vec3 blur(sampler2DArray tex, vec3 input_coord, vec2 tex_scale, float sigma, bool normalized) {
+vec4 blur(sampler2DArray tex, vec3 input_coord, vec2 tex_scale, float sigma, bool normalized) {
   vec2 input_size = textureSize(tex, 0).xy;
   vec2 delta = tex_scale / input_size;
   vec3 color = vec3(0);
   float weights = 0.0f;
-  for (int i = -7; i < 7; i++) { // -6?
+  for (int i = -6; i < 7; i++) {
     float weight = gaussian_weight(i, sigma);
-    weights += weight;
     vec3 tex_coord = input_coord;
     tex_coord.xy += i * delta; 
-    color += weight * texture(tex, tex_coord).xyz;
+    vec4 s = texture(tex, tex_coord);
+    color += weight * s.rgb;
+    weights += s.a * weight;
   }
 
   if (normalized)
     color /= weights;
 
-  return color;
+  vec4 here = texture(tex, input_coord);
+
+  if (here.a >= 0.5) return vec4(color, here.a);
+  else return here;
 }
 
 #endif

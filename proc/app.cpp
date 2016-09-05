@@ -111,7 +111,7 @@ app::app(path assets)
   , gui(window)
   , distorted()
  // , sky(vec3(0.0, 0.1, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
-  , sky(vec3(0.0, 0.01, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
+  , sky(vec3(0.0, 0.01, 0.8), 8* physical_sun_size, vec3(0.2, 0.2, 0.4), 6.f, *this)
   // , sky(vec3(0.252, 0.955, -.155), 1.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
   , quality(3)
   , post(quality)
@@ -119,7 +119,7 @@ app::app(path assets)
 
   nearClip = 0.1f;
   farClip = 10000.f;
-  bloom_exposure = -4;
+  bloom_exposure = -2;
   exposure = -14;
   blur_sigma = 2.5;
   bloom_magnitude = 1.000;

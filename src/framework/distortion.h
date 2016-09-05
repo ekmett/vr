@@ -12,7 +12,6 @@ namespace framework {
     void render(int view_mask);
 
     void set_resolve_handle(GLuint64 handle) {
-      // auto location = glGetUniformLocation(warp.programId, "resolve");
       glProgramUniformHandleui64ARB(warp.programId, 0, handle);
     }
 

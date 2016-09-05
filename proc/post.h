@@ -68,8 +68,9 @@ namespace framework {
     }
 
     void process() {
-      int vw = quality.viewport_h, vh = quality.viewport_h;
-      int pw = vw / 2, ph = vh / 2;
+      int vw = quality.viewport_w, vh = quality.viewport_h;
+      pw = vw / 2;
+      ph = vh / 2;
       log("post")->info("process() start");
       glDisable(GL_DEPTH_TEST);
       glDisable(GL_STENCIL_TEST);
@@ -78,7 +79,7 @@ namespace framework {
       glDisable(GL_BLEND);
       glUseProgram(0); // programs trump pipelines
 
-      glClearColor(0, 0, 0, 0); // we don't clear the presolve as we only sample it at points, but we blur in here
+      glClearColor(0, 0, 0, 0.0); // we don't clear the presolve as we only sample it at points, but we blur in here
       fbo[1].bind();
       glClear(GL_COLOR_BUFFER_BIT);
       fbo[0].bind();
@@ -95,7 +96,7 @@ namespace framework {
         glBlitNamedFramebuffer(presolve.fbo_view[i], fbo[0].fbo_view[i], 0, 0, vw, vh, 0, 0, pw, ph, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
       // blur
-      for (int i = 0;i < 3;++i) {
+      for (int i = 0;i < 2;++i) {
         // horizontal
         glBindProgramPipeline(horizontal_pipeline);
         fbo[1].bind();
@@ -109,6 +110,8 @@ namespace framework {
 
       glViewport(0, 0, quality.resolve_buffer_w, quality.resolve_buffer_h);
       glScissor(0, 0, vw, vh);
+
+      glEnable(GL_BLEND);
 
       log("post")->info("tonemap");
       glBindProgramPipeline(tone_pipeline);
@@ -126,7 +129,8 @@ namespace framework {
     };
 
     gl::shader pass, downsample, horizontal, vertical, tone;
-    GLsizei w, h;
+    GLsizei w, h; // buffer width
+    GLsizei pw, ph; // viewport
 
     quality & quality;
   };

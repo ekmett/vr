@@ -14,5 +14,5 @@ in vec3 coord;
 out vec4 outputColor;
 
 void main() {
-  outputColor = vec4(blur(tex, coord, vec2(1,0), blur_sigma /* * resolve_buffer_usage */, false), 1);
+  outputColor = blur(tex, coord, vec2(1,0), blur_sigma * resolve_buffer_usage, true);
 }
