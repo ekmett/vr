@@ -1,5 +1,6 @@
 * text=auto
 *.c text
+*.cc text
 *.cpp text
 *.h text
 *.hpp text
@@ -18,4 +19,7 @@
 *.opendb binary
 *.sln text eol=crlf
 *.vcxproj text eol=crlf
-
+*.vcproj text eol=crlf
+*.rc eol=crlf
+*.bat text eol=crlf
+*.ico binary
