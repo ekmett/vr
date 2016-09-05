@@ -1,0 +1,12 @@
+* text=auto
+*.c text
+*.cpp text
+*.h text
+*.hpp text
+*.png binary
+*.jpg binary
+*.ttf binary
+*.obj binary
+*.sln text eol=crlf
+*.vcxproj text eol=crlf
+
