@@ -17,7 +17,7 @@ out gl_PerVertex {
 };
 
 void main() {
-  coord = vec3(corners[gl_VertexID] * resolve_buffer_usage,gl_InstanceID);
+  coord = vec3(corners[gl_VertexID],gl_InstanceID); //  * resolve_buffer_usage
   gl_Position = vec4(positions[gl_VertexID],0.0,1.0);
   gl_Layer = gl_InstanceID;
 }

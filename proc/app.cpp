@@ -39,6 +39,20 @@ struct viewport_dim {
   GLint x, y, w, h;
 };
 
+static const char * desktop_views[] = { \
+"None",
+"Both Eyes Distorted",
+"Left Eye Distorted",
+"Right Eye Distorted",
+"Both Eyes Raw",
+"Left Eye Raw",
+"Right Eye Raw",
+"Presolve Buffer",
+"Post 0",
+"Post 1"
+};
+
+
 viewport_dim fit_viewport(float aspectRatio, int w, int h, bool bottom_justified = true, bool left_justified = false) {
   GLint x = GLint(h * aspectRatio);
   if (x <= w) {
@@ -85,8 +99,8 @@ private:
   // void initialize_framebuffers();
   void get_poses();
   void update_controller_assignment();
-  bool show_gui(bool * open = nullptr);
-  void desktop_display();
+  bool show_gui(bool * open = nullptr); // returns if we should shut down
+  bool desktop_display();
 };
 
 
@@ -213,6 +227,7 @@ void app::run() {
     // gather uniforms
     get_poses();
     l->info("quality.new_frame");
+
     quality.new_frame(vr, &render_buffer_usage, &resolve_buffer_usage);
     l->info("resolve buffer usage {}", resolve_buffer_usage);
 
@@ -247,26 +262,35 @@ void app::run() {
     quality.present();
 
     l->info("desktop");
-    desktop_display();
+    if (desktop_display()) {
+      l->info("killed by desktop");
+      return;
+    }
   }
 }
 
-void app::desktop_display() {
+bool app::desktop_display() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_MULTISAMPLE);
   auto flags = SDL_GetWindowFlags(window.sdl_window);
 
   if (flags & SDL_WINDOW_MINIMIZED) {
     glFlush();
-    return; // drop gui on the floor?
+    return false; // drop gui on the floor?
   }
-
-  glClearColor(0.18f, 0.18f, 0.18f, 1.f);
-  // glClearColor(0.f, 0.f, 0.f, 1.f);
-  glClear(GL_COLOR_BUFFER_BIT);
 
   int w, h;
   SDL_GetWindowSize(window.sdl_window, &w, &h);
+
+  glDisable(GL_STENCIL_TEST);
+  glStencilMask(1);
+  glViewport(0, 0, w, h);
+  glScissor(0, 0, w, h);
+  glClearColor(0.18f, 0.18f, 0.18f, 1.f);
+  //glClearColor(1.f, 0.f, 1.f, 1.f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+
 
   // lets find an aspect ratio preserving viewport
   switch (desktop_view) {
@@ -337,14 +361,56 @@ void app::desktop_display() {
       );
       break;
     }
+    case 7: {
+      auto dim = fit_viewport(quality.aspect_ratio, w, h);
+      glBlitNamedFramebuffer(
+        post.presolve.fbo, 0,
+        0, 0,
+        quality.resolve_buffer_w, quality.resolve_buffer_h,
+        dim.x, dim.y,
+        dim.x + dim.w, dim.y + dim.h,
+        GL_COLOR_BUFFER_BIT,
+        GL_LINEAR
+      );
+      break;
+    }
+    case 8: {
+      auto dim = fit_viewport(quality.aspect_ratio, w, h);
+      glBlitNamedFramebuffer(
+        post.fbo[0].fbo, 0,
+        0, 0,
+        post.w, post.h,
+        dim.x, dim.y,
+        dim.x + dim.w, dim.y + dim.h,
+        GL_COLOR_BUFFER_BIT,
+        GL_LINEAR
+      );
+      break;
+    }
+    case 9: {
+      auto dim = fit_viewport(quality.aspect_ratio, w, h);
+      glBlitNamedFramebuffer(
+        post.fbo[1].fbo, 0,
+        0, 0,
+        post.w, post.h,
+        dim.x, dim.y,
+        dim.x + dim.w, dim.y + dim.h,
+        GL_COLOR_BUFFER_BIT,
+        GL_LINEAR
+      );
+      break;
+    }
+
   }
 
-  if (show_gui()) return;
+  glViewport(0, 0, w, h);
+
+  if (show_gui()) return true;
 
   glFlush();
-  //static int frame = 0;
-  //if (frame++ % 3 == 0) 
   window.swap();
+
+  return false;
 }
 
 bool app::show_gui(bool * open) {
@@ -366,18 +432,9 @@ bool app::show_gui(bool * open) {
       gui::EndMenu();
     }
     if (gui::BeginMenu("View")) {
-      static const char * view_name[] = {\
-        "None",
-        "Both Eyes Distorted",
-        "Left Eye Distorted",
-        "Right Eye Distorted",
-        "Both Eyes Raw",
-        "Left Eye Raw",
-        "Right Eye Raw"
-      };
-      for (int i = 0; i < countof(view_name); ++i)
-        if (gui::MenuItem(view_name[i], nullptr, desktop_view == i))
-          desktop_view = i;              
+      for (int i = 0; i < countof(desktop_views); ++i)
+        if (gui::MenuItem(desktop_views[i], nullptr, desktop_view == i))
+          desktop_view = i;
       gui::EndMenu();
     }
     if (gui::BeginMenu("Debug")) {
@@ -404,7 +461,8 @@ bool app::show_gui(bool * open) {
 
   if (show_settings_window) {
     gui::Begin("Settings", &show_settings_window);    
-    gui::SliderInt("desktop view", &desktop_view, 0, 6);
+    gui::SliderInt("desktop view", &desktop_view, 0, countof(desktop_views) - 1);
+    gui::Text("%s", desktop_views[desktop_view]);
     bool tonemap = enable_tonemap; gui::Checkbox("tonemap", &tonemap); enable_tonemap = tonemap;  ImGui::SameLine();
     bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;
     gui::End();
@@ -413,6 +471,13 @@ bool app::show_gui(bool * open) {
   if (gui::Button(quality.suspended_rendering ? "Resume VR" : "Suspend VR")) {
     quality.suspended_rendering = !quality.suspended_rendering;
     vr::VRCompositor()->SuspendRendering(quality.suspended_rendering);
+  }
+  gui::SameLine();
+
+  if (vr::VRCompositor()->IsMirrorWindowVisible()) {
+    if (gui::Button("Hide Compositor")) vr::VRCompositor()->HideMirrorWindow();
+  } else {
+    if (gui::Button("Show Compositor")) vr::VRCompositor()->ShowMirrorWindow();
   }
 
   if (show_demo_window)

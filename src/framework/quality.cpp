@@ -120,7 +120,7 @@ namespace framework {
 
   void quality::present() {
     if (suspended_rendering) return;
-    glFinish();
+    glFinish();    
     for (int i = 0;i < 2;++i) {
       vr::Texture_t eyeTexture{
         (void*)intptr_t(resolve_target.texture_view[i]),

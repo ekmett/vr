@@ -23,9 +23,10 @@ vec3 filmic(vec3 color) {
 void main() {
   vec3 color = texture(presolve, coord).rgb;
   color += texture(bloom, coord).rgb; // * bloom_magnitude * exp2(bloom_exposure);
-  color *= exp2(exposure);// / FP16_SCALE;                    
+  // color *= exp2(exposure) / FP16_SCALE;                    
   color = color / (color + 1);
   // color = filmic(color);
   color = pow(color, vec3(1/2.2f));
-  outputColor = vec4(color, 1.0f);
+  outputColor = vec4(color.xyz, 1.0f);
+  // outputColor = vec4(coord, 1.0f);
 }

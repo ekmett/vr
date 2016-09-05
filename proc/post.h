@@ -39,22 +39,28 @@ namespace framework {
       
       glCreateProgramPipelines(countof(pipelines), pipelines);
 
+      glUniformBlockBinding(pass.programId, 0, 0);
+
       glUseProgramStages(downsample_pipeline, GL_VERTEX_SHADER_BIT, pass.programId);
       glUseProgramStages(downsample_pipeline, GL_FRAGMENT_SHADER_BIT, downsample.programId);
       glProgramUniformHandleui64ARB(downsample.programId, 0, presolve.texture_handle);
+      glUniformBlockBinding(downsample.programId, 0, 0);
 
       glUseProgramStages(horizontal_pipeline, GL_VERTEX_SHADER_BIT, pass.programId);
       glUseProgramStages(horizontal_pipeline, GL_FRAGMENT_SHADER_BIT, horizontal.programId);
       glProgramUniformHandleui64ARB(horizontal.programId, 0, fbo[0].texture_handle);
+      glUniformBlockBinding(horizontal.programId, 0, 0);
 
       glUseProgramStages(vertical_pipeline, GL_VERTEX_SHADER_BIT, pass.programId);
       glUseProgramStages(vertical_pipeline, GL_FRAGMENT_SHADER_BIT, vertical.programId);
       glProgramUniformHandleui64ARB(vertical.programId, 0, fbo[1].texture_handle);
+      glUniformBlockBinding(vertical.programId, 0, 0);
 
       glUseProgramStages(tone_pipeline, GL_VERTEX_SHADER_BIT, pass.programId);
       glUseProgramStages(tone_pipeline, GL_FRAGMENT_SHADER_BIT, tone.programId);
       glProgramUniformHandleui64ARB(tone.programId, 0, presolve.texture_handle);
       glProgramUniformHandleui64ARB(tone.programId, 1, fbo[0].texture_handle);
+      glUniformBlockBinding(tone.programId, 0, 0);
     }
 
     ~post() {
@@ -62,24 +68,34 @@ namespace framework {
     }
 
     void process() {
+      int vw = quality.viewport_h, vh = quality.viewport_h;
+      int pw = vw / 2, ph = vh / 2;
       log("post")->info("process() start");
       glDisable(GL_DEPTH_TEST);
       glDisable(GL_STENCIL_TEST);
       glDisable(GL_MULTISAMPLE);
       glDisable(GL_BLEND);
-      glEnable(GL_SCISSOR_TEST);
-      glViewport(0, 0, quality.viewport_w, quality.viewport_h);
-      glScissor(0, 0, quality.viewport_w, quality.viewport_h);            
       glUseProgram(0); // programs trump pipelines
 
+
+      glDisable(GL_SCISSOR_TEST);
+      fbo[0].bind();
+      glClearColor(1, 0, 0.5, 1);
+      glClear(GL_COLOR_BUFFER_BIT);
+      fbo[1].bind();
+      glClear(GL_COLOR_BUFFER_BIT);
+      glEnable(GL_SCISSOR_TEST);
       // downsample
       log("post")->info("downsampling");  
-      fbo[0].bind();
-      glBindProgramPipeline(downsample_pipeline);
-      glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
-      
+
+      glViewport(0, 0, w, h);
+      glScissor(0, 0, pw, ph);
+
+      for (int i = 0;i < 2;++i)
+        glBlitNamedFramebuffer(presolve.fbo_view[i], fbo[0].fbo_view[i], 0, 0, vw, vh, 0, 0, pw, ph, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
       // blur
-      for (int i = 0;i < 0;++i) {
+      for (int i = 0;i < 3;++i) {
         // horizontal
         glBindProgramPipeline(horizontal_pipeline);
         fbo[1].bind();
@@ -90,6 +106,15 @@ namespace framework {
         fbo[0].bind();
         glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
       }
+
+      //glViewport(0, 0, vw, vh);
+      //glScissor(0, 0, vw, vh);
+      glViewport(0, 0, quality.resolve_buffer_w, quality.resolve_buffer_h);
+      glScissor(0, 0, vw, vh);
+
+      //glViewport(0, 0, quality.resolve_buffer_w, quality.resolve_buffer_h);
+      //glScissor(0, 0, quality.resolve_buffer_w, quality.resolve_buffer_h);
+      // glScissor(0, 0, quality.viewport_w, quality.viewport_h);
 
       log("post")->info("tonemap");
       glBindProgramPipeline(tone_pipeline);
