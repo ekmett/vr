@@ -80,7 +80,7 @@ namespace framework {
 
     if (show_timing_window) {
       gui::Begin("Timing", &show_timing_window);
-      gui::Text("viewport: %d x %d (%dx msaa) (%.02fx supersampling)", viewport_w, viewport_h, render_target_metas[q.render_target].msaa_level, actual_supersampling);
+      gui::Text("viewport: %d x %d (%dx msaa)", viewport_w, viewport_h, render_target_metas[q.render_target].msaa_level);
       gui::Text("frame rate: %2.02f", 1000.0f / frame_timing.m_flClientFrameIntervalMs);
       gui::Text("dropped frames: %d", total_dropped_frames);
       gui::Text("utilization: %.02f", utilization);

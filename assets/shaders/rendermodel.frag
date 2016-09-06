@@ -4,16 +4,16 @@
 
 #include "uniforms.h"
 
-layout (bindless_sampler, location = 2) uniform sampler2D diffuse;
+layout (bindless_sampler, location = 2) uniform sampler2D diffuse_texture;
 
 in vec2 uv;
 in vec3 N;
-in vec3 L;
+in vec3 I;
 out vec4 outputColor;
 void main() {
-  vec4 color = pow(texture(diffuse, uv), vec4(2.2));
-  float a = 0.5;
-  float d = 0.08;
-  outputColor = vec4(color.xyz * (a + max(0, dot(normalize(N), normalize(L))) * sun_color * d), color.a);
-
+  vec3 L = sun_dir;
+  vec4 d = pow(texture(diffuse_texture, uv), vec4(2.2));
+  vec3 diffuse = d.xyz * max(0, dot(normalize(N), L)); // * sun_color;
+  vec3 ambient = d.xyz * texture(sky_cubemap, reflect(I,N)).xyz;
+  outputColor = vec4(ambient*0.4 + diffuse*0.6, d.a);
 }

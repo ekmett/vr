@@ -14,18 +14,20 @@ namespace framework {
   struct sky {
     static const int N = 128; // dimension for cubemap sides
 
-    sky(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms);
+    sky();
     ~sky();
 
-    void update(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms);
+    void update(app_uniforms & uniforms);
     vec3 sample(const vec3 & dir) const;
     void render() const;
 
-    vec3 sun_direction, sun_radiance, sun_irradiance;
+    bool initialized;
+    vec3 sun_dir, sun_radiance, sun_irradiance;
     float sun_size;
     vec3 ground_albedo;
     float turbidity;
     float elevation;
+
     sh9_t<vec3> sh;
     ArHosekSkyModelState * rgb[3];
     GLuint cubemap;
@@ -33,5 +35,7 @@ namespace framework {
     GLuint cubemap_views[6];
     gl::shader program;
     GLuint vao;
+
+    bool show_skybox_window = true;
   };
 }

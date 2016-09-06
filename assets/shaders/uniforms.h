@@ -53,7 +53,8 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(16) vec3 ground_albedo;
   UNIFORM_ALIGN(16) samplerCube sky_cubemap;
 
-  UNIFORM_ALIGN(8) float cos_sun_angular_radius;
+  UNIFORM_ALIGN(8) float turbidity;
+  UNIFORM_ALIGN(4) float cos_sun_angular_radius, sun_size;
   UNIFORM_ALIGN(4) float render_buffer_usage, resolve_buffer_usage;  //  how much of the render buffer is being used? max_supersampling_factor / current_supersampling_factor
 
   // camera

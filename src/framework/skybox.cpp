@@ -9,6 +9,7 @@
 #include "framework/half.h"
 #include "framework/texturing.h"
 #include "framework/gl.h"
+#include "framework/gui.h"
 #include "uniforms.h"
 
 extern "C" {
@@ -30,7 +31,7 @@ static float irradiance_integral(float theta) {
 namespace framework {
   static const float cos_physical_sun_size = std::cos(physical_sun_size);
 
-  sky::sky(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms)
+  sky::sky() // const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms)
     : rgb{}
     , cubemap(0)
     , program("skybox") {
@@ -61,33 +62,41 @@ namespace framework {
       glTextureStorage2D(cubemap_views[i], 7, GL_RGBA8, N, N);
     }
 
-    update(sun_direction, sun_size, ground_albedo, turbidity, uniforms);
-
+    initialized = false;
   }
 
   // sun size is in radians, not degrees
-  void sky::update(const vec3 & sun_direction_, float sun_size_, const vec3 & ground_albedo_, float turbidity_, app_uniforms & uniforms) {
-    vec3 new_sun_direction = sun_direction_;
-    new_sun_direction.y = (new_sun_direction.y);
-    new_sun_direction = normalize(new_sun_direction);
-    float new_sun_size = max(sun_size_, 0.1_degrees);
-    float new_turbidity = clamp(turbidity_, 1.f, 32.f);
-    vec3 new_ground_albedo = saturate(ground_albedo_);
+  void sky::update(app_uniforms & uniforms) {
+    if (show_skybox_window) {
+      gui::Begin("Skybox", &show_skybox_window);
+      gui::ColorEdit3("ground albedo", reinterpret_cast<float*>(&uniforms.ground_albedo));
+      gui::SliderFloat("sun size", &sun_size, 0.1_degrees, 10.0_degrees);
+      gui::SliderFloat("x", &uniforms.sun_dir.x, -1, 1);
+      gui::SliderFloat("y", &uniforms.sun_dir.y, 0, 1);
+      gui::SliderFloat("z", &uniforms.sun_dir.z, -1, 1);
+      gui::SliderFloat("turbidity", &uniforms.turbidity, 1, 32);
+      gui::End();
+    }
 
-    if (new_sun_direction == sun_direction && new_sun_size == sun_size && new_ground_albedo == ground_albedo && new_turbidity == turbidity)
+    if (initialized &&
+        uniforms.sun_dir == sun_dir && 
+        uniforms.sun_size == sun_size && 
+        uniforms.ground_albedo == ground_albedo && 
+        uniforms.turbidity == turbidity)
       return;
 
-    float theta_sun = angle_between(sun_direction, vec3(0, 1, 0));
-    elevation = M_PI_2 - theta_sun;
-    sun_direction = new_sun_direction;
-    sun_size = new_sun_size;
-    turbidity = new_turbidity;
-    ground_albedo = new_ground_albedo;
-    log("sky")->info("beginning update");
+    sun_dir = uniforms.sun_dir = normalize(uniforms.sun_dir);
+    sun_size = uniforms.sun_size = std::max(uniforms.sun_size, 0.1_degrees);
+    turbidity = uniforms.turbidity = clamp(uniforms.turbidity, 1.f, 32.f);
+    ground_albedo = uniforms.ground_albedo = saturate(uniforms.ground_albedo);
+    uniforms.cos_sun_angular_radius = cos(uniforms.sun_size);
+    uniforms.sky_cubemap = cubemap_handle;
 
-    for (int i = 0;i < 3;++i) {
-      rgb[i] = arhosek_rgb_skymodelstate_alloc_init(turbidity, ground_albedo[i], elevation);
-    }
+    float theta_sun = angle_between(sun_dir, vec3(0, 1, 0));
+    elevation = M_PI_2 - theta_sun;
+
+    for (int i = 0;i < 3;++i)
+      rgb[i] = arhosek_rgb_skymodelstate_alloc_init(turbidity, ground_albedo[i], elevation);    
 
     sampled_spectrum ground_albedo_spectrum = sampled_spectrum::from_rgb(ground_albedo, spectrum_type::reflectance);
 
@@ -95,8 +104,8 @@ namespace framework {
     for (auto i = 0; i < spectral_samples; ++i)
       sky_states[i] = arhosekskymodelstate_alloc_init(theta_sun, turbidity, ground_albedo_spectrum[i]);
 
-    vec3 sun_direction_x = perpendicular(sun_direction);
-    mat3 sun_orientation = mat3(sun_direction_x, cross(sun_direction, sun_direction_x), sun_direction);
+    vec3 sun_dir_x = perpendicular(sun_dir);
+    mat3 sun_orientation = mat3(sun_dir_x, cross(sun_dir, sun_dir_x), sun_dir);
 
     const size_t num_samples = 8;
     for (size_t x = 0;x < num_samples; ++x)
@@ -107,20 +116,24 @@ namespace framework {
           cos_physical_sun_size
         );
         float sample_theta_sun = angle_between(sample_dir, vec3(0, 1, 0));
-        float sample_gamma = angle_between(sample_dir, sun_direction);
+        float sample_gamma = angle_between(sample_dir, sun_dir);
 
         sampled_spectrum solar_radiance;
-        for (size_t i = 0; i < spectral_samples; ++i) {
-          float wavelength = lerp(float(sampled_lambda_start), float(sampled_lambda_end), i / float(spectral_samples));
-          solar_radiance[i] = float(arhosekskymodel_solar_radiance(sky_states[i], sample_theta_sun, sample_gamma, wavelength));
-        }
+
+        for (size_t i = 0; i < spectral_samples; ++i)
+          solar_radiance[i] = float(arhosekskymodel_solar_radiance(
+            sky_states[i], 
+            sample_theta_sun, 
+            sample_gamma, 
+            lerp(float(sampled_lambda_start), float(sampled_lambda_end), i / float(spectral_samples))
+          ));
+        
         vec3 sample_radiance = solar_radiance.to_rgb();
 
-        sun_irradiance += sample_radiance * saturate<float, highp>(dot(sample_dir, sun_direction));
+        sun_irradiance += sample_radiance * saturate<float, highp>(dot(sample_dir, sun_dir));
       }
 
-    float pdf = sample_direction_cone_PDF(cos_physical_sun_size);
-    sun_irradiance *= (1.0f / num_samples) * (1.0f / num_samples) * (1.0f / pdf);
+    sun_irradiance *= (1.0f / num_samples) * (1.0f / num_samples) * (1.0f / sample_direction_cone_PDF(cos_physical_sun_size));
 
     // standard luminous efficiency 683 lm/W, coordinate system scaling & scaling to fit into the dynamic range of a 16 bit float
     sun_irradiance *= 683.0f * 100.0f * fp16_scale;
@@ -130,10 +143,7 @@ namespace framework {
       sky_states[i] = nullptr;
     }
     
-    // compute uniform solar radiance value
-    sun_radiance = sun_irradiance / irradiance_integral(sun_size);
-
-    log("sky")->info("computed solar radiance: {}", sun_radiance);
+    uniforms.sun_color = sun_irradiance / irradiance_integral(sun_size);
 
     sh = sh9_t<vec3>();
     float weights = 0.0f;
@@ -180,14 +190,12 @@ namespace framework {
         }
       }
     }
-    sh *= (4.0f * float(M_PI)) / weights;
+    sh *= 4.0f * float(M_PI) / weights;
 
     log("sky")->info("spherical harmonics: {}", sh);
 
     glTextureSubImage3D(cubemap, 0, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
     glGenerateTextureMipmap(cubemap);
-    //cubemap_handle = glGetTextureHandleARB(cubemap);
-    //glMakeTextureHandleResidentARB(cubemap_handle);
 
     // right left top bottom back front - opengl order
     // front back left right top bottom - openvr order
@@ -203,15 +211,11 @@ namespace framework {
     }
     vr::VRCompositor()->SetSkyboxOverride(vr_skybox, 6);
 
-    uniforms.sun_dir = sun_direction;
-    uniforms.sun_color = sun_radiance;
-    uniforms.sky_cubemap = cubemap_handle;
-    uniforms.cos_sun_angular_radius = cos(sun_size);
-    uniforms.ground_albedo = ground_albedo;
+    initialized = true;
   }
 
   vec3 sky::sample(const vec3 & dir) const {
-    float gamma = angle_between(dir, sun_direction);
+    float gamma = angle_between(dir, sun_dir);
     float theta = angle_between(dir, vec3(0, 1, 0));
     vec3 radiance{
       arhosek_tristim_skymodel_radiance(rgb[0], theta, gamma, 0),
@@ -233,7 +237,7 @@ namespace framework {
   void sky::render() const {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
+    // glDisable(GL_CULL_FACE);
     glUseProgram(program);
     glBindVertexArray(vao);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);

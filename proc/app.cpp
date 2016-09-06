@@ -111,20 +111,22 @@ app::app(path assets)
   , vr()
   , compiler(path(assets).append("shaders"))
   , gui(window)
-  , distorted()
-  , sky(vec3(0.2, 0.01, 0.8), 8 * physical_sun_size, vec3(0.25, 0.25, 0.25), 6.f, *this)
   // , sky(vec3(0.252, 0.955, -.155), 2.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
   , quality(3)
   , post(quality)
   , rendermodels(vr)
   {
-
   nearClip = 0.1f;
   farClip = 10000.f;
   bloom_exposure = -2;
   exposure = -14;
   blur_sigma = 2.5;
   bloom_magnitude = 1.000;
+
+  sun_dir = vec3(0.2, 0.3, 0.8);
+  sun_size = 3 * physical_sun_size;
+  ground_albedo = vec3(0.25, 0.25, 0.25); 
+  turbidity = 1.5f;
 
   distorted.set_resolve_handle(quality.resolve_target.texture_handle);
   
@@ -240,10 +242,13 @@ void app::run() {
     l->info("quality.new_frame");
     quality.new_frame(vr, &render_buffer_usage, &resolve_buffer_usage);
 
+    sky.update(*this);
+
     l->info("submit_uniforms");
     submit_uniforms();
 
     l->info("render_stencil");
+
     distorted.render_stencil();
 
     l->info("skybox");
@@ -448,10 +453,11 @@ bool app::show_gui(bool * open) {
       bool srgb = enable_srgb_resolve; gui::MenuItem("SRGB Resolve", nullptr, &srgb); enable_srgb_resolve = srgb;          
       gui::MenuItem("Skybox Enabled", nullptr, &skybox_visible);
       gui::Separator();
-      if (gui::MenuItem("Settings", nullptr, &show_settings_window)) {}
-      if (gui::MenuItem("Quality", nullptr, &quality.show_quality_window)) {}
-      if (gui::MenuItem("Timing", nullptr, &quality.show_timing_window)) {}
-      if (gui::MenuItem("Demo", nullptr, &show_demo_window)) {}
+      gui::MenuItem("Settings", nullptr, &show_settings_window);
+      gui::MenuItem("Quality", nullptr, &quality.show_quality_window);
+      gui::MenuItem("Timing", nullptr, &quality.show_timing_window);
+      gui::MenuItem("Demo", nullptr, &show_demo_window);
+      gui::MenuItem("Skybox", nullptr, &sky.show_skybox_window);
       gui::EndMenu();
     }
 
