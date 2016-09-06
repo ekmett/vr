@@ -61,7 +61,8 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(4) float exposure;
   UNIFORM_ALIGN(4) float nearClip, farClip;
   UNIFORM_ALIGN(4) float global_time;
-  UNIFORM_ALIGN(4) int enable_seascape, enable_tonemap;
+  UNIFORM_ALIGN(4) int enable_seascape, 
+                       enable_srgb_resolve; // final resolve buffer is in srgb colorspace, not linear
 
   // pose info, shuffled down here by size
   UNIFORM_ALIGN(4) int controller_mask;

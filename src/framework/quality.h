@@ -49,7 +49,7 @@ namespace framework {
     void new_frame(openvr::system & vr, float * render_buffer_usage = nullptr, float * resolve_buffer_usage = nullptr, int * render_target = nullptr);
     void resolve() { resolve(resolve_target); }
     void resolve(stereo_fbo & to);
-    void present();
+    void present(bool srgb_resolve = true); // default to true since the alternative doesn't work
 
   private:
     void delete_framebuffers();

@@ -129,7 +129,7 @@ app::app(path assets)
   distorted.set_resolve_handle(quality.resolve_target.texture_handle);
   
   enable_seascape = true;
-  enable_tonemap = true;
+  enable_srgb_resolve = true;
 
   glCreateVertexArrays(1, &dummy_vao); // we'll load this as needed
   gl::label(GL_VERTEX_ARRAY, dummy_vao, "dummy vao");
@@ -261,9 +261,10 @@ void app::run() {
     post.process();
 
     l->info("present");
-    quality.present();
+    quality.present(enable_srgb_resolve);
 
     l->info("desktop");
+    
     if (desktop_display()) return;
   }
 }
@@ -288,6 +289,7 @@ bool app::desktop_display() {
   glClearColor(0.18f, 0.18f, 0.18f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+  if (!enable_srgb_resolve) glEnable(GL_FRAMEBUFFER_SRGB);
   // lets find an aspect ratio preserving viewport
   switch (desktop_view) {
     case 0: break;
@@ -396,8 +398,8 @@ bool app::desktop_display() {
       );
       break;
     }
-
   }
+  if (!enable_srgb_resolve) glDisable(GL_FRAMEBUFFER_SRGB);
 
   glViewport(0, 0, w, h);
 
@@ -442,7 +444,8 @@ bool app::show_gui(bool * open) {
         }
         gui::EndMenu();
       }
-      gui::Separator();
+      gui::Separator();        
+      bool srgb = enable_srgb_resolve; gui::MenuItem("SRGB Resolve", nullptr, &srgb); enable_srgb_resolve = srgb;          
       gui::MenuItem("Skybox Enabled", nullptr, &skybox_visible);
       gui::Separator();
       if (gui::MenuItem("Settings", nullptr, &show_settings_window)) {}
@@ -459,7 +462,6 @@ bool app::show_gui(bool * open) {
     gui::Begin("Settings", &show_settings_window);    
     gui::SliderInt("desktop view", &desktop_view, 0, countof(desktop_views) - 1);
     gui::Text("%s", desktop_views[desktop_view]);
-    bool tonemap = enable_tonemap; gui::Checkbox("tonemap", &tonemap); enable_tonemap = tonemap;  ImGui::SameLine();
     bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;
     gui::End();
   }

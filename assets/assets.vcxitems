@@ -33,6 +33,7 @@
     <None Include="$(MSBuildThisFileDirectory)shaders\seascape.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\skybox.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\skybox.vert" />
+    <None Include="$(MSBuildThisFileDirectory)cotangent.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)shaders\post_blur_v.frag" />

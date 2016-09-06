@@ -185,8 +185,6 @@ namespace framework {
     glVertexArrayAttribFormat(hidden_vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayAttribBinding(hidden_vao, 0, 0);
     glVertexArrayVertexBuffer(hidden_vao, 0, hidden_vbo, 0, sizeof(vec2));
-
-    log("distortion")->info("{} vertices, {} indices, {} hidden triangles", verts.size(), indices.size(), hidden_verts.size() / 3);
   }
 
   distortion::~distortion() {
@@ -195,42 +193,43 @@ namespace framework {
   }
 
   void distortion::render_stencil() {
-    glDisable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_STENCIL_TEST);
-    //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glDisable(GL_BLEND);       // rendering 0 into alpha channel
+    glDisable(GL_CULL_FACE);   // winding gets flipped from eye to eye
+    glDisable(GL_DEPTH_TEST);  // no depth 
+    glEnable(GL_STENCIL_TEST); //    
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // no color, just stencil
     glStencilMask(1);
     glStencilFunc(GL_ALWAYS, 1, 1);
     glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
-    glBindVertexArray(hidden_vao);
-    glUseProgram(mask.programId);
     if (debug_wireframe_render_stencil) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    glUseProgram(mask.programId);
+    glBindVertexArray(hidden_vao);
     glDrawArrays(GL_TRIANGLES, 0, n_hidden); // put 1 in the stencil mask everywhere the hidden mesh lies
-    if (debug_wireframe_render_stencil) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glStencilFunc(GL_EQUAL, 0, 1);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // use the stencil mask to disable writes
-    glStencilMask(0);
-    //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glUseProgram(0);
     glBindVertexArray(0);
+    glUseProgram(0);
+
+    if (debug_wireframe_render_stencil) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    
+    glStencilFunc(GL_EQUAL, 0, 1);                    // restore stencil
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);           // use the stencil mask to disable writes   
+    glStencilMask(0);                                 // nobody else should be writing to the stencil buffer
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);  // and they can write to colors
+    glEnable(GL_CULL_FACE);
   }
 
   void distortion::render(int view_mask) {
-    log("distortion")->info("rendering {}", view_mask);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
     glStencilMask(1);
-    glBindVertexArray(vao);
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
     glUseProgram(warp.programId);
+    glBindVertexArray(vao);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, nullptr);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glBindVertexArray(0);
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glUseProgram(0);
-    log("distortion")->info("rendering complete");
+    glBindVertexArray(0);
+
   }
 
 }

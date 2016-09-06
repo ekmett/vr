@@ -27,7 +27,7 @@ void main() {
   color *= exp2(exposure) / FP16_SCALE;                    
   color = filmic(color);
 
-  if (enable_tonemap != 0)
+  if (enable_srgb_resolve != 0)
     color = pow(color, vec3(1/2.2f));
 
   if (presolve_color.a < 0.1) {

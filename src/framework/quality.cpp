@@ -21,7 +21,6 @@ namespace framework {
   }
 
   void quality::new_frame(openvr::system & vr, float * render_buffer_usage, float * resolve_buffer_usage, int * render_target) {
-
     if (!suspended_rendering) {
       // adapt quality level
       frame_timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
@@ -96,13 +95,14 @@ namespace framework {
     current_render_fbo().bind();
 
     glStencilMask(1);
-    glDisable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
-    glClearColor(1, 0, 0, 0);
+    glClearColor(0.18, 0.18, 0.18, 0);
 
-    // glClearColor(0.18f, 0.18f, 0.18f, 0.0f); // clearing a layered framebuffer clears all layers. Use 0 alpha to indicate edge stencil when finally rendering
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glViewport(0, 0, viewport_w, viewport_h);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // use premultiplied alpha
+    glCullFace(GL_BACK);
 
 
     if (render_buffer_usage) *render_buffer_usage = actual_supersampling / render_target_metas[q.render_target].max_supersampling_factor;
@@ -124,14 +124,14 @@ namespace framework {
       );
   }
 
-  void quality::present() {
+  void quality::present(bool srgb_resolve) {
     if (suspended_rendering) return;
     glFinish();    
     for (int i = 0;i < 2;++i) {
       vr::Texture_t eyeTexture{
         (void*)intptr_t(resolve_target.texture_view[i]),
         vr::API_OpenGL,
-        vr::ColorSpace_Gamma
+        srgb_resolve ? vr::ColorSpace_Gamma : vr::ColorSpace_Linear
       };
       vr::VRTextureBounds_t eyeBounds{
         0,

@@ -76,7 +76,7 @@ namespace framework {
     void draw(int device_mask) {
       if (vr::VRSystem()->IsInputFocusCapturedByAnotherProcess()) return;
 
-      //glEnable(GL_DEPTH_TEST);
+      glEnable(GL_DEPTH_TEST);
       glEnable(GL_BLEND);
 
       glUseProgram(shader.programId);
@@ -96,7 +96,7 @@ namespace framework {
         }
       }
 
-      //glDisable(GL_DEPTH_TEST);
+      glDisable(GL_DEPTH_TEST);
       glDisable(GL_BLEND);
 
       glUseProgram(0);
