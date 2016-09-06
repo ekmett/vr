@@ -23,7 +23,7 @@ using namespace framework;
 using namespace filesystem;
 
 // used reversed [1..0] floating point z rather than the classic [-1..1] mapping
-#define USE_REVERSED_Z
+//#define USE_REVERSED_Z
 
 #ifdef USE_REVERSED_Z
 static float reverseZ_contents[16] = {
@@ -226,22 +226,19 @@ void app::get_poses() {
 
 void app::run() { 
   while (!vr.poll() && !window.poll()) {
-
     auto l = log("app");
 
     l->info("gui frame");
     gui.new_frame();
 
     l->info("polling rendermodels");
-    rendermodels.poll(); // fetch new devices
+    rendermodels.poll();
 
     l->info("get_poses");
-    // gather uniforms
     get_poses();
-    l->info("quality.new_frame");
 
+    l->info("quality.new_frame");
     quality.new_frame(vr, &render_buffer_usage, &resolve_buffer_usage);
-    l->info("resolve buffer usage {}", resolve_buffer_usage);
 
     l->info("submit_uniforms");
     submit_uniforms();
@@ -250,6 +247,7 @@ void app::run() {
     distorted.render_stencil();
 
     l->info("skybox");
+    glBindVertexArray(dummy_vao);
     sky.render();
 
     l->info("drawing rendermodels");
@@ -266,10 +264,7 @@ void app::run() {
     quality.present();
 
     l->info("desktop");
-    if (desktop_display()) {
-      l->info("killed by desktop");
-      return;
-    }
+    if (desktop_display()) return;
   }
 }
 
@@ -290,10 +285,9 @@ bool app::desktop_display() {
   glStencilMask(1);
   glViewport(0, 0, w, h);
   glScissor(0, 0, w, h);
-  glClearColor(0.18f, 0.18f, 0.18f, 1.f);
+  // glClearColor(0.18f, 0.18f, 0.18f, 1.f);
+  glClearColor(0, 0, 1, 1);
   glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-
 
   // lets find an aspect ratio preserving viewport
   switch (desktop_view) {

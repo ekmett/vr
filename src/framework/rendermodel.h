@@ -76,7 +76,7 @@ namespace framework {
     void draw(int device_mask) {
       if (vr::VRSystem()->IsInputFocusCapturedByAnotherProcess()) return;
 
-      glEnable(GL_DEPTH_TEST);
+      //glEnable(GL_DEPTH_TEST);
       glEnable(GL_BLEND);
 
       glUseProgram(shader.programId);
@@ -85,7 +85,7 @@ namespace framework {
         if (device_mask & (1 << i)) {
           auto model = tracked_rendermodels[i];
           if (!model || !model->diffuse) continue;
-          //log("rendermodel")->info("model {}", i);
+          log("rendermodel")->info("model {}", i);
           glBindVertexArray(model->vao);  // sort by model?
           //mat4 id(1.f);
           //glProgramUniformMatrix4fv(program, 0, 1, false, &id[0][0]);
@@ -96,7 +96,7 @@ namespace framework {
         }
       }
 
-      glDisable(GL_DEPTH_TEST);
+      //glDisable(GL_DEPTH_TEST);
       glDisable(GL_BLEND);
 
       glUseProgram(0);

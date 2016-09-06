@@ -94,12 +94,18 @@ namespace framework {
 
     glEnable(GL_MULTISAMPLE);
     current_render_fbo().bind();
+
+    log("QUALITY")->info("currently rendering in {}x msaa", current_render_fbo().format.msaa);
     glStencilMask(1);
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
-    glClearColor(0.18f, 0.18f, 0.18f, 0.0f); // clearing a layered framebuffer clears all layers. Use 0 alpha to indicate edge stencil when finally rendering
+    glClearColor(1, 0, 0, 0);
+
+    // glClearColor(0.18f, 0.18f, 0.18f, 0.0f); // clearing a layered framebuffer clears all layers. Use 0 alpha to indicate edge stencil when finally rendering
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glViewport(0, 0, viewport_w, viewport_h);
+
+    log("QUALITY")->info("resolve buffer usage: {}", actual_supersampling / max_supersampling_factor);
 
     if (render_buffer_usage) *render_buffer_usage = actual_supersampling / render_target_metas[q.render_target].max_supersampling_factor;
     if (resolve_buffer_usage) *resolve_buffer_usage = actual_supersampling / max_supersampling_factor;

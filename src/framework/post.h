@@ -84,7 +84,7 @@ namespace framework {
       glBindVertexArray(vao);
       glUseProgram(0); // programs trump pipelines
 
-      glClearColor(0, 0, 0, 0.0); // we don't clear the presolve as we only sample it at points, but we blur in here
+      glClearColor(1, 0, 1, 1); // we don't clear the presolve as we only sample it at points, but we blur in here
       fbo[1].bind();
       glClear(GL_COLOR_BUFFER_BIT);
       fbo[0].bind();
@@ -116,6 +116,8 @@ namespace framework {
       glViewport(0, 0, quality.resolve_buffer_w, quality.resolve_buffer_h);
       glScissor(0, 0, vw, vh);
 
+      glBlendEquation(GL_FUNC_ADD);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glEnable(GL_BLEND);
 
       log("post")->info("tonemap");

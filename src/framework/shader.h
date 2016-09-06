@@ -24,6 +24,7 @@ namespace framework {
         if (programId != 0) glDeleteProgram(programId);
       }
       GLuint programId;
+      operator GLuint () const { return programId; }
     };
 
     // this may eventually pick up more stuff

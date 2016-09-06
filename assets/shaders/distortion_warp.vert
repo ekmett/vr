@@ -1,5 +1,7 @@
 #version 450 core
-
+#extension GL_ARB_shading_language_include : require
+#extension GL_ARB_bindless_texture : require
+#include "uniforms.h"
 
 layout(location = 0) in vec4 position;
 layout(location = 1) in vec2 redIn;

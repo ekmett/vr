@@ -24,6 +24,8 @@ void main() {
     vec4 r = texture(resolve, vec3(red * resolve_buffer_usage, eye));
     vec4 g = texture(resolve, vec3(green * resolve_buffer_usage, eye));
     vec4 b = texture(resolve, vec3(blue * resolve_buffer_usage, eye));
-    outputColor = mix(vec4(0.18f, 0.18f, 0.18f,0.0f), vec4(r.r,g.g,b.b,1), smoothstep(1, 3, r.a + g.a + b.a));
+    // outputColor = vec4(r.r,g.g,b.b,1);
+    outputColor = vec4(r.r, g.g, b.b,1);    
+    //outputColor = mix(vec4(0.18f, 0.18f, 0.18f,0.0f), vec4(r.r,g.g,b.b,1), smoothstep(1, 3, r.a + g.a + b.a));
   }
 }

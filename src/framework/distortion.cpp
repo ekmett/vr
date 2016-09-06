@@ -32,7 +32,7 @@ static bool point_in_mesh(vec2 p, vec2 * mesh, int vertices) {
 
 namespace framework {
 
-  distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortion_mask"), warp("distortion_warp") {
+  distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortion_mask"), warp("distortion_warp") {   
     glUniformBlockBinding(warp.programId, 0, 0);
 
     float w = (float)(1.0 / float(segmentsH - 1)),
@@ -195,10 +195,10 @@ namespace framework {
   }
 
   void distortion::render_stencil() {
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_STENCIL_TEST);
     glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
     //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glStencilMask(1);
     glStencilFunc(GL_ALWAYS, 1, 1);
@@ -222,12 +222,13 @@ namespace framework {
     glDisable(GL_STENCIL_TEST);
     glStencilMask(1);
     glBindVertexArray(vao);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glUseProgram(warp.programId);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, nullptr);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindVertexArray(0);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glUseProgram(0);
     log("distortion")->info("rendering complete");
   }

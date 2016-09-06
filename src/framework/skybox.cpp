@@ -186,7 +186,9 @@ namespace framework {
 
     glTextureSubImage3D(cubemap, 0, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
     glGenerateTextureMipmap(cubemap);
-   
+    cubemap_handle = glGetTextureHandleARB(cubemap);
+    glMakeTextureHandleResidentARB(cubemap_handle);
+
     // right left top bottom back front - opengl order
     // front back left right top bottom - openvr order
     vr::Texture_t vr_skybox[6];
@@ -232,7 +234,7 @@ namespace framework {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
-    glUseProgram(program.programId);
+    glUseProgram(program);
     glBindVertexArray(vao);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
     glBindVertexArray(0);

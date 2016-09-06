@@ -18,7 +18,7 @@ out vec3 origin;
 
 void main() {
   // mat4 model_view = head_to_eye[gl_InstanceID] * predicted_world_to_head[gl_InstanceID];
-  vec4 position = vec4(positions[gl_VertexID],0.0,1.0);
+  vec4 position = vec4(positions[gl_VertexID],-1.0,1.0);
   mat4 inverse_model_view = predicted_device_to_world[DEVICE_HEAD] * eye_to_head[gl_InstanceID];
 #ifdef HACK_SEASCAPE
   origin = predicted_device_to_world[DEVICE_HEAD][3].xyz;
