@@ -4,7 +4,6 @@
 #pragma optionNV(unroll all)
 
 #include "uniforms.h"
-
 #include "post_blur.glsl"
 
 layout(bindless_sampler, location = 0) uniform sampler2DArray tex;

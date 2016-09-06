@@ -34,8 +34,35 @@ namespace framework {
     : rgb{}
     , cubemap(0)
     , program("skybox") {
-    update(sun_direction, sun_size, ground_albedo, turbidity, uniforms);
+    glCreateVertexArrays(1, &vao);
     glUniformBlockBinding(program.programId, 0, 0);
+    glActiveTexture(GL_TEXTURE1);
+    glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &cubemap);
+    glTextureParameteri(cubemap, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(cubemap, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(cubemap, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(cubemap, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(cubemap, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    if (GLEW_ARB_seamless_cubemap_per_texture)
+      glTextureParameteri(cubemap, GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_TRUE);
+    else
+      log("sky")->warn("GL_ARB_seamless_cubemap_per_texture unsupported");
+    glTextureStorage2D(cubemap, 7, GL_RGBA16F, N, N);
+
+    cubemap_handle = glGetTextureHandleARB(cubemap);
+    glMakeTextureHandleResidentARB(cubemap_handle);
+
+    glCreateTextures(GL_TEXTURE_2D, 6, cubemap_views);
+    for (int i = 0;i < 6; ++i) {
+      glTextureParameteri(cubemap_views[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTextureParameteri(cubemap_views[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+      glTextureParameteri(cubemap_views[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTextureParameteri(cubemap_views[i], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      glTextureStorage2D(cubemap_views[i], 7, GL_RGBA8, N, N);
+    }
+
+    update(sun_direction, sun_size, ground_albedo, turbidity, uniforms);
+
   }
 
   // sun size is in radians, not degrees
@@ -62,7 +89,7 @@ namespace framework {
       rgb[i] = arhosek_rgb_skymodelstate_alloc_init(turbidity, ground_albedo[i], elevation);
     }
 
-    sampled_spectrum ground_albedo_spectrum = sampled_spectrum::from_rgb(ground_albedo);
+    sampled_spectrum ground_albedo_spectrum = sampled_spectrum::from_rgb(ground_albedo, spectrum_type::reflectance);
 
     ArHosekSkyModelState * sky_states[spectral_samples];
     for (auto i = 0; i < spectral_samples; ++i)
@@ -111,7 +138,6 @@ namespace framework {
     sh = sh9_t<vec3>();
     float weights = 0.0f;
 
-    static const int N = 128;
     alloca_array<tvec4<half>> cubemap_data(6 * N * N);
     alloca_array<tvec4<uint8_t>> tonemapped_cubemap_data(6 * N*N);
     for (int s = 0; s < 6; ++s) {
@@ -158,34 +184,15 @@ namespace framework {
 
     log("sky")->info("spherical harmonics: {}", sh);
 
-    glActiveTexture(GL_TEXTURE1);
-    glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &cubemap);
-    glTextureParameteri(cubemap, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameteri(cubemap, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTextureParameteri(cubemap, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(cubemap, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(cubemap, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    if (GLEW_ARB_seamless_cubemap_per_texture)
-      glTextureParameteri(cubemap, GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_TRUE);
-    else
-      log("sky")->warn("GL_ARB_seamless_cubemap_per_texture unsupported");
-    glTextureStorage2D(cubemap, 7, GL_RGBA16F, N, N);
     glTextureSubImage3D(cubemap, 0, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
     glGenerateTextureMipmap(cubemap);
-
-    // copy the data for openvr
-    glCreateTextures(GL_TEXTURE_2D, 6, cubemap_views);   
-    
+   
     // right left top bottom back front - opengl order
     // front back left right top bottom - openvr order
     vr::Texture_t vr_skybox[6];
-    int swizzle[6] = { 2, 3, 4, 5, 1, 0 };
+    const int swizzle[6] = { 2, 3, 4, 5, 1, 0 };
+
     for (int i = 0;i < 6; ++i) {
-      glTextureParameteri(cubemap_views[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTextureParameteri(cubemap_views[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-      glTextureParameteri(cubemap_views[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTextureParameteri(cubemap_views[i], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      glTextureStorage2D(cubemap_views[i], 7, GL_RGBA8, N, N);
       glTextureSubImage2D(cubemap_views[i], 0, 0, 0, N, N, GL_RGBA, GL_UNSIGNED_BYTE, tonemapped_cubemap_data.data() + (N*N*i));
       glGenerateTextureMipmap(cubemap_views[i]);
       vr_skybox[swizzle[i]].handle = (void*)(intptr_t)cubemap_views[i];
@@ -193,9 +200,6 @@ namespace framework {
       vr_skybox[swizzle[i]].eType = vr::API_OpenGL;
     }
     vr::VRCompositor()->SetSkyboxOverride(vr_skybox, 6);
-
-    cubemap_handle = glGetTextureHandleARB(cubemap);
-    glMakeTextureHandleResidentARB(cubemap_handle);
 
     uniforms.sun_dir = sun_direction;
     uniforms.sun_color = sun_radiance;
@@ -219,14 +223,19 @@ namespace framework {
   sky::~sky() {
     for (auto m : rgb) arhosekskymodelstate_free(m);
     glMakeTextureHandleNonResidentARB(cubemap_handle);
+    glDeleteVertexArrays(1, &vao);
     glDeleteTextures(1, &cubemap);
     glDeleteTextures(6, cubemap_views);
   }
 
   void sky::render() const {
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
     glUseProgram(program.programId);
-    // assume we're bound to the dummy vao
+    glBindVertexArray(vao);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
+    glBindVertexArray(0);
+    glUseProgram(0);
   }
 }

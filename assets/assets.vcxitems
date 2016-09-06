@@ -28,6 +28,8 @@
     <None Include="$(MSBuildThisFileDirectory)shaders\post_downsample.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\post_pass.vert" />
     <None Include="$(MSBuildThisFileDirectory)shaders\post_tonemap.frag" />
+    <None Include="$(MSBuildThisFileDirectory)shaders\rendermodel.frag" />
+    <None Include="$(MSBuildThisFileDirectory)shaders\rendermodel.vert" />
     <None Include="$(MSBuildThisFileDirectory)shaders\seascape.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\skybox.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\skybox.vert" />

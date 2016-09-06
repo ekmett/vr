@@ -179,6 +179,7 @@ namespace framework {
     glVertexArrayAttribIFormat(vao, 4, 1, GL_UNSIGNED_SHORT, offsetof(vertex, eye));
 
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(vertex)); // bind the data
+    glVertexArrayElementBuffer(vao, ibo);
 
     glEnableVertexArrayAttrib(hidden_vao, 0);
     glVertexArrayAttribFormat(hidden_vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
@@ -221,13 +222,12 @@ namespace framework {
     glDisable(GL_STENCIL_TEST);
     glStencilMask(1);
     glBindVertexArray(vao);
-    glUseProgram(warp.programId);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glUseProgram(warp.programId);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, nullptr);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glUseProgram(0);
     log("distortion")->info("rendering complete");
   }

@@ -227,11 +227,9 @@ XCOPY "$(OpenALSoftDir)bin\$(WinXX)\soft_oal.dll" "$(TargetDir)" /D /K /Y
   <ItemGroup>
     <ClCompile Include="tracker.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="rendermodel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tracker.h" />
-    <ClInclude Include="rendermodel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

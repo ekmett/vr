@@ -31,8 +31,7 @@ namespace framework {
     template <typename ... Args> inline void label(GLenum id, GLuint name, const char * format, const Args & ... args) noexcept {
       string label = fmt::format(format, args...);
       glObjectLabel(id, name, (GLsizei) label.length(), label.c_str());
-      log("gl")->info("{} {}: {}", show_object_label_type(id), name, label);
-
+      // log("gl")->info("{} {}: {}", show_object_label_type(id), name, label);
     }
     void label(GLenum id, GLuint name, const char * label) noexcept;
 

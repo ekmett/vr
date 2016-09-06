@@ -14,6 +14,31 @@
 namespace framework {
 
   namespace openvr {
+    template<typename... Ts, typename f, typename err> static inline string buffered_with_error(f fun, err *e, Ts... args) {
+      string result;
+      uint32_t newlen = fun(args..., nullptr, 0, e), len = 0;
+      do {
+        len = newlen;
+        if (len <= 1) return "";
+        result.resize(len);
+        uint32_t newlen = fun(args..., const_cast<char*>(result.c_str()), len, e);
+      } while (len != newlen);
+      result.resize(newlen - 1); // we don't own the \0 at the end of a string.
+      return result;
+    }
+
+    template<typename... Ts, typename f> static inline string buffered(f fun, Ts... args) {
+      string result;
+      uint32_t newlen = fun(args..., nullptr, 0), len = 0;
+      do {
+        len = newlen;
+        if (len <= 1) return "";
+        result.resize(len);
+        uint32_t newlen = fun(args..., const_cast<char*>(result.c_str()), len);
+      } while (len != newlen);
+      result.resize(newlen - 1); // we don't own the \0 at the end of a string.
+      return result;
+    }
 
     // construction is safely multi-threadedly re-entrant
     struct system : noncopyable {
@@ -78,6 +103,7 @@ namespace framework {
     inline string system::serial_number() const {
       return device_string(hmd, vr::Prop_SerialNumber_String);
     }
+
   }
 }
 

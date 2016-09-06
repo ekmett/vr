@@ -12,6 +12,8 @@ namespace framework {
   static const float fp16_scale = 0.0009765625f; // 2^-10 scaling factor to allow storing physical lights in fp16 floats
 
   struct sky {
+    static const int N = 128; // dimension for cubemap sides
+
     sky(const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms);
     ~sky();
 
@@ -30,5 +32,6 @@ namespace framework {
     GLuint64 cubemap_handle;
     GLuint cubemap_views[6];
     gl::shader program;
+    GLuint vao;
   };
 }

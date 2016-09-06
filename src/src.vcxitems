@@ -36,7 +36,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openal.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\post.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\quality.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\rendermodel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sampling.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h" />
@@ -71,6 +73,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_system.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\quality.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\rendermodel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_window.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_system.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp" />

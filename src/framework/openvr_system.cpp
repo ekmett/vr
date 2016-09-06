@@ -11,34 +11,6 @@ using namespace vr;
 
 namespace framework {
   namespace openvr {
-    namespace detail {
-      template<typename... Ts, typename f, typename err> static inline string buffered_with_error(f fun, err *e, Ts... args) {
-        string result;
-        uint32_t newlen = fun(args..., nullptr, 0, e), len=0;
-        do {
-          len = newlen;
-          if (len <= 1) return "";
-          result.resize(len);
-          uint32_t newlen = fun(args..., const_cast<char*>(result.c_str()), len, e);
-        } while (len != newlen);
-        result.resize(newlen - 1); // we don't own the \0 at the end of a string.
-        return result;
-      }
-
-      template<typename... Ts, typename f> static inline string buffered(f fun, Ts... args) {
-        string result;        
-        uint32_t newlen = fun(args..., nullptr, 0, e), len=0;
-        do {
-          len = newlen;
-          if (len <= 1) return "";
-          result.resize(len);
-          uint32_t newlen = fun(args..., const_cast<char*>(result.c_str()), len);
-        } while (len != newlen);
-        result.resize(newlen - 1); // we don't own the \0 at the end of a string.
-        return result;
-      }
-    }
-
     mutex openvr_init_mutex;
     static uint64_t openvr_initializations = 0; // guarded by openvr_init_mutex
 
@@ -75,7 +47,7 @@ namespace framework {
     }
 
     string system::device_string(device_id index, vr::TrackedDeviceProperty prop, vr::TrackedPropertyError * error) const {
-      return detail::buffered_with_error(mem_fn(&vr::IVRSystem::GetStringTrackedDeviceProperty), error, handle, index, prop);
+      return openvr::buffered_with_error(mem_fn(&vr::IVRSystem::GetStringTrackedDeviceProperty), error, handle, index, prop);
     }
 
     bool system::poll() const {

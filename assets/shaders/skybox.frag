@@ -1,6 +1,7 @@
 #version 450 core
 #extension GL_ARB_bindless_texture : require
 #extension GL_ARB_shading_language_include : require
+
 #include "uniforms.h"
 
 #include "seascape.glsl"
@@ -38,5 +39,6 @@ void main() {
     color = mix(color, getSeaColor(p,n,sun_dir,dir,dist), pow(smoothstep(0.00,-0.15,dir.y),0.3)); 
   }
   outputColor = vec4(color,1);
+  //outputColor = vec4(1,1,1,1);
 }
 

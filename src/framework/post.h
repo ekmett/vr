@@ -31,6 +31,8 @@ namespace framework {
       , w((quality.resolve_buffer_w + 1)/ 2)
       , h((quality.resolve_buffer_h + 1)/ 2)
       , presolve(quality.resolve_target.format, "presolve", GL_RGBA16F) {
+
+      glCreateVertexArrays(1, &vao);
       
       for (int i = 0;i < 2;++i) {
         fbo[i].format = { w, h };
@@ -64,6 +66,7 @@ namespace framework {
     }
 
     ~post() {
+      glDeleteVertexArrays(1, &vao);
       glDeleteProgramPipelines(countof(pipelines), pipelines);
     }
 
@@ -77,6 +80,8 @@ namespace framework {
       glDisable(GL_SCISSOR_TEST);
       glDisable(GL_MULTISAMPLE);
       glDisable(GL_BLEND);
+
+      glBindVertexArray(vao);
       glUseProgram(0); // programs trump pipelines
 
       glClearColor(0, 0, 0, 0.0); // we don't clear the presolve as we only sample it at points, but we blur in here
@@ -118,6 +123,7 @@ namespace framework {
       quality.resolve_target.bind();
       glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
 
+      glBindVertexArray(0);
       glBindProgramPipeline(0);
       log("post")->info("process() end");
     }
@@ -131,6 +137,7 @@ namespace framework {
     gl::shader pass, downsample, horizontal, vertical, tone;
     GLsizei w, h; // buffer width
     GLsizei pw, ph; // viewport
+    GLuint vao;
 
     quality & quality;
   };

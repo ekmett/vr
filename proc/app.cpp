@@ -14,7 +14,8 @@
 #include "framework/skybox.h"
 #include "framework/spectrum.h"
 #include "framework/quality.h"
-#include "post.h"
+#include "framework/post.h"
+#include "framework/rendermodel.h"
 #include "uniforms.h"
 #include "controllers.h"
 
@@ -77,6 +78,7 @@ struct app : app_uniforms {
   gl::compiler compiler; // must come before anything that uses includes in opengl
   openvr::system vr;  // must come before anything that uses openvr in this object, implicitly supplies vr::VRSystem(), etc.
   openal::system al;  // must come before anything that uses sound
+  rendermodel_manager rendermodels;
 
   quality quality;    // requires vr
   post post;          // post processor, requires quality
@@ -110,11 +112,11 @@ app::app(path assets)
   , compiler(path(assets).append("shaders"))
   , gui(window)
   , distorted()
- // , sky(vec3(0.0, 0.1, 0.8), 2.0_degrees, vec3(0.2, 0.2, 0.4), 6.f, *this)
-  , sky(vec3(0.0, 0.01, 0.8), 8* physical_sun_size, vec3(0.2, 0.2, 0.4), 6.f, *this)
-  // , sky(vec3(0.252, 0.955, -.155), 1.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
+  , sky(vec3(0.2, 0.01, 0.8), 8 * physical_sun_size, vec3(0.25, 0.25, 0.25), 6.f, *this)
+  // , sky(vec3(0.252, 0.955, -.155), 2.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
   , quality(3)
   , post(quality)
+  , rendermodels(vr)
   {
 
   nearClip = 0.1f;
@@ -126,8 +128,8 @@ app::app(path assets)
 
   distorted.set_resolve_handle(quality.resolve_target.texture_handle);
   
-  enable_seascape = false;
-  enable_tonemap = false;
+  enable_seascape = true;
+  enable_tonemap = true;
 
   glCreateVertexArrays(1, &dummy_vao); // we'll load this as needed
   gl::label(GL_VERTEX_ARRAY, dummy_vao, "dummy vao");
@@ -190,9 +192,15 @@ void app::get_poses() {
 
   vr::VRCompositor()->WaitGetPoses(physical_pose, vr::k_unMaxTrackedDeviceCount, predicted_pose, vr::k_unMaxTrackedDeviceCount);
 
+  device_mask = 0;
   for (int i = 0;i < vr::k_unMaxTrackedDeviceCount; ++i) {
     current_device_to_world[i] = openvr::hmd_mat3x4(physical_pose[i].mDeviceToAbsoluteTracking);
     predicted_device_to_world[i] = openvr::hmd_mat3x4(predicted_pose[i].mDeviceToAbsoluteTracking);
+    device_mask |= physical_pose[i].bPoseIsValid ? (1 << i) : 0;
+    current_device_angular_velocity[i] = make_vec3(physical_pose[i].vAngularVelocity.v);
+    predicted_device_angular_velocity[i] = make_vec3(physical_pose[i].vAngularVelocity.v);
+    current_device_velocity[i] = make_vec3(physical_pose[i].vVelocity.v);
+    predicted_device_velocity[i] = make_vec3(physical_pose[i].vVelocity.v);
   }
 
   update_controller_assignment();
@@ -224,6 +232,9 @@ void app::run() {
     l->info("gui frame");
     gui.new_frame();
 
+    l->info("polling rendermodels");
+    rendermodels.poll(); // fetch new devices
+
     l->info("get_poses");
     // gather uniforms
     get_poses();
@@ -239,25 +250,17 @@ void app::run() {
     distorted.render_stencil();
 
     l->info("skybox");
-    if (skybox_visible) {
-      glBindVertexArray(dummy_vao);
-      sky.render();
-    }
+    sky.render();
 
-    l->info("controllers");
+    l->info("drawing rendermodels");
+    rendermodels.draw(device_mask);
+
+    l->info("drawing control vectors");
     controllers.render(controller_mask);
 
     l->info("post");
-    static bool use_post = true;
-    gui::Checkbox("Post", &use_post);
-
-    if (use_post) {
-      quality.resolve(post.presolve);
-      glBindVertexArray(dummy_vao);
-      post.process();
-    } else {
-      quality.resolve();
-    }
+    quality.resolve(post.presolve);
+    post.process();
 
     l->info("present");
     quality.present();
@@ -488,16 +491,18 @@ bool app::show_gui(bool * open) {
 }
 
 int SDL_main(int argc, char ** argv) {
-  auto test = sampled_spectrum::from_rgb(vec3(1, 0.5, 0.5));
-  spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
+   spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
 
   shared_ptr<spdlog::logger> ignore_logs[] {
     spdlog::create<spdlog::sinks::null_sink_mt>("vr"),
-    //spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
+  //  spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
     spdlog::create<spdlog::sinks::null_sink_mt>("al"),
-    //spdlog::create<spdlog::sinks::null_sink_mt>("main"),
-    //spdlog::create<spdlog::sinks::null_sink_mt>("app"),
-    //spdlog::create<spdlog::sinks::null_sink_mt>("quality")
+    spdlog::create<spdlog::sinks::null_sink_mt>("main"),
+    spdlog::create<spdlog::sinks::null_sink_mt>("app"),
+    spdlog::create<spdlog::sinks::null_sink_mt>("post"),
+    spdlog::create<spdlog::sinks::null_sink_mt>("quality"),
+    spdlog::create<spdlog::sinks::null_sink_mt>("distortion"),
+
   };
 #ifdef _WIN32
   SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96

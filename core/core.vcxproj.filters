@@ -25,15 +25,9 @@
     <ClCompile Include="tracker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rendermodel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tracker.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rendermodel.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

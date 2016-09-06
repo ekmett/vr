@@ -19,10 +19,9 @@ namespace framework {
 
     typedef uint64_t process_id;
 
-    enum device_id : uint32_t {
-      hmd = vr::k_unTrackedDeviceIndex_Hmd,
-      max = vr::k_unMaxTrackedDeviceCount
-    };
+    typedef uint32_t device_id;
+    static const device_id hmd = vr::k_unTrackedDeviceIndex_Hmd;
+    static const device_id max = vr::k_unMaxTrackedDeviceCount;
 
     static inline glm::mat4 hmd_mat4(const vr::HmdMatrix44_t & m) noexcept {
       return glm::transpose(glm::make_mat4((float*)&m.m));

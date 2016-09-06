@@ -23,7 +23,8 @@ namespace framework {
     }
 
     static void APIENTRY gl_debugging_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, const void* userParam) {
-    //  if (type != GL_DEBUG_TYPE_OTHER) 
+      //if (type != GL_DEBUG_TYPE_OTHER) 
+      if (severity != GL_DEBUG_SEVERITY_NOTIFICATION && severity != GL_DEBUG_SEVERITY_LOW)
         log("gl")->log(log_severity(severity), "{} {}: {} ({})", show_debug_source(source), show_debug_message_type(type), trim(message), id);
     }
 
@@ -101,7 +102,7 @@ namespace framework {
     }
     void label(GLenum id, GLuint name, const char * label) noexcept {
       glObjectLabel(id, name, (GLsizei)strlen(label), label);
-      log("gl")->info("{} {}: {}", show_object_label_type(id), name, label);
+      // log("gl")->info("{} {}: {}", show_object_label_type(id), name, label);
     }
     string get_label(GLenum id, GLuint name) noexcept {
       return fmt::format("{}", name);
