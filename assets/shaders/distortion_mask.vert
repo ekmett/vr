@@ -5,10 +5,9 @@ layout(location = 0) uniform int right_eye_threshold;
 
 layout(location = 0) in vec4 position;
 
-out vec2 uv;
-// in int gl_VertexID:
+//out vec2 uv;
 void main() {
+  // uv = position.xy;
   gl_Position = position;
-  uv = position.xy;
   gl_Layer = (gl_VertexID >= right_eye_threshold) ? 1 : 0;
 }

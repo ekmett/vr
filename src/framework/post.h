@@ -84,7 +84,7 @@ namespace framework {
       glBindVertexArray(vao);
       glUseProgram(0); // programs trump pipelines
 
-      glClearColor(1, 0, 1, 1); // we don't clear the presolve as we only sample it at points, but we blur in here
+      glClearColor(0, 0, 0, 0); // we don't clear the presolve as we only sample it at points, but we blur in here
       fbo[1].bind();
       glClear(GL_COLOR_BUFFER_BIT);
       fbo[0].bind();

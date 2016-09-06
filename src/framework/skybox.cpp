@@ -186,8 +186,8 @@ namespace framework {
 
     glTextureSubImage3D(cubemap, 0, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
     glGenerateTextureMipmap(cubemap);
-    cubemap_handle = glGetTextureHandleARB(cubemap);
-    glMakeTextureHandleResidentARB(cubemap_handle);
+    //cubemap_handle = glGetTextureHandleARB(cubemap);
+    //glMakeTextureHandleResidentARB(cubemap_handle);
 
     // right left top bottom back front - opengl order
     // front back left right top bottom - openvr order

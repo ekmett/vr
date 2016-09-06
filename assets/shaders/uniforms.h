@@ -72,7 +72,6 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(16) vec3 predicted_device_velocity[MAX_TRACKED_DEVICES];
   UNIFORM_ALIGN(16) vec3 current_device_angular_velocity[MAX_TRACKED_DEVICES];
   UNIFORM_ALIGN(16) vec3 predicted_device_angular_velocity[MAX_TRACKED_DEVICES];                                               // sky
-
 };
 
 #ifdef __cplusplus

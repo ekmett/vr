@@ -18,11 +18,10 @@ void main() {
   vec4 reds   = textureGather(render, coord, 0);
   vec4 greens = textureGather(render, coord, 1);
   vec4 blues  = textureGather(render, coord, 2);
-  vec3 result = vec3(0);
+  vec4 alphas = textureGather(render, coord, 3);
+  vec4 result = vec4(0);
   for (int i=0;i<4;++i)
-    result += vec3(reds[i], greens[i], blues[i]);  
+    result += vec4(reds[i], greens[i], blues[i], alphas[i]);  
   result /= 4.0f;
-  result = result / (result + 1); // hack tonemap for vis
-  outputColor = vec4(result.xyz, 1.0f);
-  // outputColor = vec4(1,1,1,1);
+  outputColor = result;
 }

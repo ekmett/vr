@@ -26,12 +26,14 @@ void main() {
   color += texture(bloom, coord).rgb * bloom_magnitude * exp2(bloom_exposure);
   color *= exp2(exposure) / FP16_SCALE;                    
   color = filmic(color);
+
   if (enable_tonemap != 0)
     color = pow(color, vec3(1/2.2f));
+
   if (presolve_color.a < 0.1) {
     outputColor = vec4(presolve_color.xyz, 1);
   } else {
     outputColor = vec4(color.xyz, 1);  
   }
-  
+
 }

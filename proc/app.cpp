@@ -285,8 +285,7 @@ bool app::desktop_display() {
   glStencilMask(1);
   glViewport(0, 0, w, h);
   glScissor(0, 0, w, h);
-  // glClearColor(0.18f, 0.18f, 0.18f, 1.f);
-  glClearColor(0, 0, 1, 1);
+  glClearColor(0.18f, 0.18f, 0.18f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   // lets find an aspect ratio preserving viewport
@@ -363,7 +362,7 @@ bool app::desktop_display() {
       glBlitNamedFramebuffer(
         post.presolve.fbo, 0,
         0, 0,
-        quality.resolve_buffer_w, quality.resolve_buffer_h,
+        quality.viewport_w, quality.viewport_h,
         dim.x, dim.y,
         dim.x + dim.w, dim.y + dim.h,
         GL_COLOR_BUFFER_BIT,
@@ -376,7 +375,7 @@ bool app::desktop_display() {
       glBlitNamedFramebuffer(
         post.fbo[0].fbo, 0,
         0, 0,
-        post.w, post.h,
+        post.pw, post.ph,
         dim.x, dim.y,
         dim.x + dim.w, dim.y + dim.h,
         GL_COLOR_BUFFER_BIT,
@@ -389,7 +388,7 @@ bool app::desktop_display() {
       glBlitNamedFramebuffer(
         post.fbo[1].fbo, 0,
         0, 0,
-        post.w, post.h,
+        post.pw, post.ph,
         dim.x, dim.y,
         dim.x + dim.w, dim.y + dim.h,
         GL_COLOR_BUFFER_BIT,
@@ -496,6 +495,7 @@ int SDL_main(int argc, char ** argv) {
     spdlog::create<spdlog::sinks::null_sink_mt>("post"),
     spdlog::create<spdlog::sinks::null_sink_mt>("quality"),
     spdlog::create<spdlog::sinks::null_sink_mt>("distortion"),
+    spdlog::create<spdlog::sinks::null_sink_mt>("rendermodel"),
 
   };
 #ifdef _WIN32
