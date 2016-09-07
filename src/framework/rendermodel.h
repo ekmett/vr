@@ -80,7 +80,10 @@ namespace framework {
       if (vr::VRSystem()->IsInputFocusCapturedByAnotherProcess()) return;
 
       glEnable(GL_DEPTH_TEST);
+      glDisable(GL_CULL_FACE);
       glEnable(GL_BLEND);
+      // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
       glUseProgram(shader.programId);
       for (int i = vr::k_unTrackedDeviceIndex_Hmd + 1;i < vr::k_unMaxTrackedDeviceCount;++i) {
@@ -100,14 +103,15 @@ namespace framework {
             glProgramUniform1i(shader, 1, i);
             vr::VRControllerState_t controller_state;
             vr::VRSystem()->GetControllerState(i, &controller_state);
+
+            vr::RenderModel_ControllerMode_State_t controller_mode_state;
+            controller_mode_state.bScrollWheelVisible = false;
+
             for (auto pair : model->components) {
-              auto & component = pair.second;
-              vr::RenderModel_ControllerMode_State_t controller_mode_state;
-              controller_mode_state.bScrollWheelVisible = true; // why not
+              const string & name = pair.first;
+              auto & component = pair.second;             
               vr::RenderModel_ComponentState_t component_state;
-              filesystem::path wtf(component->name);
-              string scrubbed_name = wtf.filename().replace_extension("").generic_string();
-              vrrm->GetComponentState(model->name.c_str(), scrubbed_name.c_str(), &controller_state, &controller_mode_state, &component_state);
+              vrrm->GetComponentState(model->name.c_str(), name.c_str(), &controller_state, &controller_mode_state, &component_state);
               if (!(component_state.uProperties & vr::VRComponentProperty_IsVisible)) continue;
               mat4 tracking_to_component = openvr::hmd_mat3x4(component_state.mTrackingToComponentRenderModel);
               glBindVertexArray(component->vao);
@@ -120,6 +124,7 @@ namespace framework {
         }
       }
 
+      glEnable(GL_CULL_FACE);
       glDisable(GL_DEPTH_TEST);
       glDisable(GL_BLEND);
 

@@ -208,9 +208,9 @@ namespace framework {
           if (iter != parts.end() && cmodel >= iter->first) continue; // already in there
           shared_ptr<rendermodel> part;
           bool part_found = poll_model(cmodel, &part, true);
-          components_found = components_found && part_found && part->diffuse;
+          components_found = components_found && part_found && part && part->diffuse;
           if (part_found && part != nullptr)
-            parts.insert(iter, make_pair(cmodel, part));
+            parts.insert(iter, make_pair(cname, part));
         }
         p.second->missing_components = !components_found;
         result = components_found && result;
