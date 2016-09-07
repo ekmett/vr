@@ -14,6 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)shaders\brdf.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\controllers.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\controllers.vert" />
     <None Include="$(MSBuildThisFileDirectory)shaders\distortion_warp.frag" />
@@ -33,7 +34,8 @@
     <None Include="$(MSBuildThisFileDirectory)shaders\seascape.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\skybox.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\skybox.vert" />
-    <None Include="$(MSBuildThisFileDirectory)cotangent.glsl" />
+    <None Include="$(MSBuildThisFileDirectory)shaders\cotangent.glsl" />
+    <None Include="$(MSBuildThisFileDirectory)shaders\spherical_harmonics.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)shaders\post_blur_v.frag" />

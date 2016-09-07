@@ -50,7 +50,9 @@ UNIFORM_STRUCT(1) app_uniforms {
   
   UNIFORM_ALIGN(16) vec3 sun_dir;
   UNIFORM_ALIGN(16) vec3 sun_color;
+  UNIFORM_ALIGN(16) vec3 sun_irradiance;
   UNIFORM_ALIGN(16) vec3 ground_albedo;
+  UNIFORM_ALIGN(16) vec4 sky_sh9[9];
   UNIFORM_ALIGN(16) samplerCube sky_cubemap;
 
   UNIFORM_ALIGN(8) float turbidity;
@@ -74,6 +76,10 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(16) vec3 predicted_device_velocity[MAX_TRACKED_DEVICES];
   UNIFORM_ALIGN(16) vec3 current_device_angular_velocity[MAX_TRACKED_DEVICES];
   UNIFORM_ALIGN(16) vec3 predicted_device_angular_velocity[MAX_TRACKED_DEVICES];                                               // sky
+
+  UNIFORM_ALIGN(16) float rendermodel_roughness;
+  UNIFORM_ALIGN(4) float rendermodel_metallic;
+  UNIFORM_ALIGN(4) float rendermodel_ambient;
 };
 
 #ifdef __cplusplus

@@ -33,8 +33,6 @@ namespace framework {
           && components.begin() != components.end();
     }
 
-    void draw(GLuint program, int device);
-
     GLuint vbo;
     GLuint ibo;
     GLuint vao;
@@ -110,5 +108,6 @@ namespace framework {
     scoped_connection 
       invalidate_models_on_model_skin_settings_have_changed, 
       poll_on_tracked_device_activated;
+    
   };
 }

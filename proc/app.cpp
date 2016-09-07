@@ -89,6 +89,7 @@ struct app : app_uniforms {
 
   bool show_settings_window = true;
   bool show_demo_window = false;
+  bool show_rendermodel_window = true;
   
   gui::system gui;
   controllers controllers;
@@ -132,6 +133,10 @@ app::app(path assets)
   
   enable_seascape = true;
   enable_srgb_resolve = true;
+
+  rendermodel_metallic = 0.1;
+  rendermodel_roughness = 0.2;
+  rendermodel_ambient = 0.1;
 
   glCreateVertexArrays(1, &dummy_vao); // we'll load this as needed
   gl::label(GL_VERTEX_ARRAY, dummy_vao, "dummy vao");
@@ -258,8 +263,8 @@ void app::run() {
     l->info("drawing rendermodels");
     rendermodels.draw(device_mask);
 
-    l->info("drawing control vectors");
-    controllers.render(controller_mask);
+    //l->info("drawing control vectors");
+    //controllers.render(controller_mask);
 
     l->info("post");
     quality.resolve(post.presolve);
@@ -458,6 +463,7 @@ bool app::show_gui(bool * open) {
       gui::MenuItem("Timing", nullptr, &quality.show_timing_window);
       gui::MenuItem("Demo", nullptr, &show_demo_window);
       gui::MenuItem("Skybox", nullptr, &sky.show_skybox_window);
+      gui::MenuItem("Render Models", nullptr, &show_rendermodel_window);
       gui::EndMenu();
     }
 
@@ -469,6 +475,18 @@ bool app::show_gui(bool * open) {
     gui::SliderInt("desktop view", &desktop_view, 0, countof(desktop_views) - 1);
     gui::Text("%s", desktop_views[desktop_view]);
     bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;
+    gui::SliderFloat("exposure", &exposure, -30, 30);
+    gui::SliderFloat("bloom exposure", &bloom_exposure, -30, 30);
+    gui::SliderFloat("bloom magnitude", &bloom_magnitude, 0, 10);
+    gui::SliderFloat("blur sigma", &blur_sigma, 0, 10);
+    gui::End();
+  }
+
+  if (show_rendermodel_window) {
+    gui::Begin("Rendermodels");
+    gui::SliderFloat("roughness", &rendermodel_roughness, 0, 1);
+    gui::SliderFloat("metallic",  &rendermodel_metallic, 0, 1);
+    gui::SliderFloat("ambient",   &rendermodel_ambient, 0, 1);
     gui::End();
   }
 

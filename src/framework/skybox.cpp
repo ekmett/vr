@@ -137,7 +137,9 @@ namespace framework {
 
     // standard luminous efficiency 683 lm/W, coordinate system scaling & scaling to fit into the dynamic range of a 16 bit float
     sun_irradiance *= 683.0f * 100.0f * fp16_scale;
-  
+
+    uniforms.sun_irradiance = sun_irradiance;
+
     for (auto i = 0; i < spectral_samples; ++i) {
       arhosekskymodelstate_free(sky_states[i]);
       sky_states[i] = nullptr;
@@ -191,6 +193,10 @@ namespace framework {
       }
     }
     sh *= 4.0f * float(M_PI) / weights;
+
+    for (int i = 0;i < 9;++i) {
+      uniforms.sky_sh9[i] = vec4(sh[i].r, sh[i].g, sh[i].b, 0);
+    }
 
     log("sky")->info("spherical harmonics: {}", sh);
 
