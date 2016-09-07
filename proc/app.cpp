@@ -133,12 +133,12 @@ app::app(path assets)
   distorted.set_resolve_handle(quality.resolve_target.texture_handle);
   
   enable_seascape = true;
-  enable_srgb_resolve = true;
+  enable_srgb_resolve = false;
   use_sun_area_light_approximation = true;
 
   rendermodel_metallic = 0.1;
   rendermodel_roughness = 0.2;
-  rendermodel_ambient = 0.1;
+  rendermodel_ambient = 0.6;
   rendermodel_albedo = 1;
 
   glCreateVertexArrays(1, &dummy_vao); // we'll load this as needed

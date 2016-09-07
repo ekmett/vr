@@ -74,7 +74,7 @@ namespace framework {
       gui::SliderFloat("x", &uniforms.sun_dir.x, -1, 1);
       gui::SliderFloat("y", &uniforms.sun_dir.y, 0, 1);
       gui::SliderFloat("z", &uniforms.sun_dir.z, -1, 1);
-      gui::SliderFloat("turbidity", &uniforms.turbidity, 1, 32);
+      gui::SliderFloat("turbidity", &uniforms.turbidity, 1, 10);
       gui::End();
     }
 
@@ -85,6 +85,7 @@ namespace framework {
         uniforms.turbidity == turbidity)
       return;
 
+    
     sun_dir = uniforms.sun_dir = normalize(uniforms.sun_dir);
     sun_angular_radius = uniforms.sun_angular_radius = std::max(uniforms.sun_angular_radius, 0.1_degrees);
     turbidity = uniforms.turbidity = clamp(uniforms.turbidity, 1.f, 32.f);
