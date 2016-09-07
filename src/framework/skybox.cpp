@@ -29,9 +29,9 @@ static float irradiance_integral(float theta) {
 }
 
 namespace framework {
-  static const float cos_physical_sun_size = std::cos(physical_sun_size);
+  static const float cos_physical_sun_angular_radius = std::cos(physical_sun_angular_radius);
 
-  sky::sky() // const vec3 & sun_direction, float sun_size, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms)
+  sky::sky() // const vec3 & sun_direction, float sun_angular_radius, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms)
     : rgb{}
     , cubemap(0)
     , program("skybox") {
@@ -70,7 +70,7 @@ namespace framework {
     if (show_skybox_window) {
       gui::Begin("Skybox", &show_skybox_window);
       gui::ColorEdit3("ground albedo", reinterpret_cast<float*>(&uniforms.ground_albedo));
-      gui::SliderFloat("sun size", &sun_size, 0.1_degrees, 10.0_degrees);
+      gui::SliderFloat("sun size", &sun_angular_radius, 0.1_degrees, 10.0_degrees);
       gui::SliderFloat("x", &uniforms.sun_dir.x, -1, 1);
       gui::SliderFloat("y", &uniforms.sun_dir.y, 0, 1);
       gui::SliderFloat("z", &uniforms.sun_dir.z, -1, 1);
@@ -80,16 +80,17 @@ namespace framework {
 
     if (initialized &&
         uniforms.sun_dir == sun_dir && 
-        uniforms.sun_size == sun_size && 
+        uniforms.sun_angular_radius == sun_angular_radius && 
         uniforms.ground_albedo == ground_albedo && 
         uniforms.turbidity == turbidity)
       return;
 
     sun_dir = uniforms.sun_dir = normalize(uniforms.sun_dir);
-    sun_size = uniforms.sun_size = std::max(uniforms.sun_size, 0.1_degrees);
+    sun_angular_radius = uniforms.sun_angular_radius = std::max(uniforms.sun_angular_radius, 0.1_degrees);
     turbidity = uniforms.turbidity = clamp(uniforms.turbidity, 1.f, 32.f);
     ground_albedo = uniforms.ground_albedo = saturate(uniforms.ground_albedo);
-    uniforms.cos_sun_angular_radius = cos(uniforms.sun_size);
+    uniforms.cos_sun_angular_radius = sin(uniforms.sun_angular_radius);
+    uniforms.cos_sun_angular_radius = cos(uniforms.sun_angular_radius);
     uniforms.sky_cubemap = cubemap_handle;
 
     float theta_sun = angle_between(sun_dir, vec3(0, 1, 0));
@@ -113,7 +114,7 @@ namespace framework {
         vec3 sample_dir = sun_orientation * sample_direction_cone(
           (x + 0.5f) / num_samples,
           (y + 0.5f) / num_samples,
-          cos_physical_sun_size
+          cos_physical_sun_angular_radius
         );
         float sample_theta_sun = angle_between(sample_dir, vec3(0, 1, 0));
         float sample_gamma = angle_between(sample_dir, sun_dir);
@@ -133,7 +134,7 @@ namespace framework {
         sun_irradiance += sample_radiance * saturate<float, highp>(dot(sample_dir, sun_dir));
       }
 
-    sun_irradiance *= (1.0f / num_samples) * (1.0f / num_samples) * (1.0f / sample_direction_cone_PDF(cos_physical_sun_size));
+    sun_irradiance *= (1.0f / num_samples) * (1.0f / num_samples) * (1.0f / sample_direction_cone_PDF(cos_physical_sun_angular_radius));
 
     // standard luminous efficiency 683 lm/W, coordinate system scaling & scaling to fit into the dynamic range of a 16 bit float
     sun_irradiance *= 683.0f * 100.0f * fp16_scale;
@@ -145,7 +146,7 @@ namespace framework {
       sky_states[i] = nullptr;
     }
     
-    uniforms.sun_color = sun_irradiance / irradiance_integral(sun_size);
+    uniforms.sun_color = sun_irradiance / irradiance_integral(sun_angular_radius);
 
     sh = sh9_t<vec3>();
     float weights = 0.0f;

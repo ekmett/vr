@@ -125,7 +125,7 @@ app::app(path assets)
   bloom_magnitude = 1.000;
 
   sun_dir = vec3(0.2, 0.3, 0.8);
-  sun_size = 3 * physical_sun_size;
+  sun_angular_radius = 3 * physical_sun_angular_radius;
   ground_albedo = vec3(0.25, 0.25, 0.25); 
   turbidity = 1.5f;
 
@@ -204,10 +204,13 @@ void app::get_poses() {
     current_device_to_world[i] = openvr::hmd_mat3x4(physical_pose[i].mDeviceToAbsoluteTracking);
     predicted_device_to_world[i] = openvr::hmd_mat3x4(predicted_pose[i].mDeviceToAbsoluteTracking);
     device_mask |= physical_pose[i].bPoseIsValid ? (1 << i) : 0;
-    current_device_angular_velocity[i] = make_vec3(physical_pose[i].vAngularVelocity.v);
-    predicted_device_angular_velocity[i] = make_vec3(physical_pose[i].vAngularVelocity.v);
-    current_device_velocity[i] = make_vec3(physical_pose[i].vVelocity.v);
-    predicted_device_velocity[i] = make_vec3(physical_pose[i].vVelocity.v);
+
+    auto vector4 = [](float v[3]) -> vec4 { return vec4(v[0], v[1], v[2], 0); };
+
+    current_device_angular_velocity[i] = vector4(physical_pose[i].vAngularVelocity.v);
+    predicted_device_angular_velocity[i] = vector4(physical_pose[i].vAngularVelocity.v);
+    current_device_velocity[i] = vector4(physical_pose[i].vVelocity.v);
+    predicted_device_velocity[i] = vector4(physical_pose[i].vVelocity.v);
   }
 
   update_controller_assignment();

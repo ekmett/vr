@@ -48,35 +48,41 @@ UNIFORM_STRUCT(1) app_uniforms {
   mat4 current_controller_to_world[MAX_CONTROLLERS]; // affine
   mat4 predicted_controller_to_world[MAX_CONTROLLERS]; // affine
   
+  UNIFORM_ALIGN(16) vec4 current_device_velocity[MAX_TRACKED_DEVICES];
+  UNIFORM_ALIGN(16) vec4 predicted_device_velocity[MAX_TRACKED_DEVICES];
+  UNIFORM_ALIGN(16) vec4 current_device_angular_velocity[MAX_TRACKED_DEVICES];
+  UNIFORM_ALIGN(16) vec4 predicted_device_angular_velocity[MAX_TRACKED_DEVICES];                                               // sky
+
   UNIFORM_ALIGN(16) vec3 sun_dir;
   UNIFORM_ALIGN(16) vec3 sun_color;
   UNIFORM_ALIGN(16) vec3 sun_irradiance;
   UNIFORM_ALIGN(16) vec3 ground_albedo;
-  UNIFORM_ALIGN(16) vec4 sky_sh9[9];
+
+  UNIFORM_ALIGN(16) vec4 sky_sh9[9]; // using vec4s so we can share
   UNIFORM_ALIGN(16) samplerCube sky_cubemap;
 
   UNIFORM_ALIGN(8) float turbidity;
-  UNIFORM_ALIGN(4) float cos_sun_angular_radius, sun_size;
-  UNIFORM_ALIGN(4) float render_buffer_usage, resolve_buffer_usage;  //  how much of the render buffer is being used? max_supersampling_factor / current_supersampling_factor
+  UNIFORM_ALIGN(4) float cos_sun_angular_radius, sin_sun_angular_radius, sun_angular_radius;
+
 
   // camera
   UNIFORM_ALIGN(4) float bloom_exposure, bloom_magnitude, blur_sigma;
   UNIFORM_ALIGN(4) float exposure;
   UNIFORM_ALIGN(4) float nearClip, farClip;
   UNIFORM_ALIGN(4) float global_time;
+
   UNIFORM_ALIGN(4) int enable_seascape, 
                        enable_srgb_resolve; // final resolve buffer is in srgb colorspace, not linear
+
+  UNIFORM_ALIGN(4) float render_buffer_usage, resolve_buffer_usage;
 
   // pose info, shuffled down here by size
   UNIFORM_ALIGN(4) int controller_mask;
   UNIFORM_ALIGN(4) int device_mask;
   UNIFORM_ALIGN(4) int controller_device[MAX_CONTROLLERS];
 
-  UNIFORM_ALIGN(16) vec3 current_device_velocity[MAX_TRACKED_DEVICES];
-  UNIFORM_ALIGN(16) vec3 predicted_device_velocity[MAX_TRACKED_DEVICES];
-  UNIFORM_ALIGN(16) vec3 current_device_angular_velocity[MAX_TRACKED_DEVICES];
-  UNIFORM_ALIGN(16) vec3 predicted_device_angular_velocity[MAX_TRACKED_DEVICES];                                               // sky
 
+  // render model utilities
   UNIFORM_ALIGN(16) float rendermodel_roughness;
   UNIFORM_ALIGN(4) float rendermodel_metallic;
   UNIFORM_ALIGN(4) float rendermodel_ambient;
