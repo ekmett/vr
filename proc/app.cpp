@@ -73,6 +73,8 @@ struct app : app_uniforms {
     global_time = SDL_GetTicks() / 1000.0f;
     glNamedBufferSubData(ubo, 0, sizeof(app_uniforms), static_cast<app_uniforms*>(this));
   }
+
+  void calculate_composite_frustum();
  
   sdl::window window; // must come before anything that needs opengl support in this object, implicitly supplies gl context
   gl::compiler compiler; // must come before anything that uses includes in opengl
@@ -170,8 +172,9 @@ app::app(path assets)
   SDL_GetWindowDisplayMode(window.sdl_window, &wdm);
   log("app")->info("desktop window refresh rate: {}hz", wdm.refresh_rate); // TODO: compute frame skipping for gui and desktop display off this relative to the vr rate.
 
-  SDL_StartTextInput();
+  calculate_composite_frustum();
   submit_uniforms(); // pre-load some data
+  SDL_StartTextInput();
 }
 
 app::~app() {
@@ -179,6 +182,47 @@ app::~app() {
   glDeleteVertexArrays(1, &dummy_vao);
 }
 
+
+void app::calculate_composite_frustum() {
+  struct frustum { 
+    float l, r, t, b; 
+  } e[2];
+  for (int i = 0;i < 2;++i) {
+    vr::VRSystem()->GetProjectionRaw(vr::EVREye(i), &e[i].l, &e[i].r, &e[i].t, &e[i].b);
+    log("app")->info("raw frustum {}: {}, {}, {}, {}", i, e[i].l, e[i].r, e[i].t, e[i].b);
+  }
+  vec2 tan_half(
+    max({ -e[0].l, e[0].r,-e[1].l,e[1].r }),
+    max({ -e[0].t, e[0].b,-e[1].t,e[1].b })
+  );
+
+  float aspect_ratio = tan_half.x / tan_half.y;
+  float fov = 2 * atan(tan_half.y) * 180.0f / float(M_PI);
+
+  log("app")->info("composite frustum has an {} degree fov, aspect ratio: {}", fov, aspect_ratio);
+
+  struct bounds {
+    float ul, uh, vl, vh;
+  } t[2];
+
+  for (int i = 0;i < 2;++i) {
+    t[i] = {
+      0.5f + 0.5f * e[i].l / tan_half.x,
+      0.5f + 0.5f * e[i].r / tan_half.x,
+      0.5f - 0.5f * e[i].t / tan_half.y,
+      0.5f - 0.5f * e[i].b / tan_half.y
+    };
+    log("app")->info("viewport {} ({},{}) - ({},{})", i, t[i].ul, t[i].vh, t[i].uh, t[i].vl);
+  }
+
+  uint32_t w, h;
+  vr::VRSystem()->GetRecommendedRenderTargetSize(&w, &h);
+
+  log("app")->info("individual recommended window size: {} x {}", w, h);
+  w = uint32_t(w / std::max(t[0].uh - t[0].ul, t[1].uh - t[1].ul));
+  h = uint32_t(h / std::max(t[0].uh - t[0].ul, t[1].uh - t[1].ul));
+  log("app")->info("composite recommended window size: {} x {}", w, h);
+}
 
 void app::update_controller_assignment() {
   if (controller_mask == 3) return;
@@ -523,7 +567,7 @@ int SDL_main(int argc, char ** argv) {
   //  spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
     spdlog::create<spdlog::sinks::null_sink_mt>("al"),
     spdlog::create<spdlog::sinks::null_sink_mt>("main"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("app"),
+   // spdlog::create<spdlog::sinks::null_sink_mt>("app"),
     spdlog::create<spdlog::sinks::null_sink_mt>("post"),
     spdlog::create<spdlog::sinks::null_sink_mt>("quality"),
     spdlog::create<spdlog::sinks::null_sink_mt>("distortion"),
