@@ -119,26 +119,25 @@ app::app(path assets)
   {
   nearClip = 0.1f;
   farClip = 10000.f;
-  bloom_exposure = -10;
+  bloom_exposure = -8.125;
   exposure = -14;
   blur_sigma = 2.5;
   bloom_magnitude = 1.000;
 
-  sun_dir = vec3(0.2, 0.3, 0.8);
-  sun_angular_radius = 3 * physical_sun_angular_radius;
+  sun_dir = vec3(0.228, 0.342, 0.912);
+  sun_angular_radius = 2 * physical_sun_angular_radius;
   ground_albedo = vec3(0.25, 0.25, 0.25); 
-  turbidity = 1.5f;
+  turbidity = 3.f;
   use_sun_area_light_approximation = true;
 
   distorted.set_resolve_handle(quality.resolve_target.texture_handle);
   
   enable_seascape = true;
-  enable_srgb_resolve = false;
   use_sun_area_light_approximation = true;
 
   rendermodel_metallic = 0.1;
-  rendermodel_roughness = 0.2;
-  rendermodel_ambient = 0.6;
+  rendermodel_roughness = 0.05;
+  rendermodel_ambient = 0.8; // bug open scene
   rendermodel_albedo = 1;
 
   glCreateVertexArrays(1, &dummy_vao); // we'll load this as needed
@@ -277,7 +276,7 @@ void app::run() {
     post.process();
 
     l->info("present");
-    quality.present(enable_srgb_resolve);
+    quality.present();
 
     l->info("desktop");
     
@@ -305,7 +304,6 @@ bool app::desktop_display() {
   glClearColor(0.18f, 0.18f, 0.18f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  if (!enable_srgb_resolve) glEnable(GL_FRAMEBUFFER_SRGB);
   // lets find an aspect ratio preserving viewport
   switch (desktop_view) {
     case 0: break;
@@ -415,7 +413,6 @@ bool app::desktop_display() {
       break;
     }
   }
-  if (!enable_srgb_resolve) glDisable(GL_FRAMEBUFFER_SRGB);
 
   glViewport(0, 0, w, h);
 
@@ -461,7 +458,6 @@ bool app::show_gui(bool * open) {
         gui::EndMenu();
       }
       gui::Separator();        
-      bool srgb = enable_srgb_resolve; gui::MenuItem("SRGB Resolve", nullptr, &srgb); enable_srgb_resolve = srgb;          
       gui::MenuItem("Skybox Enabled", nullptr, &skybox_visible);
       gui::Separator();
       gui::MenuItem("Settings", nullptr, &show_settings_window);

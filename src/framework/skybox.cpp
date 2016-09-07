@@ -70,7 +70,7 @@ namespace framework {
     if (show_skybox_window) {
       gui::Begin("Skybox", &show_skybox_window);
       gui::ColorEdit3("ground albedo", reinterpret_cast<float*>(&uniforms.ground_albedo));
-      gui::SliderFloat("sun size", &sun_angular_radius, 0.1_degrees, 10.0_degrees);
+      gui::SliderFloat("sun size", &uniforms.sun_angular_radius, 0.1_degrees, 15.0_degrees);
       gui::SliderFloat("x", &uniforms.sun_dir.x, -1, 1);
       gui::SliderFloat("y", &uniforms.sun_dir.y, 0, 1);
       gui::SliderFloat("z", &uniforms.sun_dir.z, -1, 1);

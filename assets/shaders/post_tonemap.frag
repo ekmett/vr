@@ -14,6 +14,8 @@ in vec3 coord;
 out vec4 outputColor;
 
 // ALU driven approximation of Duiker's film stock curve
+// by Jim Hejl and Richard Burgess-Dawson.
+// NB: This has a baked in gamma correction
 vec3 filmic(vec3 color) {
   color = max(vec3(0), color - vec3(0.004f));
   color = (color * (6.2f * color + 0.5f)) / (color * (6.2f * color + 1.7f)+ 0.06f);
@@ -22,18 +24,17 @@ vec3 filmic(vec3 color) {
 
 void main() {
   vec4 presolve_color = texture(presolve, coord);
-  vec3 color = presolve_color.rgb;
-  color += texture(bloom, coord).rgb * bloom_magnitude * exp2(bloom_exposure);
-  color *= exp2(exposure) / FP16_SCALE;                    
-  color = filmic(color);
+  vec3 bloom_color = texture(bloom, coord).rgb;
 
-  if (enable_srgb_resolve != 0)
-    color = pow(color, vec3(1/2.2f));
+  vec3 color = presolve_color.rgb;
+  color += bloom_color * bloom_magnitude * exp2(bloom_exposure);
+  color *= exp2(exposure) / FP16_SCALE;                    
+
+  color = filmic(color);
 
   if (presolve_color.a < 0.1) {
     outputColor = vec4(presolve_color.xyz, 1);
   } else {
     outputColor = vec4(color.xyz, 1);  
   }
-
 }

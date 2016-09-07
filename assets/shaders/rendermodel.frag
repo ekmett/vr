@@ -20,7 +20,7 @@ void main() {
   vec3 V = normalize(V_ws);
   if (use_sun_area_light_approximation != 0) {
     vec3 R = reflect(V, N);
-    float apparent_angular_radius = sun_angular_radius * turbidity;
+    float apparent_angular_radius = sun_angular_radius * (1 + log(turbidity));
     float c = cos(apparent_angular_radius);
     float s = sin(apparent_angular_radius);
     float LdR = dot(L,R);
@@ -30,10 +30,11 @@ void main() {
   vec3 albedo = pow(srgb_albedo.xyz, vec3(2.2));
   vec3 diffuse_albedo = mix(albedo.xyz, vec3(0), rendermodel_metallic) * rendermodel_albedo;
   vec3 specular_albedo = mix(vec3(0.03f), albedo.xyz, rendermodel_metallic) * rendermodel_albedo;
-  vec3 color = calc_lighting(sun_irradiance / turbidity, diffuse_albedo, specular_albedo, rendermodel_roughness, N,L,V);
+  vec3 color = calc_lighting(sun_irradiance / (1 + log(turbidity)), diffuse_albedo, specular_albedo, rendermodel_roughness, N,L,V);
   // vec3 ambient = texture(sky_cubemap, reflect(-V,N)).xyz;
-  vec3 ambient = eval_sh9_irradiance(N, sky_sh9) / 3.14159f; // skylight
-  ambient *= rendermodel_ambient; // proxy for sky occlusion
+  vec3 ambient = eval_sh9_irradiance(N, sky_sh9) / 3.14159f;
+  ambient *= rendermodel_ambient;
   color += ambient * diffuse_albedo * mix(rendermodel_albedo, 1, turbidity / 10);
   outputColor = vec4(clamp(color, 0.0f, 65000), srgb_albedo.a);
+  //outputColor = vec4(clamp(pow(srgb_albedo.xyz, vec3(2.2)) * sky_sh9[0].xyz / 3.14159f, 0, 65000).xyz, srgb_albedo.a);
 }

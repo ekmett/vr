@@ -78,8 +78,7 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(4) float nearClip, farClip;
   UNIFORM_ALIGN(4) float global_time;
 
-  UNIFORM_ALIGN(4) int enable_seascape, 
-                       enable_srgb_resolve; // final resolve buffer is in srgb colorspace, not linear
+  UNIFORM_ALIGN(4) int enable_seascape; // final resolve buffer is in srgb colorspace, not linear
 
   UNIFORM_ALIGN(4) float render_buffer_usage, resolve_buffer_usage;
 
