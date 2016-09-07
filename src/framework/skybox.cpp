@@ -248,7 +248,7 @@ namespace framework {
     // glDisable(GL_CULL_FACE);
     glUseProgram(program);
     glBindVertexArray(vao);
-    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 2);
     glBindVertexArray(0);
     glUseProgram(0);
   }

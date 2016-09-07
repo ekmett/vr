@@ -6,8 +6,8 @@
 
 #include "uniforms.h"
 
-const vec2 positions[4] = vec2[](vec2(-1,1),vec2(-1,-1),vec2(1,1),vec2(1,-1));
-const vec2 corners[4] = vec2[](vec2(0,1),vec2(0,0),vec2(1,1),vec2(1,0));
+const vec2 positions[3] = vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));
+const vec2 corners[3]   = vec2[](vec2(0,0),vec2(2,0),vec2(0,2));
 
 noperspective out vec3 coord;
 

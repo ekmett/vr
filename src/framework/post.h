@@ -105,12 +105,12 @@ namespace framework {
         // horizontal
         glBindProgramPipeline(horizontal_pipeline);
         fbo[1].bind();
-        glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 2);
 
         // vertical
         glBindProgramPipeline(vertical_pipeline);
         fbo[0].bind();
-        glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 2);
       }
 
       glViewport(0, 0, quality.resolve_buffer_w, quality.resolve_buffer_h);
@@ -123,7 +123,7 @@ namespace framework {
       log("post")->info("tonemap");
       glBindProgramPipeline(tone_pipeline);
       quality.resolve_target.bind();
-      glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
+      glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 2);
 
       glBindVertexArray(0);
       glBindProgramPipeline(0);
