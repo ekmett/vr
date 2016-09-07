@@ -27,6 +27,12 @@ namespace framework {
 
 // monolithic ubo for common scene info, mostly sorted by size
 UNIFORM_STRUCT(1) app_uniforms {  
+  // render model utilities
+  UNIFORM_ALIGN(4) float rendermodel_roughness;
+  UNIFORM_ALIGN(4) float rendermodel_metallic;
+  UNIFORM_ALIGN(4) float rendermodel_ambient;
+  UNIFORM_ALIGN(4) float rendermodel_albedo;
+  UNIFORM_ALIGN(4) int use_sun_area_light_approximation;
 
   // head
   UNIFORM_ALIGN(16) mat4 projection[MAX_EYES];
@@ -62,7 +68,8 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(16) samplerCube sky_cubemap;
 
   UNIFORM_ALIGN(8) float turbidity;
-  UNIFORM_ALIGN(4) float cos_sun_angular_radius, sin_sun_angular_radius, sun_angular_radius;
+  UNIFORM_ALIGN(4) float cos_sun_angular_radius
+                       , sin_sun_angular_radius, sun_angular_radius;
 
 
   // camera
@@ -82,10 +89,6 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(4) int controller_device[MAX_CONTROLLERS];
 
 
-  // render model utilities
-  UNIFORM_ALIGN(16) float rendermodel_roughness;
-  UNIFORM_ALIGN(4) float rendermodel_metallic;
-  UNIFORM_ALIGN(4) float rendermodel_ambient;
 };
 
 #ifdef __cplusplus

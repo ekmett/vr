@@ -119,7 +119,7 @@ app::app(path assets)
   {
   nearClip = 0.1f;
   farClip = 10000.f;
-  bloom_exposure = -2;
+  bloom_exposure = -10;
   exposure = -14;
   blur_sigma = 2.5;
   bloom_magnitude = 1.000;
@@ -128,15 +128,18 @@ app::app(path assets)
   sun_angular_radius = 3 * physical_sun_angular_radius;
   ground_albedo = vec3(0.25, 0.25, 0.25); 
   turbidity = 1.5f;
+  use_sun_area_light_approximation = true;
 
   distorted.set_resolve_handle(quality.resolve_target.texture_handle);
   
   enable_seascape = true;
   enable_srgb_resolve = true;
+  use_sun_area_light_approximation = true;
 
   rendermodel_metallic = 0.1;
   rendermodel_roughness = 0.2;
   rendermodel_ambient = 0.1;
+  rendermodel_albedo = 1;
 
   glCreateVertexArrays(1, &dummy_vao); // we'll load this as needed
   gl::label(GL_VERTEX_ARRAY, dummy_vao, "dummy vao");
@@ -490,6 +493,10 @@ bool app::show_gui(bool * open) {
     gui::SliderFloat("roughness", &rendermodel_roughness, 0, 1);
     gui::SliderFloat("metallic",  &rendermodel_metallic, 0, 1);
     gui::SliderFloat("ambient",   &rendermodel_ambient, 0, 1);
+    gui::SliderFloat("albedo",    &rendermodel_albedo, 0, 1);
+    bool sun_area = use_sun_area_light_approximation;
+    gui::Checkbox("sun area light", &sun_area);
+    use_sun_area_light_approximation = sun_area;
     gui::End();
   }
 
