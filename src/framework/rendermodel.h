@@ -4,8 +4,11 @@
 #include "framework/gl.h"
 #include "framework/signal.h"
 #include "framework/openvr_system.h"
+#include "framework/filesystem.h"
 #include "framework/shader.h"
 #include "framework/noncopyable.h"
+#include "framework/gui.h"
+#include "framework/fmt.h"
 
 namespace framework {
 
@@ -38,6 +41,8 @@ namespace framework {
     GLuint vao;
     GLsizei vertexCount;
 
+    string name;
+    
     vr::TextureID_t vr_texture_id;           // openvr asynchronous texture id
     shared_ptr<rendermodel_texture> diffuse; // updated after the fact
     bool missing_components;                 // do we have all the component parts?
@@ -78,19 +83,40 @@ namespace framework {
       glEnable(GL_BLEND);
 
       glUseProgram(shader.programId);
-
       for (int i = vr::k_unTrackedDeviceIndex_Hmd + 1;i < vr::k_unMaxTrackedDeviceCount;++i) {
         if (device_mask & (1 << i)) {
           auto model = tracked_rendermodels[i];
           if (!model || !model->diffuse) continue;
           log("rendermodel")->info("model {}", i);
-          glBindVertexArray(model->vao);  // sort by model?
-          //mat4 id(1.f);
-          //glProgramUniformMatrix4fv(program, 0, 1, false, &id[0][0]);
-          glProgramUniform1i(shader.programId, 1, i);
-          glProgramUniformHandleui64ARB(shader.programId, 2, model->diffuse->handle);
-          glDrawElementsInstanced(GL_TRIANGLES, model->vertexCount, GL_UNSIGNED_SHORT, nullptr, 2);
-          glBindVertexArray(0);
+          if (model->components.empty() || model->missing_components) {
+            glBindVertexArray(model->vao);  // sort by model?
+            mat4 id(1.f);
+            glProgramUniformMatrix4fv(shader, 0, 1, false, &id[0][0]);
+            glProgramUniform1i(shader, 1, i);
+            glProgramUniformHandleui64ARB(shader, 2, model->diffuse->handle);
+            glDrawElementsInstanced(GL_TRIANGLES, model->vertexCount, GL_UNSIGNED_SHORT, nullptr, 2);
+            glBindVertexArray(0);
+          } else {
+            glProgramUniform1i(shader, 1, i);
+            vr::VRControllerState_t controller_state;
+            vr::VRSystem()->GetControllerState(i, &controller_state);
+            for (auto pair : model->components) {
+              auto & component = pair.second;
+              vr::RenderModel_ControllerMode_State_t controller_mode_state;
+              controller_mode_state.bScrollWheelVisible = true; // why not
+              vr::RenderModel_ComponentState_t component_state;
+              filesystem::path wtf(component->name);
+              string scrubbed_name = wtf.filename().replace_extension("").generic_string();
+              vrrm->GetComponentState(model->name.c_str(), scrubbed_name.c_str(), &controller_state, &controller_mode_state, &component_state);
+              if (!(component_state.uProperties & vr::VRComponentProperty_IsVisible)) continue;
+              mat4 tracking_to_component = openvr::hmd_mat3x4(component_state.mTrackingToComponentRenderModel);
+              glBindVertexArray(component->vao);
+              glProgramUniformMatrix4fv(shader, 0, 1, false, &tracking_to_component[0][0]);
+              glProgramUniformHandleui64ARB(shader, 2, component->diffuse->handle);
+              glDrawElementsInstanced(GL_TRIANGLES, component->vertexCount, GL_UNSIGNED_SHORT, nullptr, 2);
+              glBindVertexArray(0);
+            }
+          }
         }
       }
 

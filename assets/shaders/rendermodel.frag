@@ -36,5 +36,4 @@ void main() {
   ambient *= rendermodel_ambient;
   color += ambient * diffuse_albedo * mix(rendermodel_albedo, 1, turbidity / 10);
   outputColor = vec4(clamp(color, 0.0f, 65000), srgb_albedo.a);
-  //outputColor = vec4(clamp(pow(srgb_albedo.xyz, vec3(2.2)) * sky_sh9[0].xyz / 3.14159f, 0, 65000).xyz, srgb_albedo.a);
 }

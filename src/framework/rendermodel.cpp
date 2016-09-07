@@ -12,6 +12,7 @@ namespace framework {
     : vertexCount(model.unTriangleCount * 3)
     , diffuse(nullptr)
     , vr_texture_id(model.diffuseTextureId)
+    , name(name)
     , missing_components(missing_components) {
     glCreateVertexArrays(1, &vao);
 
@@ -158,6 +159,7 @@ namespace framework {
     known_ready = false;
     models.clear();
     textures.clear();
+    for (int i = 0;i < countof(tracked_rendermodels);++i) tracked_rendermodels[i] = nullptr;
     poll(); 
   }
 
@@ -206,7 +208,7 @@ namespace framework {
           if (iter != parts.end() && cmodel >= iter->first) continue; // already in there
           shared_ptr<rendermodel> part;
           bool part_found = poll_model(cmodel, &part, true);
-          components_found = components_found && part_found;
+          components_found = components_found && part_found && part->diffuse;
           if (part_found && part != nullptr)
             parts.insert(iter, make_pair(cmodel, part));
         }
