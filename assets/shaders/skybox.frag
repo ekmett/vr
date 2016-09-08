@@ -29,7 +29,7 @@ void main() {
     vec3 p = heightMapTracing(origin,dir);
     vec3 dist = p - origin;
     vec3 n = getNormal(p, dot(dist,dist) * 0.1 / viewport_w);
-    color = mix(color, getSeaColor(p,n,sun_dir,dir,dist), pow(smoothstep(0.00,-0.05,dir.y),0.3));
+    color = mix(color, getSeaColor(p,n,sun_dir,dir,dist), pow(smoothstep(0.00,-0.01*turbidity,dir.y),0.3));
     // gl_FragDepth = length(dist); // use GL_ARB_conservative_depth for seascape?
   }
   outputColor = vec4(color,1); 

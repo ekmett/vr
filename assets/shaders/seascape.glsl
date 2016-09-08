@@ -113,8 +113,10 @@ vec3 getSeaColor(vec3 p, vec3 N, vec3 L, vec3 I, vec3 dist) {
   }
   float fresnel = 1.0 - NdV;
   fresnel = pow(fresnel,3.0) * 0.65;
-  vec3 reflected = SEA_BASE * getSkyColor(R);
+  // vec3 reflected = SEA_BASE * getSkyColor(R); // causing speckles
+  vec3 reflected = SEA_BASE * eval_sh9_irradiance(R, sky_sh9) / 3.14159;
   vec3 refracted = SEA_BASE + diffuse(N, L, 80.0) * SEA_WATER_COLOR * 0.12;
+
   reflected += GGX_specular(0.01, N, H, V, L) * sun_irradiance / (turbidity*turbidity);
   vec3 color = mix(refracted,reflected,fresnel);
   float atten = max(1.0 - dot(dist,dist) * 0.001, 0.0);
