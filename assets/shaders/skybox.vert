@@ -23,7 +23,7 @@ void main() {
   mat4 inverse_model_view = predicted_device_to_world[DEVICE_HEAD] * eye_to_head[gl_InstanceID];
 #ifdef HACK_SEASCAPE
   origin = predicted_device_to_world[DEVICE_HEAD][3].xyz;
-  origin.y -= 2;
+  origin.y -= 3;
 #endif
   coord = mat3(inverse_model_view) * (inverse_projection[gl_InstanceID] * position).xyz;
   gl_Layer = gl_InstanceID;

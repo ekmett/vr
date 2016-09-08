@@ -36,6 +36,6 @@ namespace framework {
     GLuint cubemap_views[6];
     gl::shader program;
     GLuint vao;
-    bool show_skybox_window = false;
+    bool show_skybox_window = true;
   };
 }

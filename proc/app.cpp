@@ -115,7 +115,6 @@ app::app(path assets)
   , vr()
   , compiler(path(assets).append("shaders"))
   , gui(window)
-  // , sky(vec3(0.252, 0.955, -.155), 2.0_degrees, vec3(0.25, 0.25, 0.25), 2.f, *this)
   , quality(3)
   , post(quality)
   , rendermodels(vr)
@@ -129,7 +128,7 @@ app::app(path assets)
   quality.maximum_quality_level = 4;
 
   sun_dir = vec3(0.228, 0.342, 0.912);
-  sun_angular_radius = 2 * physical_sun_angular_radius;
+  sun_angular_radius = 2.0_degrees;
   ground_albedo = vec3(0.25, 0.25, 0.25); 
   turbidity = 3.f;
   use_sun_area_light_approximation = true;
