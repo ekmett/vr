@@ -30,7 +30,7 @@ void main() {
   vec3 albedo = pow(srgb_albedo.xyz, vec3(2.2));
   vec3 diffuse_albedo = mix(albedo.xyz, vec3(0), rendermodel_metallic) * rendermodel_albedo;
   vec3 specular_albedo = mix(vec3(0.03f), albedo.xyz, rendermodel_metallic) * rendermodel_albedo;
-  vec3 color = calc_lighting(sun_irradiance / (1 + log(turbidity)), diffuse_albedo, specular_albedo, rendermodel_roughness, N,L,V);
+  vec3 color = calc_lighting(sun_irradiance / (turbidity * turbidity), diffuse_albedo, specular_albedo, rendermodel_roughness, N,L,V);
   // vec3 ambient = texture(sky_cubemap, reflect(-V,N)).xyz;
   vec3 ambient = eval_sh9_irradiance(N, sky_sh9) / 3.14159f;
   ambient *= rendermodel_ambient;
