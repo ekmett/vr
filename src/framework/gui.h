@@ -2,7 +2,18 @@
 
 #include "framework/std.h"
 #include "framework/sdl_window.h"
+#include "framework/glm.h"
+
+#define IM_VEC2_CLASS_EXTRA \
+  operator glm::vec2 () const { return glm::vec2(x,y); }; \
+  ImVec2(glm::vec2 v) : x(v.x), y(v.y) {}
+ 
+#define IM_VEC4_CLASS_EXTRA \
+  operator glm::vec4 () const { return glm::vec4(x,y,z,w); } \
+  ImVec4(glm::vec4 v) : x(v.y), y(v.y), z(v.z), w(v.w) {}
+
 #include "imgui.h"
+#include <imgui_internal.h>
 #include "imgui_table.h"
 #include "IconsFontAwesome.h"
 #include "IconsMaterialDesign.h"
@@ -29,5 +40,9 @@ namespace framework {
       string message = fmt::format(args...);
       gui::Text("%s", message.c_str());
     }
+
+    bool IsItemActiveLastFrame();
+
+    bool IsItemJustReleased();
   }
 }

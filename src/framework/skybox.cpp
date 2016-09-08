@@ -36,7 +36,9 @@ namespace framework {
   sky::sky() // const vec3 & sun_direction, float sun_angular_radius, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms)
     : rgb{}
     , cubemap(0)
-    , program("skybox") {
+    , program("skybox")
+    , direction_editor("sun_dir", "sun dir", vec3(1,0,0),true) {
+    direction_editor.hemisphere = true;
     glCreateVertexArrays(1, &vao);
     glUniformBlockBinding(program.programId, 0, 0);
     glActiveTexture(GL_TEXTURE1);
@@ -69,30 +71,45 @@ namespace framework {
 
   // sun size is in radians, not degrees
   void sky::update(app_uniforms & uniforms) {
+    bool just_released = false;
+
+    if (!initialized_direction_editor) {
+      direction_editor.val = uniforms.sun_dir;
+      initialized_direction_editor = true;
+    }
     if (show_skybox_window) {
       gui::Begin("Skybox", &show_skybox_window);
+      if (direction_editor.direction(uniforms.predicted_world_to_head)) {
+        just_released = true;
+      }
+      gui::DragFloat("sun radius", &uniforms.sun_angular_radius, 0.05_degrees, 0.1_degrees, 15.0_degrees);
+      just_released = just_released || gui::IsItemJustReleased();
+      gui::SliderFloat("turbidity", &uniforms.turbidity, 1, 10, "%.2f");
+      just_released = just_released || gui::IsItemJustReleased();
       gui::ColorEdit3("ground albedo", reinterpret_cast<float*>(&uniforms.ground_albedo));
-      gui::DragFloat("sun size", &uniforms.sun_angular_radius, 0.05_degrees, 0.1_degrees, 15.0_degrees);
-      gui::InputFloat3("sun dir", &uniforms.sun_dir.x, 2);
-      gui::SliderFloat("turbidity", &uniforms.turbidity, 1, 10,"%.2f");
+      just_released = just_released || gui::IsItemJustReleased();
       gui::End();
     }
-
-    if (initialized &&
-        uniforms.sun_dir == sun_dir && 
-        uniforms.sun_angular_radius == sun_angular_radius && 
-        uniforms.ground_albedo == ground_albedo && 
-        uniforms.turbidity == turbidity)
-      return;
-
-    
-    sun_dir = uniforms.sun_dir = normalize(uniforms.sun_dir);
-    sun_angular_radius = uniforms.sun_angular_radius = std::max(uniforms.sun_angular_radius, 0.1_degrees);
-    turbidity = uniforms.turbidity = clamp(uniforms.turbidity, 1.f, 32.f);
-    ground_albedo = uniforms.ground_albedo = saturate(uniforms.ground_albedo);
+    uniforms.sun_dir = normalize(direction_editor.val);
     uniforms.cos_sun_angular_radius = sin(uniforms.sun_angular_radius);
     uniforms.cos_sun_angular_radius = cos(uniforms.sun_angular_radius);
+    uniforms.ground_albedo = saturate(uniforms.ground_albedo);
+    uniforms.sun_angular_radius = std::max(uniforms.sun_angular_radius, 0.1_degrees);
+    uniforms.turbidity = clamp(uniforms.turbidity, 1.f, 10.f);
     uniforms.sky_cubemap = cubemap_handle;
+
+    if (initialized) {
+      if (!just_released) return;
+      if (uniforms.sun_dir == sun_dir &&
+        uniforms.sun_angular_radius == sun_angular_radius &&
+        uniforms.ground_albedo == ground_albedo &&
+        uniforms.turbidity == turbidity) return;      
+    }
+    
+    direction_editor.val = sun_dir = uniforms.sun_dir;
+    sun_angular_radius = uniforms.sun_angular_radius;
+    turbidity = uniforms.turbidity;
+    ground_albedo = uniforms.ground_albedo;
 
     float theta_sun = angle_between(sun_dir, vec3(0, 1, 0));
     elevation = M_PI_2 - theta_sun;

@@ -64,6 +64,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stereo_fbo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\timer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui_direction.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp" />

@@ -127,7 +127,7 @@ app::app(path assets)
   bloom_magnitude = 1.000;
   quality.maximum_quality_level = 4;
 
-  sun_dir = vec3(0.228, 0.342, 0.912);
+  sun_dir = vec3(0.228, 0.842, 0.912);
   sun_angular_radius = 2.0_degrees;
   ground_albedo = vec3(0.25, 0.25, 0.25); 
   turbidity = 3.f;

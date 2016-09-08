@@ -5,6 +5,7 @@
 #include "framework/shader.h"
 #include "uniforms.h"
 #include "framework/timer.h"
+#include "framework/gui_direction.h"
 
 struct ArHosekSkyModelState;
 
@@ -37,5 +38,8 @@ namespace framework {
     gl::shader program;
     GLuint vao;
     bool show_skybox_window = true;
+
+    direction_setting direction_editor;
+    bool initialized_direction_editor = false;
   };
 }

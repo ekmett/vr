@@ -330,6 +330,17 @@ namespace framework {
 
       return true;
     }
-  }
+
+    bool IsItemActiveLastFrame() {
+      ImGuiContext& g = *GImGui;
+      if (g.ActiveIdPreviousFrame)
+        return g.ActiveIdPreviousFrame == g.CurrentWindow->DC.LastItemId;
+      return false;
+    }
+
+    bool IsItemJustReleased() {
+      return IsItemActiveLastFrame() && !ImGui::IsItemActive();
+    }
+}
 }
 

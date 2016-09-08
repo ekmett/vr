@@ -95,6 +95,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\rendermodel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\timer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\adsr.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui_direction.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cds">
