@@ -11,7 +11,7 @@ namespace framework {
     float max_supersampling_factor;
   } render_target_metas[]{
     { 4, 1.1f },
-    { 8, 1.4f }
+    { 8, 1.4f },
   };
 
   static const int render_target_count = countof(render_target_metas);

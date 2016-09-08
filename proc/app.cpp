@@ -91,7 +91,7 @@ struct app : app_uniforms {
 
   bool show_settings_window = true;
   bool show_demo_window = false;
-  bool show_rendermodel_window = true;
+  bool show_rendermodel_window = false;
   bool show_controllers_window = false;
   
   gui::system gui;
@@ -271,7 +271,6 @@ void app::get_poses() {
     }
   }
      
-  static bool show_controllers_window = true;
   if (show_controllers_window && gui::Begin("Controllers", &show_controllers_window)) {
     for (int i = 0;i < 2;++i) {
       if (controller_mask & (1 << i)) {
@@ -359,7 +358,10 @@ void app::run() {
 
     l->info("quality.new_frame");
     quality.new_frame(vr, &render_buffer_usage, &resolve_buffer_usage);
+    viewport_w = quality.viewport_w;
+    viewport_h = quality.viewport_h;
 
+    l->info("updating sky");
     sky.update(*this);
 
     l->info("submit_uniforms");
@@ -369,12 +371,11 @@ void app::run() {
 
     distorted.render_stencil();
 
-    l->info("skybox");
-    glBindVertexArray(dummy_vao);
-    sky.render();
-
     l->info("drawing rendermodels");
     rendermodels.draw(device_mask);
+
+    l->info("skybox");
+    sky.render();
 
     //l->info("drawing control vectors");
     //controllers.render(controller_mask);

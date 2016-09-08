@@ -1,6 +1,9 @@
 #ifndef INCLUDED_SHADERS_SEASCAPE_GLSL
 #define INCLUDED_SHADERS_SEASCAPE_GLSL
 
+#include "brdf.glsl"
+#include "spherical_harmonics.glsl"
+
 vec2 iResolution = vec2(1024.,768.);
 
 // based on https://www.shadertoy.com/view/Ms2SD1
@@ -15,27 +18,21 @@ float EPSILON_NRM    = 0.1 / iResolution.x;
 
 // sea
 const int ITER_GEOMETRY = 3;
-const int ITER_FRAGMENT = 5;
-const float SEA_HEIGHT = 0.6;
-const float SEA_CHOPPY = 4.0;
+const int ITER_FRAGMENT = 6;
+
+const float SEA_HEIGHT = 0.3;
+const float SEA_CHOPPY = 2.0;
 const float SEA_SPEED = 0.8;
 const float SEA_FREQ = 0.16;
+
 const vec3 SEA_BASE = vec3(0.1,0.19,0.22);
+
 const vec3 SEA_WATER_COLOR = vec3(0.8,0.9,0.6);
+
 float SEA_TIME = global_time * SEA_SPEED;
+
 mat2 octave_m = mat2(1.6,1.2,-1.2,1.6);
 
-// math
-mat3 fromEuler(vec3 ang) {
-    vec2 a1 = vec2(sin(ang.x),cos(ang.x));
-    vec2 a2 = vec2(sin(ang.y),cos(ang.y));
-    vec2 a3 = vec2(sin(ang.z),cos(ang.z));
-    mat3 m;
-    m[0] = vec3(a1.y*a3.y+a1.x*a2.x*a3.x,a1.y*a2.x*a3.x+a3.y*a1.x,-a2.y*a3.x);
-    m[1] = vec3(-a2.y*a1.x,a1.y*a2.y,a2.x);
-    m[2] = vec3(a3.y*a1.x*a2.x+a1.y*a3.x,a1.x*a3.x-a1.y*a3.y*a2.x,a2.y*a3.y);
-    return m;
-}
 float hash( vec2 p ) {
     float h = dot(p,vec2(127.1,311.7));
     return fract(sin(h)*43758.5453123);
@@ -52,21 +49,11 @@ float noise( in vec2 p ) {
 
 // lighting
 float diffuse(vec3 n,vec3 l,float p) {
-    return pow(dot(n,l) * 0.4 + 0.6,p);
+  return pow(dot(n, l) * 0.4 + 0.6, p);
 }
 float specular(vec3 n,vec3 l,vec3 e,float s) {
     float nrm = (s + 8.0) / (3.1415 * 8.0);
     return pow(max(dot(reflect(e,n),l),0.0),s) * nrm;
-}
-
-// sky
-vec3 getSkyColor(vec3 e) {
-    e.y = max(e.y,0.0);
-    vec3 ret;
-    ret.x = pow(1.0-e.y,2.0);
-    ret.y = 1.0-e.y;
-    ret.z = 0.6+(1.0-e.y)*0.4;
-    return ret;
 }
 
 // sea
@@ -112,21 +99,27 @@ float map_detailed(vec3 p) {
     return p.y - h;
 }
 
-vec3 getSeaColor(vec3 p, vec3 n, vec3 l, vec3 eye, vec3 dist) {
-    float fresnel = 1.0 - max(dot(n,-eye),0.0);
-    fresnel = pow(fresnel,3.0) * 0.65;
-
-    vec3 reflected = getSkyColor(reflect(eye,n));
-    vec3 refracted = SEA_BASE + diffuse(n,l,80.0) * SEA_WATER_COLOR * 0.12;
-
-    vec3 color = mix(refracted,reflected,fresnel);
-
-    float atten = max(1.0 - dot(dist,dist) * 0.001, 0.0);
-    color += SEA_WATER_COLOR * (p.y - SEA_HEIGHT) * 0.18 * atten;
-
-    color += vec3(specular(n,l,eye,60.0));
-
-    return color;
+vec3 getSeaColor(vec3 p, vec3 N, vec3 L, vec3 I, vec3 dist) {
+  vec3 V = -I;
+  vec3 R = reflect(I, N);
+  vec3 H = normalize(V + L);
+  float NdV = clamp(dot(N, V), 0, 1);
+  if (use_sun_area_light_approximation != 0) {
+    float apparent_angular_radius = sun_angular_radius * (1 + log(turbidity));
+    float c = cos(apparent_angular_radius);
+    float s = sin(apparent_angular_radius);
+    float LdR = dot(L, R);
+    L = LdR < c ? normalize(c * L + s * normalize(R - LdR * L)) : R;
+  }
+  float fresnel = 1.0 - NdV;
+  fresnel = pow(fresnel,3.0) * 0.65;
+  vec3 reflected = SEA_BASE * getSkyColor(R);
+  vec3 refracted = SEA_BASE + diffuse(N, L, 80.0) * SEA_WATER_COLOR * 0.12;
+  reflected += GGX_specular(0.01, N, H, V, L) * sun_irradiance / (1 + log(turbidity));
+  vec3 color = mix(refracted,reflected,fresnel);
+  float atten = max(1.0 - dot(dist,dist) * 0.001, 0.0);
+  color += SEA_WATER_COLOR * (p.y - SEA_HEIGHT) * 0.18 * atten * eval_sh9_irradiance(N, sky_sh9) / 3.14159;
+  return color;
 }
 
 // tracing

@@ -33,6 +33,7 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(4) float rendermodel_ambient;
   UNIFORM_ALIGN(4) float rendermodel_albedo;
   UNIFORM_ALIGN(4) int use_sun_area_light_approximation;
+  UNIFORM_ALIGN(4) int viewport_w, viewport_h;
 
   // head
   UNIFORM_ALIGN(16) mat4 projection[MAX_EYES];
@@ -86,8 +87,6 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(4) int controller_mask;
   UNIFORM_ALIGN(4) int device_mask;
   UNIFORM_ALIGN(4) int controller_device[MAX_CONTROLLERS];
-
-
 };
 
 #ifdef __cplusplus
