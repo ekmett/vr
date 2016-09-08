@@ -3,7 +3,8 @@
 #include "framework/spherical_harmonics.h"
 #include "framework/glm.h"
 #include "framework/shader.h"
-#include "uniforms.h" 
+#include "uniforms.h"
+#include "framework/timer.h"
 
 struct ArHosekSkyModelState;
 
@@ -35,7 +36,6 @@ namespace framework {
     GLuint cubemap_views[6];
     gl::shader program;
     GLuint vao;
-
-    bool show_skybox_window = true;
+    bool show_skybox_window = false;
   };
 }

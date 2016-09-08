@@ -22,5 +22,12 @@ namespace framework {
       bool create_device_objects();
       float content_scale; // ui scale multiplier
     };
+
+    // nicer strings
+    template<typename ... Ts>
+    static void text(Ts ... args) {
+      string message = fmt::format(args...);
+      gui::Text("%s", message.c_str());
+    }
   }
 }

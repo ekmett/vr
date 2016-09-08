@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\adsr.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\alloca_array.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\apply.h" />
@@ -62,6 +63,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\worker.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stereo_fbo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp" />
@@ -85,6 +87,7 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\worker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gui.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\third-party\glm\util\glm.natvis" />

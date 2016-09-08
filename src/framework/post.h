@@ -3,6 +3,7 @@
 #include "framework/gl.h"
 #include "framework/quality.h"
 #include "framework/shader.h"
+#include "framework/timer.h"
 
 namespace framework {
   struct post {
@@ -30,13 +31,16 @@ namespace framework {
       , tone(GL_FRAGMENT_SHADER, "post_tonemap")
       , w((quality.resolve_buffer_w + 1)/ 2)
       , h((quality.resolve_buffer_h + 1)/ 2)
-      , presolve(quality.resolve_target.format, "presolve", GL_RGBA16F) {
+      , presolve(quality.resolve_target.format, "presolve", GL_RGBA16F)
+      , timer("post") {
 
       glCreateVertexArrays(1, &vao);
-      
+            
       for (int i = 0;i < 2;++i) {
         fbo[i].format = { w, h };
-        fbo[i].initialize("post fbo 0", GL_RGBA16F);
+        string name = fmt::format("post fbo {}", i);
+        fbo[i].initialize(name, GL_RGBA16F);
+        //fbo[i].initialize(name, GL_R11F_G11F_B10F);
       }
       
       glCreateProgramPipelines(countof(pipelines), pipelines);
@@ -71,6 +75,8 @@ namespace framework {
     }
 
     void process() {
+      static elapsed_timer post_timer("post");
+      timer_block timed(post_timer);
       int vw = quality.viewport_w, vh = quality.viewport_h;
       pw = vw / 2;
       ph = vh / 2;
@@ -92,13 +98,18 @@ namespace framework {
 
       glEnable(GL_SCISSOR_TEST);
 
-      // downsample
-      log("post")->info("downsampling");  
-      glViewport(0, 0, w, h);
-      glScissor(0, 0, pw, ph);
+      static elapsed_timer downsample_timer("downsample");
+      {
+        timer_block downsample_timing(downsample_timer);
 
-      for (int i = 0;i < 2;++i)
-        glBlitNamedFramebuffer(presolve.fbo_view[i], fbo[0].fbo_view[i], 0, 0, vw, vh, 0, 0, pw, ph, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        // downsample
+        log("post")->info("downsampling");
+        glViewport(0, 0, w, h);
+        glScissor(0, 0, pw, ph);
+
+        for (int i = 0;i < 2;++i)
+          glBlitNamedFramebuffer(presolve.fbo_view[i], fbo[0].fbo_view[i], 0, 0, vw, vh, 0, 0, pw, ph, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+      }
 
       // blur
       for (int i = 0;i < 2;++i) {
@@ -142,5 +153,6 @@ namespace framework {
     GLuint vao;
 
     quality & quality;
+    elapsed_timer timer;
   };
 }

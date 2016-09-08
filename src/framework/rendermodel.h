@@ -9,6 +9,7 @@
 #include "framework/noncopyable.h"
 #include "framework/gui.h"
 #include "framework/fmt.h"
+#include "framework/timer.h"
 
 namespace framework {
 
@@ -77,6 +78,9 @@ namespace framework {
     string component_model(std::string model, std::string cname);
 
     void draw(int device_mask) {
+      static elapsed_timer timer("rendermodels");
+      timer_block timed(timer);
+
       if (vr::VRSystem()->IsInputFocusCapturedByAnotherProcess()) return;
 
       glEnable(GL_DEPTH_TEST);

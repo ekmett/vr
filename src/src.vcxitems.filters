@@ -93,6 +93,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stereo_fbo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\post.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\rendermodel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\timer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\adsr.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cds">
@@ -156,6 +158,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\quality.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\distortion.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\rendermodel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\third-party\glm\util\glm.natvis" />

@@ -25,3 +25,9 @@
 [submodule "third-party/recastnavigation"]
 	path = third-party/recastnavigation
 	url = https://github.com/recastnavigation/recastnavigation.git
+[submodule "third-party/tinyobjloader"]
+	path = third-party/tinyobjloader
+	url = https://github.com/syoyo/tinyobjloader.git
+[submodule "third-party/tinyexr"]
+	path = third-party/tinyexr
+	url = https://github.com/syoyo/tinyexr.git

@@ -3,6 +3,7 @@
 #include "framework/gui.h"
 #include "framework/error.h"
 #include "framework/openvr_system.h"
+#include "framework/timer.h"
 #include "quality.h"
 
 namespace framework {
@@ -111,6 +112,9 @@ namespace framework {
   }
 
   void quality::resolve(stereo_fbo & to) {
+    static elapsed_timer timer("resolve msaa");
+    timer_block timed(timer);
+
     auto & from  = current_render_fbo();
     glDisable(GL_MULTISAMPLE);
     for (int i=0;i<2;++i)
@@ -164,7 +168,8 @@ namespace framework {
         GLsizei(recommended_w * meta.max_supersampling_factor + 1) & ~1,
         GLsizei(recommended_h * meta.max_supersampling_factor + 1) & ~1,
         meta.msaa_level,
-        false
+        false,
+        GL_DEPTH24_STENCIL8
       };
       string name = fmt::format("render target {} ({}x msaa)", i, meta.msaa_level);
       render_target[i].initialize(name, GL_RGBA16F);

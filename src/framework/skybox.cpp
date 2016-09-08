@@ -5,12 +5,14 @@
 #include <algorithm>
 #include "framework/spectrum.h"
 #include "framework/sampling.h"
-#include <glm/detail/type_half.hpp>
 #include "framework/half.h"
 #include "framework/texturing.h"
 #include "framework/gl.h"
+#include "framework/std.h"
 #include "framework/gui.h"
+#include "framework/timer.h"
 #include "uniforms.h"
+#include <glm/detail/type_half.hpp>
 
 extern "C" {
 #include "ArHosekSkyModel.h"
@@ -70,11 +72,13 @@ namespace framework {
     if (show_skybox_window) {
       gui::Begin("Skybox", &show_skybox_window);
       gui::ColorEdit3("ground albedo", reinterpret_cast<float*>(&uniforms.ground_albedo));
-      gui::SliderFloat("sun size", &uniforms.sun_angular_radius, 0.1_degrees, 15.0_degrees);
-      gui::SliderFloat("x", &uniforms.sun_dir.x, -1, 1);
-      gui::SliderFloat("y", &uniforms.sun_dir.y, 0, 1);
-      gui::SliderFloat("z", &uniforms.sun_dir.z, -1, 1);
-      gui::SliderFloat("turbidity", &uniforms.turbidity, 1, 10);
+      gui::DragFloat("sun size", &uniforms.sun_angular_radius, 0.05_degrees, 0.1_degrees, 15.0_degrees);
+  //    gui::SliderFloat("sun size", &uniforms.sun_angular_radius, 0.1_degrees, 15.0_degrees);
+      gui::InputFloat3("sun dir", &uniforms.sun_dir.x, 2);
+      //gui::SliderFloat("x", &uniforms.sun_dir.x, -1, 1);
+      //gui::SliderFloat("y", &uniforms.sun_dir.y, 0, 1);
+      //gui::SliderFloat("z", &uniforms.sun_dir.z, -1, 1);
+      gui::SliderFloat("turbidity", &uniforms.turbidity, 1, 10,"%.2f");
       gui::End();
     }
 
@@ -243,13 +247,16 @@ namespace framework {
   }
 
   void sky::render() const {
-    glDisable(GL_DEPTH_TEST);
+    static elapsed_timer timer("sky");
+    timer_block timed(timer);
+    //glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
-    // glDisable(GL_CULL_FACE);
+    //glDisable(GL_MULTISAMPLE);
     glUseProgram(program);
     glBindVertexArray(vao);
     glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 2);
     glBindVertexArray(0);
     glUseProgram(0);
+    //glEnable(GL_MULTISAMPLE);
   }
 }

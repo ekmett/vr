@@ -2,6 +2,7 @@
 #include "framework/glm.h"
 #include "framework/std.h"
 #include "framework/sdl_window.h"
+#include "framework/timer.h"
 #include "framework/openvr.h"
 #include "distortion.h"
 
@@ -193,6 +194,9 @@ namespace framework {
   }
 
   void distortion::render_stencil() {
+    static elapsed_timer timer("stencil");
+    timer_block timed(timer);
+
     glDisable(GL_BLEND);       // rendering 0 into alpha channel
     glDisable(GL_CULL_FACE);   // winding gets flipped from eye to eye
     glDisable(GL_DEPTH_TEST);  // no depth 
@@ -218,6 +222,9 @@ namespace framework {
   }
 
   void distortion::render(int view_mask) {
+    static elapsed_timer timer("distortion");
+    timer_block timed(timer);
+
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
     glStencilMask(1);

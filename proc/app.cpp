@@ -2,20 +2,20 @@
 #include <random>
 #include <functional>
 #include <algorithm>
-#include "framework/worker.h"
-#include "framework/gl.h"
-#include "framework/signal.h"
-#include "framework/filesystem.h"
-#include "framework/gui.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include "framework/openal.h"
 #include "framework/distortion.h"
-//#include "overlay.h"
-#include "framework/skybox.h"
+#include "framework/gl.h"
+#include "framework/gui.h"
+#include "framework/filesystem.h"
+#include "framework/signal.h"
 #include "framework/spectrum.h"
-#include "framework/quality.h"
+#include "framework/skybox.h"
+#include "framework/openal.h"
 #include "framework/post.h"
+#include "framework/quality.h"
 #include "framework/rendermodel.h"
+#include "framework/timer.h"
+#include "framework/worker.h"
+#include <glm/gtc/matrix_transform.hpp>
 #include "uniforms.h"
 #include "controllers.h"
 
@@ -92,6 +92,7 @@ struct app : app_uniforms {
   bool show_settings_window = true;
   bool show_demo_window = false;
   bool show_rendermodel_window = true;
+  bool show_controllers_window = false;
   
   gui::system gui;
   controllers controllers;
@@ -105,7 +106,7 @@ private:
   void get_poses();
   void update_controller_assignment();
   bool show_gui(bool * open = nullptr); // returns if we should shut down
-  bool desktop_display();
+  void desktop_display();
 };
 
 
@@ -120,11 +121,12 @@ app::app(path assets)
   , rendermodels(vr)
   {
   nearClip = 0.1f;
-  farClip = 10000.f;
+  farClip = 50.f;
   bloom_exposure = -8.125;
   exposure = -14;
   blur_sigma = 2.5;
   bloom_magnitude = 1.000;
+  quality.maximum_quality_level = 4;
 
   sun_dir = vec3(0.228, 0.342, 0.912);
   sun_angular_radius = 2 * physical_sun_angular_radius;
@@ -265,9 +267,69 @@ void app::get_poses() {
     if (controller_mask & (1 << i)) {
       current_controller_to_world[i] = current_device_to_world[controller_device[i]];
       predicted_controller_to_world[i] = predicted_device_to_world[controller_device[i]];
-    } else {
-      log("app")->warn("Unable to update controller position {}", i);
+
     }
+  }
+     
+  static bool show_controllers_window = true;
+  if (show_controllers_window && gui::Begin("Controllers", &show_controllers_window)) {
+    for (int i = 0;i < 2;++i) {
+      if (controller_mask & (1 << i)) {
+        gui::Text("controller %d", i);
+        vr::VRControllerState_t controller_state;
+        vr::VRSystem()->GetControllerState(controller_device[i], &controller_state);
+  
+        static const std::map<const char *, vr::EVRButtonId> buttons{ 
+          { "grip", vr::k_EButton_Grip },
+          { "menu", vr::k_EButton_ApplicationMenu }          
+        };
+
+        for (auto b : buttons) {
+          auto button_mask = vr::ButtonMaskFromId(b.second);
+          bool touched = (controller_state.ulButtonTouched & button_mask) != 0;
+          bool pressed = (controller_state.ulButtonPressed & button_mask) != 0;
+          if (touched || pressed) {
+            gui::BulletText("%s%s%s",
+              b.first,
+              touched ? " (touched)" : "",
+              pressed ? " (pressed)" : ""
+            );
+          }
+        }
+          
+        for (int a = 0;a < vr::k_unControllerStateAxisCount; ++a) {
+          auto prop = vr::ETrackedDeviceProperty(int(vr::Prop_Axis0Type_Int32) + a);
+          auto axis_type = vr::EVRControllerAxisType(vr::VRSystem()->GetInt32TrackedDeviceProperty(controller_device[i], prop));
+          const char * axis_type_name = vr::VRSystem()->GetControllerAxisTypeNameFromEnum(axis_type);
+          auto button_id = vr::EVRButtonId(vr::k_EButton_Axis0 + a);
+          auto button_mask = vr::ButtonMaskFromId(button_id);
+          bool touched = (controller_state.ulButtonTouched & button_mask) != 0;
+          bool pressed = (controller_state.ulButtonPressed & button_mask) != 0;
+          switch (axis_type) {
+            case vr::k_eControllerAxis_Trigger:
+              gui::BulletText("trigger %d: %.02f%s%s",
+                a,
+                controller_state.rAxis[a].x,
+                touched ? " (touched)" : "",
+                pressed ? " (pressed)" : ""
+              );
+              break;
+            case vr::k_eControllerAxis_TrackPad:
+            case vr::k_eControllerAxis_Joystick:
+              gui::BulletText("%s %d: (%.02f,%.02f)%s%s",
+                axis_type == vr::k_eControllerAxis_TrackPad ? "trackpad" : "joystick",
+                a,
+                controller_state.rAxis[a].x,
+                controller_state.rAxis[a].y,
+                touched ? " (touched)" : "",
+                pressed ? " (pressed)" : ""
+              );
+            default: break;
+          }
+        }
+      }
+    }
+    gui::End();
   }
 
   current_world_to_head = affineInverse(current_device_to_world[vr::k_unTrackedDeviceIndex_Hmd]);
@@ -283,6 +345,8 @@ void app::get_poses() {
 void app::run() { 
   while (!vr.poll() && !window.poll()) {
     auto l = log("app");
+
+    timer::start_frame();
 
     l->info("gui frame");
     gui.new_frame();
@@ -322,20 +386,27 @@ void app::run() {
     l->info("present");
     quality.present();
 
-    l->info("desktop");
-    
-    if (desktop_display()) return;
+    l->info("desktop");    
+    desktop_display();
+
+    if (show_gui()) return;
+
+    glFlush();
+    window.swap();
   }
 }
 
-bool app::desktop_display() {
+void app::desktop_display() {
+  static elapsed_timer timer("desktop");
+  timer_block timed(timer);
+
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_MULTISAMPLE);
   auto flags = SDL_GetWindowFlags(window.sdl_window);
 
   if (flags & SDL_WINDOW_MINIMIZED) {
     glFlush();
-    return false; // drop gui on the floor?
+    return; // drop gui on the floor?
   }
 
   int w, h;
@@ -459,13 +530,6 @@ bool app::desktop_display() {
   }
 
   glViewport(0, 0, w, h);
-
-  if (show_gui()) return true;
-
-  glFlush();
-  window.swap();
-
-  return false;
 }
 
 bool app::show_gui(bool * open) {
@@ -510,6 +574,7 @@ bool app::show_gui(bool * open) {
       gui::MenuItem("Demo", nullptr, &show_demo_window);
       gui::MenuItem("Skybox", nullptr, &sky.show_skybox_window);
       gui::MenuItem("Render Models", nullptr, &show_rendermodel_window);
+      gui::MenuItem("Controllers", nullptr, &show_controllers_window);
       gui::EndMenu();
     }
 
@@ -529,7 +594,7 @@ bool app::show_gui(bool * open) {
   }
 
   if (show_rendermodel_window) {
-    gui::Begin("Rendermodels");
+    gui::Begin("Rendermodels", &show_rendermodel_window);
     gui::SliderFloat("roughness", &rendermodel_roughness, 0, 1);
     gui::SliderFloat("metallic",  &rendermodel_metallic, 0, 1);
     gui::SliderFloat("ambient",   &rendermodel_ambient, 0, 1);
