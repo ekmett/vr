@@ -28,7 +28,7 @@ vec4 blur(sampler2DArray tex, vec3 input_coord, vec2 tex_scale, float sigma, boo
 
   vec4 here = texture(tex, input_coord);
 
-  if (here.a >= 0.5) return vec4(color, here.a);
+  if (here.a >= 0.5) return vec4(clamp(color,0,65000), here.a);
   else return here;
 }
 

@@ -23,14 +23,13 @@ in vec3 coord;
 out vec4 outputColor;
 
 void main() {
-  vec3 dir = normalize(coord);
-  vec3 color = getSkyColor(dir);
-  if (enable_seascape != 0) {
-    vec3 p = heightMapTracing(origin,dir);
+  vec3 I = normalize(coord);
+  vec3 color = getSkyColor(I);
+  if (enable_seascape != 0 && I.y < 0) {
+    vec3 p = heightMapTracing(origin,I);
     vec3 dist = p - origin;
-    vec3 n = getNormal(p, dot(dist,dist) * 0.1 / viewport_w);
-    color = mix(color, getSeaColor(p,n,sun_dir,dir,dist), pow(smoothstep(0.00,-0.01*turbidity,dir.y),0.3));
-    // gl_FragDepth = length(dist); // use GL_ARB_conservative_depth for seascape?
+    vec3 N = getNormal(p, dot(dist,dist) * 0.1 / viewport_w);
+    color = mix(color, getSeaColor(p,N,sun_dir,I,dist), pow(smoothstep(0.00,-0.01*turbidity,I.y),0.3));
   }
   outputColor = vec4(color,1); 
 }

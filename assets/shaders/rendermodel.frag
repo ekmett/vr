@@ -20,7 +20,7 @@ void main() {
   vec3 V = normalize(V_ws);
   if (use_sun_area_light_approximation != 0) {
     vec3 R = reflect(V, N);
-    float apparent_angular_radius = sun_angular_radius * (1 + log(turbidity));
+    float apparent_angular_radius = sun_angular_radius; //  * (1 + log(turbidity));
     float c = cos(apparent_angular_radius);
     float s = sin(apparent_angular_radius);
     float LdR = dot(L,R);

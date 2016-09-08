@@ -10,6 +10,7 @@ vec2 iResolution = vec2(1024.,768.);
 
 // "Seascape" by Alexander Alekseev aka TDM - 2014
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+// lighting model replaced
 
 const int NUM_STEPS = 6;
 const float PI         = 3.14159;
@@ -105,7 +106,7 @@ vec3 getSeaColor(vec3 p, vec3 N, vec3 L, vec3 I, vec3 dist) {
   vec3 H = normalize(V + L);
   float NdV = clamp(dot(N, V), 0, 1);
   if (use_sun_area_light_approximation != 0) {
-    float apparent_angular_radius = sun_angular_radius * (1 + log(turbidity));
+    float apparent_angular_radius = sun_angular_radius;
     float c = cos(apparent_angular_radius);
     float s = sin(apparent_angular_radius);
     float LdR = dot(L, R);
@@ -113,10 +114,8 @@ vec3 getSeaColor(vec3 p, vec3 N, vec3 L, vec3 I, vec3 dist) {
   }
   float fresnel = 1.0 - NdV;
   fresnel = pow(fresnel,3.0) * 0.65;
-  // vec3 reflected = SEA_BASE * getSkyColor(R); // causing speckles
   vec3 reflected = SEA_BASE * eval_sh9_irradiance(R, sky_sh9) / 3.14159;
   vec3 refracted = SEA_BASE + diffuse(N, L, 80.0) * SEA_WATER_COLOR * 0.12;
-
   reflected += GGX_specular(0.01, N, H, V, L) * sun_irradiance / (turbidity*turbidity);
   vec3 color = mix(refracted,reflected,fresnel);
   float atten = max(1.0 - dot(dist,dist) * 0.001, 0.0);
