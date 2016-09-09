@@ -62,12 +62,17 @@ namespace framework {
         if (was_dragged)
           rotAmt -= last_drag_delta;
         rotAmt *= 0.01f;
-        mat3 rotation = mat3(eulerAngleYX(rotAmt.y, rotAmt.x));
+        mat3 rotation = mat3(eulerAngleXY(rotAmt.y, rotAmt.x));
         val = val * view3 * rotation * transpose(view3);
         was_dragged = true;
         last_drag_delta = drag_delta;
       } else
         was_dragged = false;
+
+      if (hemisphere) {
+        val.y = clamp(val.y, 0.f, 1.f);
+        val = normalize(val);
+      }
 
       vec2 canvas_start = ImGui::GetItemRectMin();
       vec2 canvas_size = ImGui::GetItemRectSize();
@@ -83,6 +88,7 @@ namespace framework {
 
       auto line = [&](vec3 a, vec3 b) {
         float z = (a.z + b.z)/2;
+        z = pow(z, 2.2);
         ImColor color(1.0f, 1.0f, 0.f, z);
         drawList->AddLine(vec2(a), vec2(b), color);
       };
@@ -104,7 +110,8 @@ namespace framework {
 
       auto rot = [&](float theta, float r = 1.0f) { return canvas(view3 * r * vec3(cos(theta), 0, -sin(theta))); };
 
-        line(rot(0, 0.9), rot(0, 1.1)); 
+      if (convert_to_view_space) {
+        line(rot(0, 0.9), rot(0, 1.1));
         float lo = .7f;
         float hi = .85f;
         float w = float(-M_PI / 30);
@@ -117,6 +124,8 @@ namespace framework {
           line(o, n);
           o = n;
         }
+      }
+      line(canvas(view3 * vec3(0, 1, 0)), canvas(view3 * vec3(0, 0, 0)));
 
       vec3 start_point = canvas(0.0f);
       vec3 end_point = canvas(draw_dir);

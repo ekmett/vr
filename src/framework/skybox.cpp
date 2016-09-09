@@ -8,15 +8,18 @@
 #include "framework/half.h"
 #include "framework/texturing.h"
 #include "framework/gl.h"
+#include "framework/sdl.h"
 #include "framework/std.h"
 #include "framework/gui.h"
 #include "framework/timer.h"
 #include "uniforms.h"
+#include <omp.h>
 #include <glm/detail/type_half.hpp>
 
 extern "C" {
 #include "ArHosekSkyModel.h"
 }
+
 
 // #define HACK_SEASCAPE
 
@@ -34,8 +37,7 @@ namespace framework {
   static const float cos_physical_sun_angular_radius = std::cos(physical_sun_angular_radius);
 
   sky::sky() // const vec3 & sun_direction, float sun_angular_radius, const vec3 & ground_albedo, float turbidity, app_uniforms & uniforms)
-    : rgb{}
-    , cubemap(0)
+    : cubemap(0)
     , program("skybox")
     , direction_editor("sun_dir", "sun dir", vec3(1,0,0),true) {
     direction_editor.hemisphere = true;
@@ -71,8 +73,13 @@ namespace framework {
 
   // sun size is in radians, not degrees
   void sky::update(app_uniforms & uniforms) {
-    bool just_released = false;
+    static int last_skybox_update_time = 0;
+    static int last_solar_radiance_update_time = 0;
+    static int last_update_time = 0;
 
+    // show gui
+
+    bool just_released = false;
     if (!initialized_direction_editor) {
       direction_editor.val = uniforms.sun_dir;
       initialized_direction_editor = true;
@@ -88,24 +95,33 @@ namespace framework {
       just_released = just_released || gui::IsItemJustReleased();
       gui::ColorEdit3("ground albedo", reinterpret_cast<float*>(&uniforms.ground_albedo));
       just_released = just_released || gui::IsItemJustReleased();
+      gui::text("Last overall update time: {}", last_update_time);
+      gui::text("Last solar radiance update time: {}", last_solar_radiance_update_time);
+      gui::text("Last skybox update time: {}", last_skybox_update_time);
+      gui::text("omp threads: {}/{}", omp_get_num_threads(), omp_get_max_threads());
       gui::End();
     }
     uniforms.sun_dir = normalize(direction_editor.val);
     uniforms.cos_sun_angular_radius = sin(uniforms.sun_angular_radius);
     uniforms.cos_sun_angular_radius = cos(uniforms.sun_angular_radius);
+    uniforms.sun_color = sun_irradiance / irradiance_integral(sun_angular_radius);
+
     uniforms.ground_albedo = saturate(uniforms.ground_albedo);
     uniforms.sun_angular_radius = std::max(uniforms.sun_angular_radius, 0.1_degrees);
     uniforms.turbidity = clamp(uniforms.turbidity, 1.f, 10.f);
     uniforms.sky_cubemap = cubemap_handle;
 
+    // check if we need to update
     if (initialized) {
       if (!just_released) return;
-      if (uniforms.sun_dir == sun_dir &&
-        uniforms.sun_angular_radius == sun_angular_radius &&
-        uniforms.ground_albedo == ground_albedo &&
-        uniforms.turbidity == turbidity) return;      
+      if (uniforms.sun_dir == sun_dir &&        
+          uniforms.ground_albedo == ground_albedo &&
+          uniforms.turbidity == turbidity) return;      
     }
     
+    int start = SDL_GetTicks(); 
+
+    // modify cache parameters, we're doing this
     direction_editor.val = sun_dir = uniforms.sun_dir;
     sun_angular_radius = uniforms.sun_angular_radius;
     turbidity = uniforms.turbidity;
@@ -114,111 +130,144 @@ namespace framework {
     float theta_sun = angle_between(sun_dir, vec3(0, 1, 0));
     elevation = M_PI_2 - theta_sun;
 
-    for (int i = 0;i < 3;++i)
-      rgb[i] = arhosek_rgb_skymodelstate_alloc_init(turbidity, ground_albedo[i], elevation);    
-
-    sampled_spectrum ground_albedo_spectrum = sampled_spectrum::from_rgb(ground_albedo, spectrum_type::reflectance);
-
-    ArHosekSkyModelState * sky_states[spectral_samples];
-    for (auto i = 0; i < spectral_samples; ++i)
-      sky_states[i] = arhosekskymodelstate_alloc_init(theta_sun, turbidity, ground_albedo_spectrum[i]);
-
-    vec3 sun_dir_x = perpendicular(sun_dir);
-    mat3 sun_orientation = mat3(sun_dir_x, cross(sun_dir, sun_dir_x), sun_dir);
-
-    const size_t num_samples = 8;
-    for (size_t x = 0;x < num_samples; ++x)
-      for (size_t y = 0;y < num_samples; ++y) {
-        vec3 sample_dir = sun_orientation * sample_direction_cone(
-          (x + 0.5f) / num_samples,
-          (y + 0.5f) / num_samples,
-          cos_physical_sun_angular_radius
-        );
-        float sample_theta_sun = angle_between(sample_dir, vec3(0, 1, 0));
-        float sample_gamma = angle_between(sample_dir, sun_dir);
-
-        sampled_spectrum solar_radiance;
-
-        for (size_t i = 0; i < spectral_samples; ++i)
-          solar_radiance[i] = float(arhosekskymodel_solar_radiance(
-            sky_states[i], 
-            sample_theta_sun, 
-            sample_gamma, 
-            lerp(float(sampled_lambda_start), float(sampled_lambda_end), i / float(spectral_samples))
-          ));
-        
-        vec3 sample_radiance = solar_radiance.to_rgb();
-
-        sun_irradiance += sample_radiance * saturate<float, highp>(dot(sample_dir, sun_dir));
-      }
-
-    sun_irradiance *= (1.0f / num_samples) * (1.0f / num_samples) * (1.0f / sample_direction_cone_PDF(cos_physical_sun_angular_radius));
-
-    // standard luminous efficiency 683 lm/W, coordinate system scaling & scaling to fit into the dynamic range of a 16 bit float
-    sun_irradiance *= 683.0f * 100.0f * fp16_scale;
-
-    uniforms.sun_irradiance = sun_irradiance;
-
-    for (auto i = 0; i < spectral_samples; ++i) {
-      arhosekskymodelstate_free(sky_states[i]);
-      sky_states[i] = nullptr;
-    }
-    
-    uniforms.sun_color = sun_irradiance / irradiance_integral(sun_angular_radius);
-
-    sh = sh9_t<vec3>();
-    float weights = 0.0f;
-
     alloca_array<tvec4<half>> cubemap_data(6 * N * N);
     alloca_array<tvec4<uint8_t>> tonemapped_cubemap_data(6 * N*N);
-    for (int s = 0; s < 6; ++s) {
-      for (int y = 0; y < N; ++y) {
-        for (int x = 0; x < N; ++x) {
-          vec3 dir = xys_to_direction(x, y, s, N, N);
-          vec3 radiance = sample(dir);
-          int i = s*N*N + y*N + x;
-          cubemap_data[i] = tvec4<half>{
-            half(radiance.r),
-            half(radiance.g),
-            half(radiance.b),
-            1.0_half
-          };
 
-          bool flip[] = { false, false, true, true, false, false }; // openvr uses a different cubemap face order, apparently, with different windings
+    {
+      // compute skybox and spherical harmonics ~2s
+      {
+        int sky_start = SDL_GetTicks();
+        float weights = 0.0f;
 
-          if (flip[s]) i = (s + 1) * N*N - 1 - y*N - x;
-            
-          tonemapped_cubemap_data[i] = tvec4<uint8_t>{
-            uint8_t(clamp<float>(128.0 * radiance.r / (radiance.r + 1),0.f, 255.f)),
-            uint8_t(clamp<float>(128.0 * radiance.g / (radiance.g + 1),0.f, 255.f)),
-            uint8_t(clamp<float>(128.0 * radiance.b / (radiance.b + 1),0.f, 255.f)),
-            255
-          };
+        ArHosekSkyModelState * rgb[3];
+        // create an rgb sky model for sampling
+        for (int i = 0;i < 3;++i)
+          rgb[i] = arhosek_rgb_skymodelstate_alloc_init(turbidity, ground_albedo[i], elevation);
 
-          float u = (x + 0.5f) / N;
-          float v = (y + 0.5f) / N;
+        sh9_t<vec3> sh_array[N]{};
 
-          // map onto -1 to 1
-          u = u * 2.0f - 1.0f;
-          v = v * 2.0f - 1.0f;
+        #pragma omp parallel for reduction(+:weights)
+        for (int y = 0; y < N; ++y) {
+          for (int s = 0; s < 6; ++s) {
+            for (int x = 0; x < N; ++x) {
+              vec3 dir = xys_to_direction(x, y, s, N, N);
+              float gamma = angle_between(dir, sun_dir);
+              float theta = angle_between(dir, vec3(0, 1, 0));
+              vec3 radiance {
+                arhosek_tristim_skymodel_radiance(rgb[0], theta, gamma, 0),
+                arhosek_tristim_skymodel_radiance(rgb[1], theta, gamma, 1),
+                arhosek_tristim_skymodel_radiance(rgb[2], theta, gamma, 2),
+              };
+              // multiply by luminous efficiency and scale down for fp16 samples
+              radiance *= 683.0f * fp16_scale;
 
-          // account for distribution
-          const float temp = 1.0f + u*u + v*v;
-          const float weight = 4.0f / (sqrt(temp) * temp);
+              int i = s*N*N + y*N + x;
 
-          sh += project_onto_sh9(dir, radiance) * weight;
-          weights += weight;
+              cubemap_data[i] = tvec4<half>{
+                half(radiance.r),
+                half(radiance.g),
+                half(radiance.b),
+                1.0_half
+              };
+
+              bool flip[] = { false, false, true, true, false, false }; // openvr uses a different cubemap face order, apparently, with different windings
+
+              if (flip[s]) i = (s + 1) * N*N - 1 - y*N - x;
+
+              tonemapped_cubemap_data[i] = tvec4<uint8_t>{
+                uint8_t(clamp<float>(128.0 * radiance.r / (radiance.r + 1),0.f, 255.f)),
+                uint8_t(clamp<float>(128.0 * radiance.g / (radiance.g + 1),0.f, 255.f)),
+                uint8_t(clamp<float>(128.0 * radiance.b / (radiance.b + 1),0.f, 255.f)),
+                255
+              };
+
+              float u = (x + 0.5f) / N;
+              float v = (y + 0.5f) / N;
+
+              // map onto -1 to 1
+              u = u * 2.0f - 1.0f;
+              v = v * 2.0f - 1.0f;
+
+              // account for distribution of texels
+              const float temp = 1.0f + u*u + v*v;
+              const float weight = 4.0f / (sqrt(temp) * temp);
+
+              sh_array[y] += project_onto_sh9(dir, radiance) * weight;
+              weights += weight;
+            }
+          }
         }
+
+        sh9_t<vec3> sh{};
+        for (int i = 0;i < N;++i) sh += sh_array[i];
+        sh *= 4.0f * float(M_PI) / weights;
+        for (int i = 0;i < 9;++i)
+          uniforms.sky_sh9[i] = vec4(sh[i].r, sh[i].g, sh[i].b, 0);
+
+        last_skybox_update_time = SDL_GetTicks() - sky_start;
       }
+      // compute solar radiance ~15ms
+      {
+        int solar_start = SDL_GetTicks();
+        sampled_spectrum ground_albedo_spectrum = sampled_spectrum::from_rgb(ground_albedo, spectrum_type::reflectance);
+
+        // initialize sky_states
+        ArHosekSkyModelState * sky_states[spectral_samples];
+        //#pragma omp parallel for
+        for (auto i = 0; i < spectral_samples; ++i)
+          sky_states[i] = arhosekskymodelstate_alloc_init(theta_sun, turbidity, ground_albedo_spectrum[i]);
+
+
+        // compute solar radiance
+        vec3 sun_dir_x = perpendicular(sun_dir);
+        mat3 sun_orientation = mat3(sun_dir_x, cross(sun_dir, sun_dir_x), sun_dir);
+        const size_t num_samples = 8;
+        // #pragma omp parallel for collapse(2) reduction(+:sun_irradiance)
+        for (size_t x = 0;x < num_samples; ++x)
+          for (size_t y = 0;y < num_samples; ++y) {
+            vec3 sample_dir = sun_orientation * sample_direction_cone(
+              (x + 0.5f) / num_samples,
+              (y + 0.5f) / num_samples,
+              cos_physical_sun_angular_radius
+            );
+            float sample_theta_sun = angle_between(sample_dir, vec3(0, 1, 0));
+            float sample_gamma = angle_between(sample_dir, sun_dir);
+
+            sampled_spectrum solar_radiance;
+            for (size_t i = 0; i < spectral_samples; ++i)
+              solar_radiance[i] = float(arhosekskymodel_solar_radiance(
+                sky_states[i],
+                sample_theta_sun,
+                sample_gamma,
+                lerp(float(sampled_lambda_start), float(sampled_lambda_end), i / float(spectral_samples))
+              ));
+
+            sun_irradiance += solar_radiance.to_rgb() * saturate<float, highp>(dot(sample_dir, sun_dir));
+          }
+
+        sun_irradiance *= (1.0f / num_samples) * (1.0f / num_samples) * (1.0f / sample_direction_cone_PDF(cos_physical_sun_angular_radius));
+
+        // standard luminous efficiency 683 lm/W, coordinate system scaling & scaling to fit into the dynamic range of a 16 bit float
+        sun_irradiance *= 683.0f * 100.0f * fp16_scale;
+        uniforms.sun_irradiance = sun_irradiance;
+        uniforms.sun_color = sun_irradiance / irradiance_integral(sun_angular_radius);
+
+        // free sky states
+        // #pragma omp parallel for
+        for (auto i = 0; i < spectral_samples; ++i) {
+          arhosekskymodelstate_free(sky_states[i]);
+          sky_states[i] = nullptr;
+        }
+
+        last_solar_radiance_update_time = SDL_GetTicks() - solar_start;
+      }
+
+
+
+
     }
-    sh *= 4.0f * float(M_PI) / weights;
 
-    for (int i = 0;i < 9;++i) {
-      uniforms.sky_sh9[i] = vec4(sh[i].r, sh[i].g, sh[i].b, 0);
-    }
-
-    log("sky")->info("spherical harmonics: {}", sh);
-
+    // load cubemap into opengl
     glTextureSubImage3D(cubemap, 0, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
     glGenerateTextureMipmap(cubemap);
 
@@ -236,23 +285,11 @@ namespace framework {
     }
     vr::VRCompositor()->SetSkyboxOverride(vr_skybox, 6);
 
+    last_update_time = SDL_GetTicks() - start;
     initialized = true;
   }
 
-  vec3 sky::sample(const vec3 & dir) const {
-    float gamma = angle_between(dir, sun_dir);
-    float theta = angle_between(dir, vec3(0, 1, 0));
-    vec3 radiance{
-      arhosek_tristim_skymodel_radiance(rgb[0], theta, gamma, 0),
-      arhosek_tristim_skymodel_radiance(rgb[1], theta, gamma, 1),
-      arhosek_tristim_skymodel_radiance(rgb[2], theta, gamma, 2),
-    };
-    // multiply by luminous efficiency and scale down for fp16 samples
-    return radiance * 683.0f * fp16_scale;
-  }
-
   sky::~sky() {
-    for (auto m : rgb) arhosekskymodelstate_free(m);
     glMakeTextureHandleNonResidentARB(cubemap_handle);
     glDeleteVertexArrays(1, &vao);
     glDeleteTextures(1, &cubemap);
@@ -262,16 +299,13 @@ namespace framework {
   void sky::render() const {
     static elapsed_timer timer("sky");
     timer_block timed(timer);
-    //glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_DEPTH_CLAMP);
-    //glDisable(GL_MULTISAMPLE);
     glUseProgram(program);
     glBindVertexArray(vao);
     glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 2);
     glBindVertexArray(0);
     glUseProgram(0);
-    //glEnable(GL_MULTISAMPLE);
   }
 }

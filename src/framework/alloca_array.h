@@ -80,6 +80,6 @@ namespace framework {
     }
 
     T * elems;
-    int N;
+    size_t N;
   };
 }

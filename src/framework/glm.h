@@ -63,10 +63,16 @@ namespace framework {
   }
 
   template <typename T> T radians_to_degrees(T radians) {
+#pragma warning( push )
+#pragma warning( disable : 4305 )
     return radians * T(180.0 / M_PI);
+#pragma warning( pop )
   }
 
   template <typename T> T degrees_to_radians(T degrees) {
+#pragma warning( push )
+#pragma warning( disable : 4305 )
     return degrees * T(M_PI / 180.0);
+#pragma warning( pop )
   }
 }

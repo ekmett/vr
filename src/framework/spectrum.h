@@ -71,18 +71,22 @@ namespace framework {
     }
 
     inline spectrum & operator+=(const spectrum & that) {
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) _Elems[i] += that[i];
       return *this;
     }
     inline spectrum & operator-=(const spectrum & that) {
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) _Elems[i] -= that[i];
       return *this;
     }
     inline spectrum & operator*=(const spectrum & that) {
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) _Elems[i] *= that[i];
       return *this;
     }
     inline spectrum & operator/=(const spectrum & that) {
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) _Elems[i] /= that[i];
       return *this;
     }
@@ -99,12 +103,14 @@ namespace framework {
 
     inline spectrum operator+(const spectrum & that) const {
       spectrum result;
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] + that[i];
       return result;
     }
 
     inline spectrum operator-(const spectrum & that) const {
       spectrum result;
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] - that[i];
       return result;
     }
@@ -112,6 +118,7 @@ namespace framework {
     // pointwise
     inline spectrum operator*(const spectrum & that) const {
       spectrum result;
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] * that[i];
       return result;
     }
@@ -119,6 +126,7 @@ namespace framework {
     // pointwise
     inline spectrum operator/(const spectrum & that) const {
       spectrum result;
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] / that[i];
       return result;
     }
@@ -128,23 +136,27 @@ namespace framework {
     }
 
     inline spectrum operator*=(float scale) {
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) _Elems[i] *= scale;
       return *this;
     }
 
     inline spectrum operator*(float scale) const {
       spectrum result;
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] * scale;
       return result;
     }
 
     inline spectrum operator/=(float scale) noexcept {
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) _Elems[i] /= scale;
       return *this;
     }
 
     inline spectrum operator/(float scale) const noexcept {
       spectrum result;
+//#pragma omp simd
       for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] / scale;
       return result;
     }
@@ -164,6 +176,7 @@ namespace framework {
     // this generalization lets us use scalar-vector products for the members.
     float dot(const spectrum & that) const noexcept {
       float result = 0;
+//#pragma omp simd reduction(+:result)
       for (size_t i = 0; i < N; ++i) result += _Elems[i] * that._Elems[i];
       return result;
     }
@@ -179,6 +192,7 @@ namespace framework {
 
     spectrum clamp(float low = 0, float high = std::numeric_limits<float>::infinity()) {
       spectrum result;
+//#pragma omp simd
       for (size_t i = 0;i < N; ++i) result[i] = glm::clamp(result[i], low, high);
       return result;
     }
@@ -206,12 +220,11 @@ namespace framework {
     static sampled_spectrum from_sorted_samples(const float * lambda, const float * v, int n) {
       sampled_spectrum result;
       auto start = float(sampled_lambda_start), end = float(sampled_lambda_end);
-
-      float lambda0 = start;
+#pragma omp parallel for
       for (int i = 0; i < spectral_samples; ++i) {
+        float lambda0 = lerp(start, end, float(i));
         float lambda1 = lerp(start, end, float(i + 1));
         result[i] = average_spectrum_samples(lambda, v, n, lambda0, lambda1);
-        lambda0 = lambda1;
       }
       return result;
     }

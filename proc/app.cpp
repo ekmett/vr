@@ -18,9 +18,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "uniforms.h"
 #include "controllers.h"
+#include <omp.h>
 
 using namespace framework;
 using namespace filesystem;
+
+static const int omp_threads = 6;
 
 // used reversed [1..0] floating point z rather than the classic [-1..1] mapping
 //#define USE_REVERSED_Z
@@ -121,15 +124,15 @@ app::app(path assets)
   {
   nearClip = 0.1f;
   farClip = 50.f;
-  bloom_exposure = -8.125;
-  exposure = -14;
-  blur_sigma = 2.5;
-  bloom_magnitude = 1.000;
+  bloom_exposure = -8.125f;
+  exposure = -14.f;
+  blur_sigma = 2.5f;
+  bloom_magnitude = 1.000f;
   quality.maximum_quality_level = 4;
 
-  sun_dir = vec3(0.228, 0.842, 0.912);
+  sun_dir = vec3(0.228f, 0.842f, 0.912f);
   sun_angular_radius = 2.0_degrees;
-  ground_albedo = vec3(0.25, 0.25, 0.25); 
+  ground_albedo = vec3(0.25f, 0.25f, 0.25f); 
   turbidity = 3.f;
   use_sun_area_light_approximation = true;
 
@@ -138,9 +141,9 @@ app::app(path assets)
   enable_seascape = true;
   use_sun_area_light_approximation = true;
 
-  rendermodel_metallic = 0.1;
-  rendermodel_roughness = 0.05;
-  rendermodel_ambient = 0.8; // bug open scene
+  rendermodel_metallic = 0.1f;
+  rendermodel_roughness = 0.05f;
+  rendermodel_ambient = 0.8f; // bug open scene
   rendermodel_albedo = 1;
 
   glCreateVertexArrays(1, &dummy_vao); // we'll load this as needed
@@ -626,24 +629,29 @@ bool app::show_gui(bool * open) {
 
 int SDL_main(int argc, char ** argv) {
    spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
+   shared_ptr<spdlog::logger> ignore_logs[]{
+     spdlog::create<spdlog::sinks::null_sink_mt>("vr"),
+     //  spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
+     spdlog::create<spdlog::sinks::null_sink_mt>("al"),
+     //spdlog::create<spdlog::sinks::null_sink_mt>("main"),
+     // spdlog::create<spdlog::sinks::null_sink_mt>("app"),
+     spdlog::create<spdlog::sinks::null_sink_mt>("post"),
+     spdlog::create<spdlog::sinks::null_sink_mt>("quality"),
+     spdlog::create<spdlog::sinks::null_sink_mt>("distortion"),
+     spdlog::create<spdlog::sinks::null_sink_mt>("rendermodel"),
+   };
 
-  shared_ptr<spdlog::logger> ignore_logs[] {
-    spdlog::create<spdlog::sinks::null_sink_mt>("vr"),
-  //  spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("al"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("main"),
-   // spdlog::create<spdlog::sinks::null_sink_mt>("app"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("post"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("quality"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("distortion"),
-    spdlog::create<spdlog::sinks::null_sink_mt>("rendermodel"),
 
-  };
+
+
 #ifdef _WIN32
   SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96
 #endif
 
   log("main")->info("pid: {}", GetCurrentProcessId());
+  omp_set_num_threads(omp_threads);
+  omp_set_dynamic(6);
+  log("main")->info("openmp threads {}", omp_get_num_threads());
 
   path exe = executable_path();
   path asset_dir = path(exe.parent_path().parent_path().parent_path()).append("assets");

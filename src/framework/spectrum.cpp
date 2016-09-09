@@ -35,13 +35,13 @@ namespace framework {
     if (lambdaEnd > lambda[n - 1]) sum += vals[n - 1] * (lambdaEnd - lambda[n - 1]);
     int i = 0;
     while (lambdaStart > lambda[i + 1]) ++i; // linear scan is fine for caches.
-    auto interp = [lambda, vals](float w, int i) {
-      return lerp(vals[i], vals[i + 1], (w - lambda[i]) / (lambda[i + 1] - lambda[i]));
-    };
-    for (;i + 1 < n && lambdaEnd >= lambda[i]; ++i) {
+    for (int i = 0;i + 1 < n && lambdaEnd >= lambda[i]; ++i) {
       float segLambdaStart = std::max(lambdaStart, lambda[i]);
       float segLambdaEnd = std::max(lambdaEnd, lambda[i + 1]);
-      sum += 0.5f * (interp(segLambdaStart, i) + interp(segLambdaEnd, i)) * (segLambdaEnd - segLambdaStart);
+      sum += 0.5f * (
+        lerp(vals[i], vals[i + 1], (segLambdaStart - lambda[i]) / (lambda[i + 1] - lambda[i])) + 
+        lerp(vals[i], vals[i + 1], (segLambdaEnd - lambda[i]) / (lambda[i + 1] - lambda[i]))
+      ) * (segLambdaEnd - segLambdaStart);
     }
     return sum / (lambdaEnd - lambdaStart);
   }
