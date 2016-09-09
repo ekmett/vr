@@ -1,100 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\fmt.h">
-      <Filter>logging</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\spdlog.h">
-      <Filter>logging</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\error.h">
-      <Filter>logging</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl.h">
-      <Filter>sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl_window.h">
-      <Filter>sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\sdl_system.h">
-      <Filter>sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\noncopyable.h">
-      <Filter>util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\apply.h">
-      <Filter>util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\std.h">
-      <Filter>util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\utf8.h">
-      <Filter>util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_system.h">
-      <Filter>openvr</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\worker.h">
-      <Filter>concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\serialization.h">
-      <Filter>work-in-progress</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\epoch.h">
-      <Filter>concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr.h">
-      <Filter>openvr</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\oculus.h">
-      <Filter>oculus</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\cds.h">
-      <Filter>cds</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\opt.h">
-      <Filter>cds</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\circular_array.h">
-      <Filter>concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.h">
-      <Filter>concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\cache_isolated.h">
-      <Filter>concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\chase_lev_deque.h">
-      <Filter>concurrency</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\alloca_array.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\composition.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\filesystem.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glm.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\grammar.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\half.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\openal.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\sampling.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\signal.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\skybox.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\spectrum.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\spherical_harmonics.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\stdafx.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\texturing.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\shader.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\gl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\glew.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\quality.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\distortion.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\stereo_fbo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\post.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\rendermodel.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\timer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)framework\adsr.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui_direction.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stb.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\stb\stb_image.h" />
@@ -129,39 +45,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spdlog.cpp">
       <Filter>logging</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_window.cpp">
-      <Filter>sdl</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\sdl_system.cpp">
-      <Filter>sdl</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr_system.cpp">
-      <Filter>openvr</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\worker.cpp">
-      <Filter>concurrency</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\epoch.cpp">
-      <Filter>concurrency</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\openvr.cpp">
-      <Filter>openvr</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.cpp">
-      <Filter>concurrency</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\filesystem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\gui.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\openal.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\skybox.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spectrum.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\shader.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\gl.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\quality.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\distortion.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\rendermodel.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)framework\timer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stb.cpp" />
   </ItemGroup>
   <ItemGroup>

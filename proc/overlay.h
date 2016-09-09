@@ -1,7 +1,7 @@
 #pragma once
 
-#include "framework/std.h"
-#include "framework/openvr.h"
+#include "std.h"
+#include "openvr.h"
 
 using namespace framework;
 

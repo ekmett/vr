@@ -1,7 +1,7 @@
 #pragma once
 
-#include "framework/glm.h"
-#include "framework/shader.h"
+#include "glm.h"
+#include "shader.h"
 #include "uniforms.h"
 
 struct controllers {

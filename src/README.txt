@@ -1,1 +1,0 @@
-shared source for direct linking or shared library construction

@@ -16,30 +16,16 @@
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)shaders\lens_flare.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\brdf.glsl" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\controllers.frag" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\controllers.vert" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\distortion_warp.frag" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\distortion_warp.vert" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\distortion_mask.frag" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\distortion_mask.vert" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\gui.frag" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\gui.vert" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\oct.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\post_blur.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\post_blur_h.frag" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\post_downsample.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\post_pass.vert" />
     <None Include="$(MSBuildThisFileDirectory)shaders\post_tonemap.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\rendermodel.frag" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\rendermodel.vert" />
     <None Include="$(MSBuildThisFileDirectory)shaders\seascape.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\skybox.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\skybox.vert" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\cotangent.glsl" />
-    <None Include="$(MSBuildThisFileDirectory)shaders\spherical_harmonics.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)shaders\post_blur_v.frag" />
     <ClInclude Include="$(MSBuildThisFileDirectory)shaders\uniforms.h" />
   </ItemGroup>
 </Project>

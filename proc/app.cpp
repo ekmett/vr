@@ -2,22 +2,23 @@
 #include <random>
 #include <functional>
 #include <algorithm>
-#include "framework/distortion.h"
-#include "framework/gl.h"
-#include "framework/gui.h"
-#include "framework/filesystem.h"
-#include "framework/signal.h"
-#include "framework/spectrum.h"
-#include "framework/skybox.h"
-#include "framework/openal.h"
-#include "framework/post.h"
-#include "framework/quality.h"
-#include "framework/rendermodel.h"
-#include "framework/timer.h"
-#include "framework/worker.h"
+#include "distortion.h"
+#include "gl.h"
+#include "gui.h"
+#include "filesystem.h"
+#include "signal.h"
+#include "spectrum.h"
+#include "skybox.h"
+#include "openal.h"
+#include "post.h"
+#include "quality.h"
+#include "rendermodel.h"
+#include "timer.h"
+#include "worker.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "uniforms.h"
 #include "controllers.h"
+#include "cds.h"
 #include <omp.h>
 
 using namespace framework;
@@ -126,7 +127,7 @@ app::app(path assets)
   farClip = 50.f;
   bloom_exposure = -6.f;
   exposure = -14.f;
-  blur_sigma = 1.5f;
+  blur_sigma = 2.5f;
   bloom_magnitude = 1.000f;
   quality.maximum_quality_level = 4;
 
@@ -641,25 +642,22 @@ int SDL_main(int argc, char ** argv) {
      spdlog::create<spdlog::sinks::null_sink_mt>("rendermodel"),
    };
 
-
-
-
 #ifdef _WIN32
   SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96
 #endif
 
   log("main")->info("pid: {}", GetCurrentProcessId());
-  omp_set_num_threads(omp_threads);
-  omp_set_dynamic(6);
-  log("main")->info("openmp threads {}", omp_get_num_threads());
 
-  path exe = executable_path();
-  path asset_dir = path(exe.parent_path().parent_path().parent_path()).append("assets");
+  //omp_set_dynamic(6);
+
+  //path exe = executable_path();
+  //path asset_dir = path(exe.parent_path().parent_path().parent_path()).append("proc\\assets");
+  path asset_dir = R"(d:\vr\proc)";
   _wchdir(asset_dir.native().c_str());
 
   cds_main_thread_attachment<> main_thread; // Allow use of concurrent data structures in the main threads
 
-  app main(asset_dir);
+  app main("");
   main.run();
 
   spdlog::details::registry::instance().apply_all([](shared_ptr<logger> logger) { logger->flush(); }); // make sure the logs are flushed before shutting down

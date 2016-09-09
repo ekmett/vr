@@ -31,7 +31,6 @@
     <ClInclude Include="..\third-party\imgui\stb_textedit.h" />
     <ClInclude Include="..\third-party\imgui\stb_truetype.h" />
     <ClInclude Include="..\third-party\stb\stb_image.h" />
-    <ClInclude Include="framework\config.h" />
     <ClInclude Include="imgui_table.h" />
   </ItemGroup>
   <ItemGroup>

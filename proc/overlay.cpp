@@ -1,4 +1,4 @@
-#include "framework/error.h"
+#include "error.h"
 #include "overlay.h"
 
 using namespace vr;

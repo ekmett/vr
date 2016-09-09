@@ -1,7 +1,7 @@
-#include "framework/error.h"
-#include "framework/gl.h"
-#include "framework/glm.h"
-#include "framework/openvr.h"
+#include "error.h"
+#include "gl.h"
+#include "glm.h"
+#include "openvr.h"
 #include "controllers.h"
 
 using namespace framework;
