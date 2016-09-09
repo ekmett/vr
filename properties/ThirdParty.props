@@ -13,6 +13,7 @@
     <BOOST_PATH>$(BoostDir)</BOOST_PATH>
     <OculusSDKDir>$(SolutionDir)third-party\ovr_sdk_win_1.6.0_public\OculusSDK\</OculusSDKDir>
     <BOOST_ROOT>$(BoostDir)</BOOST_ROOT>
+    <STBDir>$(SolutionDir)third-party\stb\</STBDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
@@ -20,7 +21,7 @@
       <AdditionalDependencies>openvr_api.lib;glew32.lib;SDL2.lib;glu32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(OpenALSoftDir)include\;$(OpenVRDir)headers\;$(GLEWDir)include\;$(SDL2Dir)include\;$(SPDLogDir)include\;$(GLMDir);$(BoostDir);$(CDSDir);$(OculusSDKDir)LibOVR\;$(OculusSDKDir)LibOVR\Src\Util\;$(OculusSDKDir)LibOVR\Include\;$(SolutionDir)third-party\HosekWilkie_SkylightModel_C_Source.1.4a;$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(STBDir);$(OpenALSoftDir)include\;$(OpenVRDir)headers\;$(GLEWDir)include\;$(SDL2Dir)include\;$(SPDLogDir)include\;$(GLMDir);$(BoostDir);$(CDSDir);$(OculusSDKDir)LibOVR\;$(OculusSDKDir)LibOVR\Src\Util\;$(OculusSDKDir)LibOVR\Include\;$(SolutionDir)third-party\HosekWilkie_SkylightModel_C_Source.1.4a;$(SolutionDir)third-party\imgui;$(SolutionDir)third-party\IconFontCppHeaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -66,6 +67,10 @@
     </BuildMacro>
     <BuildMacro Include="BOOST_ROOT">
       <Value>$(BOOST_ROOT)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="STBDir">
+      <Value>$(STBDir)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

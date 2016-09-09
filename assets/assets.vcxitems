@@ -14,6 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)shaders\lens_flare.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\brdf.glsl" />
     <None Include="$(MSBuildThisFileDirectory)shaders\controllers.frag" />
     <None Include="$(MSBuildThisFileDirectory)shaders\controllers.vert" />

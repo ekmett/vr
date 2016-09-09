@@ -67,6 +67,7 @@ namespace framework {
       glProgramUniformHandleui64ARB(tone.programId, 0, presolve.texture_handle);
       glProgramUniformHandleui64ARB(tone.programId, 1, fbo[0].texture_handle);
       glUniformBlockBinding(tone.programId, 0, 0);
+
     }
 
     ~post() {

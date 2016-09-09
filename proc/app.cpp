@@ -124,16 +124,16 @@ app::app(path assets)
   {
   nearClip = 0.1f;
   farClip = 50.f;
-  bloom_exposure = -8.125f;
+  bloom_exposure = -6.f;
   exposure = -14.f;
-  blur_sigma = 2.5f;
+  blur_sigma = 1.5f;
   bloom_magnitude = 1.000f;
   quality.maximum_quality_level = 4;
 
-  sun_dir = vec3(0.228f, 0.842f, 0.912f);
-  sun_angular_radius = 2.0_degrees;
-  ground_albedo = vec3(0.25f, 0.25f, 0.25f); 
-  turbidity = 3.f;
+  sun_dir = vec3(0.228f, 0.242f, 0.912f);
+  sun_angular_radius = physical_sun_angular_radius * 2;
+  ground_albedo = vec3(0.25f, 0.4f, 0.4f); 
+  turbidity = 5.f;
   use_sun_area_light_approximation = true;
 
   distorted.set_resolve_handle(quality.resolve_target.texture_handle);

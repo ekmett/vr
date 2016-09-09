@@ -96,6 +96,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\timer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\adsr.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\gui_direction.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\stb.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\stb\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cds">
@@ -160,6 +162,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\distortion.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\rendermodel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\timer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\stb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\third-party\glm\util\glm.natvis" />

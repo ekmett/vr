@@ -12,7 +12,7 @@ namespace framework {
   static const float fp16_scale = 0.0009765625f; // 2^-10 scaling factor to allow storing physical lights in fp16 floats
 
   struct sky {
-    static const int N = 64; // dimension for cubemap sides
+    static const int N = 32; // dimension for cubemap sides
 
     sky();
     ~sky();

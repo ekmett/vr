@@ -16,6 +16,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\third-party\stb\stb_image.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\adsr.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\aligned_allocator.h" />
@@ -55,6 +56,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\openvr_system.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\spectrum.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\spherical_harmonics.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)framework\stb.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\std.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\stdafx.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)framework\texturing.h" />
@@ -83,6 +85,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\skybox.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spdlog.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\spectrum.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)framework\stb.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)framework\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

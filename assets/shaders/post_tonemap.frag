@@ -3,6 +3,7 @@
 #extension GL_ARB_shading_language_include : require
 
 #include "uniforms.h"
+#include "lens_flare.glsl"
 
 // #include "post.h"
 
@@ -28,7 +29,11 @@ void main() {
 
   vec3 color = presolve_color.rgb;
   color += bloom_color * bloom_magnitude * exp2(bloom_exposure);
-  color *= exp2(exposure) / FP16_SCALE;                    
+
+  color += 0.001 * flare(bloom, coord.xy,8, flare_orange, 0.2f, 0.001f, coord.z, 0.1f);
+  color += 0.001 * flare(bloom, coord.xy,8, flare_purple, 0.22f, 0.015f, coord.z, 0.1f);
+
+  color *= exp2(exposure) / FP16_SCALE;
 
   color = filmic(color);
 

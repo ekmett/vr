@@ -54,7 +54,7 @@ namespace framework {
       glTextureParameteri(cubemap, GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_TRUE);
     else
       log("sky")->warn("GL_ARB_seamless_cubemap_per_texture unsupported");
-    glTextureStorage2D(cubemap, 7, GL_RGBA16F, N, N);
+    glTextureStorage2D(cubemap, clamp(GLsizei(log2(float(N))),1,10), GL_RGBA16F, N, N);
 
     cubemap_handle = glGetTextureHandleARB(cubemap);
     glMakeTextureHandleResidentARB(cubemap_handle);
@@ -76,9 +76,9 @@ namespace framework {
     static int last_skybox_update_time = 0;
     static int last_solar_radiance_update_time = 0;
     static int last_update_time = 0;
+    static int time_accum = 0;
 
     // show gui
-
     bool just_released = false;
     if (!initialized_direction_editor) {
       direction_editor.val = uniforms.sun_dir;
@@ -95,10 +95,9 @@ namespace framework {
       just_released = just_released || gui::IsItemJustReleased();
       gui::ColorEdit3("ground albedo", reinterpret_cast<float*>(&uniforms.ground_albedo));
       just_released = just_released || gui::IsItemJustReleased();
-      gui::text("Last overall update time: {}", last_update_time);
-      gui::text("Last solar radiance update time: {}", last_solar_radiance_update_time);
-      gui::text("Last skybox update time: {}", last_skybox_update_time);
-      gui::text("omp threads: {}/{}", omp_get_num_threads(), omp_get_max_threads());
+      gui::text("Last overall update time: {}ms", last_update_time);
+      gui::text("Last solar radiance update time: {}ms", last_solar_radiance_update_time);
+      gui::text("Last skybox update time: {}ms", last_skybox_update_time);
       gui::End();
     }
     uniforms.sun_dir = normalize(direction_editor.val);
@@ -111,14 +110,25 @@ namespace framework {
     uniforms.turbidity = clamp(uniforms.turbidity, 1.f, 10.f);
     uniforms.sky_cubemap = cubemap_handle;
 
-    // check if we need to update
-    if (initialized) {
-      if (!just_released) return;
-      if (uniforms.sun_dir == sun_dir &&        
-          uniforms.ground_albedo == ground_albedo &&
-          uniforms.turbidity == turbidity) return;      
-    }
+    static const float epsilon = 1e-6;
     
+    // check if we need to update
+    if (initialized) { // always run if not initialized
+
+      // skip running if the parameters are close to the current
+      if (length(uniforms.sun_dir - sun_dir) < epsilon &&        
+          length(uniforms.ground_albedo - ground_albedo) < epsilon &&
+          uniforms.turbidity == turbidity) return;      
+
+      // if the user is dragging the mouse rate limit so we don't spend more than half our time updating the sky
+      if (!just_released) {
+        time_accum += 11;
+        if (time_accum < last_update_time) return;
+      }
+    }
+
+
+    time_accum = 0;    
     int start = SDL_GetTicks(); 
 
     // modify cache parameters, we're doing this
@@ -221,7 +231,7 @@ namespace framework {
         // compute solar radiance
         vec3 sun_dir_x = perpendicular(sun_dir);
         mat3 sun_orientation = mat3(sun_dir_x, cross(sun_dir, sun_dir_x), sun_dir);
-        const size_t num_samples = 8;
+        const size_t num_samples = 4;
         // #pragma omp parallel for collapse(2) reduction(+:sun_irradiance)
         for (size_t x = 0;x < num_samples; ++x)
           for (size_t y = 0;y < num_samples; ++y) {
@@ -234,6 +244,7 @@ namespace framework {
             float sample_gamma = angle_between(sample_dir, sun_dir);
 
             sampled_spectrum solar_radiance;
+
             for (size_t i = 0; i < spectral_samples; ++i)
               solar_radiance[i] = float(arhosekskymodel_solar_radiance(
                 sky_states[i],
@@ -253,7 +264,6 @@ namespace framework {
         uniforms.sun_color = sun_irradiance / irradiance_integral(sun_angular_radius);
 
         // free sky states
-        // #pragma omp parallel for
         for (auto i = 0; i < spectral_samples; ++i) {
           arhosekskymodelstate_free(sky_states[i]);
           sky_states[i] = nullptr;
@@ -261,9 +271,6 @@ namespace framework {
 
         last_solar_radiance_update_time = SDL_GetTicks() - solar_start;
       }
-
-
-
 
     }
 
