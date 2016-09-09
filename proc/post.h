@@ -23,8 +23,12 @@ namespace framework {
     stereo_fbo presolve;
     
     stereo_fbo fbo[2];
-    GLuint flare;
-    GLuint64 flare_handle;
+    GLuint color;
+    GLuint64 color_handle;
+    GLuint dirt;
+    GLuint64 dirt_handle;
+    GLuint star;
+    GLuint64 star_handle;
 
     post(quality & quality)
       : quality(quality)
@@ -74,27 +78,60 @@ namespace framework {
 
       {
         int w, h, comp;
-        auto image = stbi_load("images/lensflare_1d.png", &w, &h, &comp, 4);
-        if (!image) die("needs more lensflare");
-        assert(h == 1);
-        log("setup")->info("loaded 1d flare: w = {}, components = {}", w, comp);
-        glCreateTextures(GL_TEXTURE_1D, 1, &flare);
-        glTextureStorage1D(flare, 1, GL_RGB8, w);
-        glTextureSubImage1D(flare, 0, 0, w, GL_RGBA, GL_UNSIGNED_BYTE, image);
-        glTextureParameteri(flare, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTextureParameteri(flare, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTextureParameteri(flare, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glGenerateTextureMipmap(flare);
-        flare_handle = glGetTextureHandleARB(flare);
-        glMakeTextureHandleResidentARB(flare_handle);
-        glProgramUniformHandleui64ARB(tone, 2, flare_handle);
-        stbi_image_free(image);
+        auto image = stbi_load("images/lenscolor.png", &w, &h, &comp, 4);
+        if (!image) log("post")->warn("missing lenscolor.png");
+        glCreateTextures(GL_TEXTURE_1D, 1, &color);
+        glTextureStorage1D(color, 1, GL_RGB8, w);
+        if (image) glTextureSubImage1D(color, 0, 0, w, GL_RGBA, GL_UNSIGNED_BYTE, image);
+        glTextureParameteri(color, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(color, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(color, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glGenerateTextureMipmap(color);
+        color_handle = glGetTextureHandleARB(color);
+        glMakeTextureHandleResidentARB(color_handle);
+        glProgramUniformHandleui64ARB(tone, 2, color_handle);
+        if (image) stbi_image_free(image);
+
+        image = stbi_load("images/lensdirt.png", &w, &h, &comp, 4);
+        if (!image) log("post")->warn("missing lensdirt.png");
+        glCreateTextures(GL_TEXTURE_2D, 1, &dirt);
+        glTextureStorage2D(dirt, 1, GL_RGB8, w, h);
+        if (image) glTextureSubImage2D(dirt, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, image);
+        glTextureParameteri(dirt, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(dirt, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(dirt, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(dirt, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glGenerateTextureMipmap(dirt);
+        dirt_handle = glGetTextureHandleARB(dirt);
+        glMakeTextureHandleResidentARB(dirt_handle);
+        glProgramUniformHandleui64ARB(tone, 3, dirt_handle);
+        if (image) stbi_image_free(image);
+
+        image = stbi_load("images/lensstar.png", &w, &h, &comp, 4);
+        if (!image) log("post")->warn("missing lensstar.png");
+        glCreateTextures(GL_TEXTURE_2D, 1, &star);
+        glTextureStorage2D(star, 1, GL_RGB8, w, h);
+        if (image) glTextureSubImage2D(star, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, image);
+        glTextureParameteri(star, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(star, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(star, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(star, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glGenerateTextureMipmap(star);
+        star_handle = glGetTextureHandleARB(star);
+        glMakeTextureHandleResidentARB(star_handle);
+        glProgramUniformHandleui64ARB(tone, 4, star_handle);
+        if (image) stbi_image_free(image);
       }
     }
 
     ~post() {
-      glMakeTextureHandleNonResidentARB(flare_handle);
-      glDeleteTextures(1, &flare);
+      glMakeTextureHandleNonResidentARB(color_handle);
+      glMakeTextureHandleNonResidentARB(dirt_handle);
+      glMakeTextureHandleNonResidentARB(star_handle);
+      glDeleteTextures(1, &color);
+      glDeleteTextures(1, &dirt);
+      glDeleteTextures(1, &star);
+      glDeleteTextures(1, &color);
       glDeleteVertexArrays(1, &vao);
       glDeleteProgramPipelines(countof(pipelines), pipelines);
     }
