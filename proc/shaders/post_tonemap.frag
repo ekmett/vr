@@ -55,47 +55,29 @@ vec2 mirror_ndc(vec2 ndc) {
   return -ndc;
 }
 
-const float dispersal = 0.1;
-const int ghosts = 8;
+const float threshold = 0.1;
+
+// todo: factor in faux chromatic aberration
+vec3 fetch(vec2 ndc) {
+  return max(texture(bloom, vec3(ndc_to_resolve(ndc),coord.z)).rgb - threshold,0.0) / (1 - threshold);
+}
 
 vec3 flare3() {
   vec2 uv = coord.xy / resolve_buffer_usage;
   vec2 ndc = uv_to_ndc(uv);
-  vec2 dg_ndc = ndc * dispersal;
+  vec2 dg_ndc = ndc * lens_flare_ghost_dispersal;
   vec3 result = vec3(0);
-  for (int i = 0;i < ghosts; ++i) {
+  for (int i = 0;i < lens_flare_ghosts; ++i) {
     vec2 sample_ndc = -ndc + dg_ndc * pow(i,1.1);
     float len = length(sample_ndc)/sqrt(2);
     if (len < 1) {
-      result += texture(bloom, vec3(ndc_to_resolve(sample_ndc), coord.z)).rgb * pow(1-len,20);
+      result += fetch(sample_ndc) * pow(1-len,20);
     }       
   }
-  return result * texture(lenscolor, length(ndc)/sqrt(2)).rgb;
-  /*
-  vec2 toward_center_ndc = -normalize(mirror_ndc);
-
-  vec2 offset = toward_center / samples * blur_dist * 2;
-  vec2 sample_ndc = normalized_coord;
-  vec2 step_ndc = -2 * offset;
-  vec4 sum = vec4(0);
-  for (int i = 0; i < samples; ++i) {
-    vec2 sample_resolve = texture_to_resolve(fract(ndc_to_texture(sample_ndc)));
-    float len = length(sample_ndc);
-    if (len <= 1) {
-      vec4 sampled = texture(bloom, vec3(sample_resolve, coord.z));
-      sum += sampled * pow(1-len,10);
-    }
-   vec2 halo = normalize(sample_ndc) * 0.8;
-   float weight = length(vec2(0.5) - fract(texcoord + haloVec)) / length(vec2(0.5));
-   weight = pow(1.0 - weight, 5.0);
-   result += texture(uInputTex, texcoord + haloVec) * weight;
-    sample_ndc += step_ndc;
-  }
-  return sum.xyz * texture(lenscolor, length(normalized_coord) / sqrt(2)).rgb;
-  */
+  vec2 halo_ndc = ndc - normalize(dg_ndc) * lens_flare_halo_radius;
+  result += fetch(halo_ndc) * pow(length(halo_ndc),2.5);
+  return result * texture(lenscolor, length(ndc)/sqrt(3)).rgb;  
 }
-
-const float flare_exposure = -6.8;
 
 
 void main() {
@@ -105,20 +87,20 @@ void main() {
   } else {
     vec3 color = presolve_color.rgb;
     color += texture(bloom, coord).rgb * bloom_magnitude * exp2(bloom_exposure);
-    vec2 uv = coord.xy / resolve_buffer_usage;
+    if (use_lens_flare != 0) {
+      vec2 uv = coord.xy / resolve_buffer_usage;
+      int eye = coord.z >= 0.5 ? 1 : 0;
+      mat3 view = mat3(head_to_eye[eye]) * mat3(predicted_world_to_head);
+      float camrot = dot(view[0], vec3(0,0,1)) + dot(view[2], vec3(0,1,0));
+      float c = cos(camrot);
+      float s = sin(camrot);
+      mat2 rot = mat2(c,-s, s, c);    
+      vec3 lensmod =
+        texture(lensdirt,uv + eye).rgb + 
+        texture(lensstar, ndc_to_uv(rot * uv_to_ndc(uv))).rgb;
 
-    int eye = coord.z >= 0.5 ? 1 : 0;
-    mat3 view = mat3(head_to_eye[eye]) * mat3(predicted_world_to_head);
-    float camrot = dot(view[0], vec3(0,0,1)) + dot(view[2], vec3(0,1,0));
-    float c = cos(camrot);
-    float s = sin(camrot);
-
-    mat2 rot = mat2(c,-s, s, c);    
-    vec3 lensmod =
-      texture(lensdirt,uv + eye).rgb + 
-      texture(lensstar, ndc_to_uv(rot * uv_to_ndc(uv))).rgb;
-
-    color += flare3().rgb * lensmod *  exp2(flare_exposure);
+      color += flare3().rgb * lensmod *  exp2(lens_flare_exposure);
+    }
     color *= exp2(exposure) / FP16_SCALE;
     color = filmic(color);
     outputColor = vec4(color.rgb, 1);  

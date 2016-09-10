@@ -34,6 +34,10 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(4) float rendermodel_albedo;
   UNIFORM_ALIGN(4) int use_sun_area_light_approximation;
   UNIFORM_ALIGN(4) int viewport_w, viewport_h;
+  UNIFORM_ALIGN(4) int use_lens_flare;
+  UNIFORM_ALIGN(4) int lens_flare_ghosts;
+  UNIFORM_ALIGN(4) float lens_flare_exposure, lens_flare_halo_radius;
+  UNIFORM_ALIGN(4) float lens_flare_ghost_dispersal;
 
   // head
   UNIFORM_ALIGN(16) mat4 projection[MAX_EYES];

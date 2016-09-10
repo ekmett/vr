@@ -3,7 +3,8 @@
 #extension GL_ARB_bindless_texture : require
 #include "uniforms.h"
 
-layout (bindless_sampler, location = 0) uniform sampler2DArray resolve;
+layout (bindless_sampler, location = 0) uniform sampler2DArray last_resolve;
+layout (location = 1) uniform float last_resolve_buffer_usage;
 
 noperspective in vec2 red;
 noperspective in vec2 green;
@@ -21,10 +22,9 @@ void main() {
     + dot( vec2( greaterThan( hi.xy, vec2( 0.95, 0.95) ) ), vec2(1.0, 1.0))) );
   if (fBoundsCheck >= 1.0f) outputColor = vec4(0.18f,0.18f,0.18f,0.0);
   else {
-    vec4 r = texture(resolve, vec3(red * resolve_buffer_usage, eye));
-    vec4 g = texture(resolve, vec3(green * resolve_buffer_usage, eye));
-    vec4 b = texture(resolve, vec3(blue * resolve_buffer_usage, eye));
-    // outputColor = vec4(r.r,g.g,b.b,1);
+    vec4 r = texture(last_resolve, vec3(red * last_resolve_buffer_usage, eye));
+    vec4 g = texture(last_resolve, vec3(green * last_resolve_buffer_usage, eye));
+    vec4 b = texture(last_resolve, vec3(blue * last_resolve_buffer_usage, eye));
     outputColor = vec4(r.r, g.g, b.b,1);    
     //outputColor = mix(vec4(0.18f, 0.18f, 0.18f,0.0f), vec4(r.r,g.g,b.b,1), smoothstep(1, 3, r.a + g.a + b.a));
   }

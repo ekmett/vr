@@ -39,7 +39,7 @@ namespace framework {
       , tone(GL_FRAGMENT_SHADER, "post_tonemap")
       , w((quality.resolve_buffer_w + 1)/ 2)
       , h((quality.resolve_buffer_h + 1)/ 2)
-      , presolve(quality.resolve_target.format, "presolve", GL_RGBA16F)
+      , presolve(quality.resolve_target[0].format, "presolve", GL_RGBA16F)
       , timer("post") {
 
       glCreateVertexArrays(1, &vao);
@@ -203,7 +203,7 @@ namespace framework {
 
         log("post")->info("tonemap");
         glBindProgramPipeline(tone_pipeline);
-        quality.resolve_target.bind();
+        quality.current_resolve_fbo().bind();
         glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 2);
 
         glBindVertexArray(0);

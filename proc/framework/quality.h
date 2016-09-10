@@ -47,24 +47,40 @@ namespace framework {
     quality(int quality_level = 4);
     ~quality();
 
-    void new_frame(openvr::system & vr, float * render_buffer_usage = nullptr, float * resolve_buffer_usage = nullptr, int * render_target = nullptr);
-    void resolve() { resolve(resolve_target); }
+    void new_frame(openvr::system & vr, float * render_buffer_usage = nullptr, float * resolve_buffer_usage = nullptr);
+    void resolve() { resolve(current_resolve_fbo()); }
     void resolve(stereo_fbo & to);
-    void present(bool srgb_resolve = true); // default to true since the alternative doesn't work
+    void present(bool read_pixel_hack = false); // default to true since the alternative doesn't work
+    void submit(int resolve_target, int w, int h, bool read_pixel_hack = false);
+    void swap();
 
   private:
     void delete_framebuffers();
     void create_framebuffers();
-    inline const quality_level & current_quality_level() const { return quality_levels[quality_level]; }
 
+  public:
+    inline const quality_level & current_quality_level() const { return quality_levels[quality_level]; }
     inline stereo_render_fbo & current_render_fbo() { return render_target[quality_levels[quality_level].render_target]; }
     inline const stereo_render_fbo & current_render_fbo() const { return render_target[quality_levels[quality_level].render_target]; }
+    inline stereo_fbo & current_resolve_fbo() {
+      return resolve_target[resolve_index];
+    }
+    inline const stereo_fbo & current_resolve_fbo() const {
+      return resolve_target[resolve_index];
+    }
+    inline stereo_fbo & last_resolve_fbo() {
+      return resolve_target[double_buffer ? 1 - resolve_index : resolve_index];
+    }
+    inline const stereo_fbo & last_resolve_fbo() const {
+      return resolve_target[double_buffer ? 1 - resolve_index : resolve_index];
+    }
 
   public:
     float desired_supersampling = 1.0f;
 
     int minimum_quality_level = 0;
     int maximum_quality_level = quality_level_count - 1;
+    int resolve_index = 0;
 
     bool show_timing_window = true;
     bool show_quality_window = true;
@@ -76,11 +92,16 @@ namespace framework {
 
     uint32_t recommended_w, recommended_h;
     GLsizei viewport_w, viewport_h;
+    GLsizei last_viewport_w, last_viewport_h;
     GLsizei resolve_buffer_w, resolve_buffer_h;
+    float last_resolve_buffer_usage;
 
     bool using_interleaved_reprojection;
 
     stereo_render_fbo render_target[render_target_count];
-    stereo_fbo resolve_target;
+    stereo_fbo resolve_target[2];
+
+    bool double_buffer = true;
+    GLsync sync[2];
   };
 }

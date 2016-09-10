@@ -221,7 +221,7 @@ namespace framework {
     glEnable(GL_CULL_FACE);
   }
 
-  void distortion::render(int view_mask) {
+  void distortion::render(int view_mask, GLuint64 handle, float resolve_buffer_usage) {
     static elapsed_timer timer("distortion");
     timer_block timed(timer);
 
@@ -231,6 +231,8 @@ namespace framework {
 
     glUseProgram(warp.programId);
     glBindVertexArray(vao);
+    glProgramUniformHandleui64ARB(warp.programId, 0, handle);
+    glProgramUniform1f(warp.programId, 1, resolve_buffer_usage);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, nullptr);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

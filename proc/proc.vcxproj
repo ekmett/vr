@@ -101,7 +101,7 @@
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4800;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(ProjectDir)\shaders;$(SolutionDir)third-party\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\shaders;$(SolutionDir)third-party\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
@@ -130,7 +130,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4800;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(ProjectDir)\shaders;$(SolutionDir)third-party\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\shaders;$(SolutionDir)third-party\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
@@ -161,7 +161,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4800;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(ProjectDir)\shaders;$(SolutionDir)third-party\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\shaders;$(SolutionDir)third-party\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
@@ -195,7 +195,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996;4800;4503;4101</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(ProjectDir)\shaders;$(SolutionDir)third-party\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\shaders;$(SolutionDir)third-party\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
@@ -225,28 +225,29 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClCompile Include="..\third-party\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\third-party\imgui\imgui_draw.cpp" />
     <ClCompile Include="app.cpp" />
-    <ClCompile Include="controllers.cpp" />
-    <ClCompile Include="aligned_allocator.cpp" />
-    <ClCompile Include="distortion.cpp" />
-    <ClCompile Include="epoch.cpp" />
-    <ClCompile Include="filesystem.cpp" />
-    <ClCompile Include="gl.cpp" />
-    <ClCompile Include="gui.cpp" />
-    <ClCompile Include="openal.cpp" />
-    <ClCompile Include="openvr.cpp" />
-    <ClCompile Include="openvr_system.cpp" />
-    <ClCompile Include="quality.cpp" />
-    <ClCompile Include="rendermodel.cpp" />
-    <ClCompile Include="sdl_system.cpp" />
-    <ClCompile Include="sdl_window.cpp" />
-    <ClCompile Include="shader.cpp" />
-    <ClCompile Include="skybox.cpp" />
-    <ClCompile Include="spdlog.cpp" />
-    <ClCompile Include="spectrum.cpp" />
+    <ClCompile Include="framework\controllers.cpp" />
+    <ClCompile Include="framework\aligned_allocator.cpp" />
+    <ClCompile Include="framework\distortion.cpp" />
+    <ClCompile Include="framework\epoch.cpp" />
+    <ClCompile Include="framework\filesystem.cpp" />
+    <ClCompile Include="framework\gl.cpp" />
+    <ClCompile Include="framework\gui.cpp" />
+    <ClCompile Include="framework\openal.cpp" />
+    <ClCompile Include="framework\openvr.cpp" />
+    <ClCompile Include="framework\openvr_system.cpp" />
+    <ClCompile Include="framework\quality.cpp" />
+    <ClCompile Include="framework\rendermodel.cpp" />
+    <ClCompile Include="framework\sdl_system.cpp" />
+    <ClCompile Include="framework\sdl_window.cpp" />
+    <ClCompile Include="framework\shader.cpp" />
+    <ClCompile Include="framework\skybox.cpp" />
+    <ClCompile Include="framework\spdlog.cpp" />
+    <ClCompile Include="framework\spectrum.cpp" />
+    <ClCompile Include="framework\spherical_harmonics.cpp" />
     <ClCompile Include="stb.cpp" />
-    <ClCompile Include="timer.cpp" />
-    <ClCompile Include="worker.cpp" />
-    <ClCompile Include="overlay.cpp" />
+    <ClCompile Include="framework\timer.cpp" />
+    <ClCompile Include="framework\worker.cpp" />
+    <ClCompile Include="framework\overlay.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cds.vcxproj">
@@ -263,61 +264,63 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="..\third-party\imgui\stb_rect_pack.h" />
     <ClInclude Include="..\third-party\imgui\stb_textedit.h" />
     <ClInclude Include="..\third-party\imgui\stb_truetype.h" />
+    <ClInclude Include="framework\math.h" />
+    <ClInclude Include="framework\math_constexpr.h" />
     <ClInclude Include="shaders\uniforms.h" />
-    <ClInclude Include="config.h" />
-    <ClInclude Include="controllers.h" />
+    <ClInclude Include="framework\config.h" />
+    <ClInclude Include="framework\controllers.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="adsr.h" />
-    <ClInclude Include="aligned_allocator.h" />
-    <ClInclude Include="alloca_array.h" />
-    <ClInclude Include="apply.h" />
-    <ClInclude Include="cache_isolated.h" />
-    <ClInclude Include="cds.h" />
-    <ClInclude Include="chase_lev_deque.h" />
-    <ClInclude Include="circular_array.h" />
-    <ClInclude Include="composition.h" />
-    <ClInclude Include="distortion.h" />
-    <ClInclude Include="epoch.h" />
-    <ClInclude Include="error.h" />
-    <ClInclude Include="filesystem.h" />
-    <ClInclude Include="fmt.h" />
-    <ClInclude Include="gl.h" />
-    <ClInclude Include="glew.h" />
-    <ClInclude Include="glm.h" />
-    <ClInclude Include="grammar.h" />
-    <ClInclude Include="gui.h" />
-    <ClInclude Include="gui_direction.h" />
-    <ClInclude Include="half.h" />
-    <ClInclude Include="imgui_table.h" />
-    <ClInclude Include="noncopyable.h" />
-    <ClInclude Include="oculus.h" />
-    <ClInclude Include="openal.h" />
-    <ClInclude Include="openvr.h" />
-    <ClInclude Include="openvr_system.h" />
-    <ClInclude Include="opt.h" />
-    <ClInclude Include="post.h" />
-    <ClInclude Include="quality.h" />
-    <ClInclude Include="rendermodel.h" />
-    <ClInclude Include="sampling.h" />
-    <ClInclude Include="sdl.h" />
-    <ClInclude Include="sdl_system.h" />
-    <ClInclude Include="sdl_window.h" />
-    <ClInclude Include="serialization.h" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="signal.h" />
-    <ClInclude Include="skybox.h" />
-    <ClInclude Include="spdlog.h" />
-    <ClInclude Include="spectrum.h" />
-    <ClInclude Include="spherical_harmonics.h" />
+    <ClInclude Include="framework\aligned_allocator.h" />
+    <ClInclude Include="framework\alloca_array.h" />
+    <ClInclude Include="framework\apply.h" />
+    <ClInclude Include="framework\cache_isolated.h" />
+    <ClInclude Include="framework\cds.h" />
+    <ClInclude Include="framework\chase_lev_deque.h" />
+    <ClInclude Include="framework\circular_array.h" />
+    <ClInclude Include="framework\composition.h" />
+    <ClInclude Include="framework\distortion.h" />
+    <ClInclude Include="framework\epoch.h" />
+    <ClInclude Include="framework\error.h" />
+    <ClInclude Include="framework\filesystem.h" />
+    <ClInclude Include="framework\fmt.h" />
+    <ClInclude Include="framework\gl.h" />
+    <ClInclude Include="framework\glew.h" />
+    <ClInclude Include="framework\glm.h" />
+    <ClInclude Include="framework\grammar.h" />
+    <ClInclude Include="framework\gui.h" />
+    <ClInclude Include="framework\gui_direction.h" />
+    <ClInclude Include="framework\half.h" />
+    <ClInclude Include="framework\gui_table.h" />
+    <ClInclude Include="framework\noncopyable.h" />
+    <ClInclude Include="framework\oculus.h" />
+    <ClInclude Include="framework\openal.h" />
+    <ClInclude Include="framework\openvr.h" />
+    <ClInclude Include="framework\openvr_system.h" />
+    <ClInclude Include="framework\opt.h" />
+    <ClInclude Include="framework\post.h" />
+    <ClInclude Include="framework\quality.h" />
+    <ClInclude Include="framework\rendermodel.h" />
+    <ClInclude Include="framework\sampling.h" />
+    <ClInclude Include="framework\sdl.h" />
+    <ClInclude Include="framework\sdl_system.h" />
+    <ClInclude Include="framework\sdl_window.h" />
+    <ClInclude Include="framework\serialization.h" />
+    <ClInclude Include="framework\shader.h" />
+    <ClInclude Include="framework\signal.h" />
+    <ClInclude Include="framework\skybox.h" />
+    <ClInclude Include="framework\spdlog.h" />
+    <ClInclude Include="framework\spectrum.h" />
+    <ClInclude Include="framework\spherical_harmonics.h" />
     <ClInclude Include="stb.h" />
-    <ClInclude Include="std.h" />
+    <ClInclude Include="framework\std.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="stereo_fbo.h" />
-    <ClInclude Include="texturing.h" />
-    <ClInclude Include="timer.h" />
-    <ClInclude Include="utf8.h" />
-    <ClInclude Include="worker.h" />
-    <ClInclude Include="overlay.h" />
+    <ClInclude Include="framework\stereo_fbo.h" />
+    <ClInclude Include="framework\texturing.h" />
+    <ClInclude Include="framework\timer.h" />
+    <ClInclude Include="framework\utf8.h" />
+    <ClInclude Include="framework\worker.h" />
+    <ClInclude Include="framework\overlay.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="..\third-party\glm\util\glm.natvis" />

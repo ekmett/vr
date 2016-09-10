@@ -1,25 +1,24 @@
 #include "stdafx.h"
-#include <random>
-#include <functional>
 #include <algorithm>
-#include "distortion.h"
-#include "gl.h"
-#include "gui.h"
-#include "filesystem.h"
-#include "signal.h"
-#include "spectrum.h"
-#include "skybox.h"
-#include "openal.h"
-#include "post.h"
-#include "quality.h"
-#include "rendermodel.h"
-#include "timer.h"
-#include "worker.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include "uniforms.h"
-#include "controllers.h"
-#include "cds.h"
+#include <functional>
 #include <omp.h>
+#include <random>
+#include "framework/distortion.h"
+#include "framework/gl.h"
+#include "framework/gui.h"
+#include "framework/filesystem.h"
+#include "framework/openal.h"
+#include "framework/post.h"
+#include "framework/quality.h"
+#include "framework/rendermodel.h"
+#include "framework/signal.h"
+#include "framework/skybox.h"
+#include "framework/spectrum.h"
+#include "framework/timer.h"
+#include "framework/worker.h"
+#include "framework/cds.h"
+#include "shaders/uniforms.h"
+#include "controllers.h"
 
 using namespace framework;
 using namespace filesystem;
@@ -97,6 +96,8 @@ struct app : app_uniforms {
   bool show_demo_window = false;
   bool show_rendermodel_window = false;
   bool show_controllers_window = false;
+  bool gl_finish_hack = true;
+  bool read_pixel_hack = false;
   
   gui::system gui;
   controllers controllers;
@@ -104,6 +105,7 @@ struct app : app_uniforms {
   int desktop_view = 1;
   bool skybox_visible = true;
   int controller_mask = 0;
+  float last_resolve_buffer_usage = 0.f;
   
 private: 
   // void initialize_framebuffers();
@@ -137,10 +139,14 @@ app::app(path assets)
   turbidity = 5.f;
   use_sun_area_light_approximation = true;
 
-  distorted.set_resolve_handle(quality.resolve_target.texture_handle);
   
   enable_seascape = true;
   use_sun_area_light_approximation = true;
+  use_lens_flare = true;
+  lens_flare_exposure = -3.5;
+  lens_flare_halo_radius = 0.433;
+  lens_flare_ghosts = 8;
+  lens_flare_ghost_dispersal = 0.11;
 
   rendermodel_metallic = 0.1f;
   rendermodel_roughness = 0.05f;
@@ -360,6 +366,7 @@ void app::run() {
     get_poses();
 
     l->info("quality.new_frame");
+    last_resolve_buffer_usage = resolve_buffer_usage;
     quality.new_frame(vr, &render_buffer_usage, &resolve_buffer_usage);
     viewport_w = quality.viewport_w;
     viewport_h = quality.viewport_h;
@@ -371,7 +378,6 @@ void app::run() {
     submit_uniforms();
 
     l->info("render_stencil");
-
     distorted.render_stencil();
 
     l->info("drawing rendermodels");
@@ -387,15 +393,16 @@ void app::run() {
     quality.resolve(post.presolve);
     post.process();
 
+    if (gl_finish_hack) glFinish();
     l->info("present");
-    quality.present();
+    quality.present(read_pixel_hack);
 
     l->info("desktop");    
     desktop_display();
 
     if (show_gui()) return;
 
-    glFlush();
+    quality.swap();
     window.swap();
   }
 }
@@ -423,13 +430,30 @@ void app::desktop_display() {
   glClearColor(0.18f, 0.18f, 0.18f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+
+  stereo_fbo * display_fbo;
+  float display_resolve_buffer_usage;
+  GLsizei display_viewport_w, display_viewport_h;
+
+  if (quality.double_buffer) {
+    display_fbo = &quality.last_resolve_fbo();
+    display_resolve_buffer_usage = last_resolve_buffer_usage;
+    display_viewport_w = quality.last_viewport_w;
+    display_viewport_h = quality.last_viewport_h;
+  } else {
+    display_fbo = &quality.current_resolve_fbo();
+    display_resolve_buffer_usage = resolve_buffer_usage;
+    display_viewport_w = quality.viewport_w;
+    display_viewport_h = quality.viewport_h;
+  }
+
   // lets find an aspect ratio preserving viewport
   switch (desktop_view) {
     case 0: break;
     case 1: {
       auto dim = fit_viewport(quality.aspect_ratio * 2, w, h);
       glViewport(dim.x, dim.y, dim.w, dim.h);
-      distorted.render(3);
+      distorted.render(3, display_fbo->texture_handle, display_resolve_buffer_usage);
       break;
     }
     case 2:
@@ -438,25 +462,25 @@ void app::desktop_display() {
       glViewport(dim.x - (desktop_view - 2) * dim.w, dim.y, dim.w * 2, dim.h);
       glScissor(dim.x, dim.y, dim.w, dim.h);
       glEnable(GL_SCISSOR_TEST);
-      distorted.render(desktop_view - 1);
+      distorted.render(desktop_view - 1, display_fbo->texture_handle, display_resolve_buffer_usage);
       glDisable(GL_SCISSOR_TEST);
       break;
     }
     case 4: {
       auto dim = fit_viewport(quality.aspect_ratio * 2, w, h);
       glBlitNamedFramebuffer(
-        quality.resolve_target.fbo_view[0], 0,
+        display_fbo->fbo_view[0], 0,
         0, 0,
-        quality.viewport_w, quality.viewport_h,
+        display_viewport_w, display_viewport_h,
         dim.x, dim.y,
         dim.x + dim.w / 2, dim.y + dim.h,
         GL_COLOR_BUFFER_BIT,
         GL_LINEAR
       );
       glBlitNamedFramebuffer(
-        quality.resolve_target.fbo_view[1], 0,
+        display_fbo->fbo_view[1], 0,
         0, 0,
-        quality.viewport_w, quality.viewport_h,
+        display_viewport_w, display_viewport_h,
         dim.x + dim.w / 2, dim.y,
         dim.x + dim.w, dim.y + dim.h,
         GL_COLOR_BUFFER_BIT,
@@ -468,9 +492,9 @@ void app::desktop_display() {
     case 5: {
       auto dim = fit_viewport(quality.aspect_ratio, w, h);
       glBlitNamedFramebuffer(
-        quality.resolve_target.fbo_view[0], 0,
+        display_fbo->fbo_view[0], 0,
         0, 0,
-        quality.viewport_w, quality.viewport_h,
+        display_viewport_w, display_viewport_h,
         dim.x, dim.y,
         dim.x + dim.w, dim.y + dim.h,
         GL_COLOR_BUFFER_BIT,
@@ -482,9 +506,9 @@ void app::desktop_display() {
     case 6: {
       auto dim = fit_viewport(quality.aspect_ratio, w, h);
       glBlitNamedFramebuffer(
-        quality.resolve_target.fbo_view[1], 0,
+        display_fbo->fbo_view[1], 0,
         0, 0,
-        quality.viewport_w, quality.viewport_h,
+        display_viewport_w, display_viewport_h,
         dim.x, dim.y,
         dim.x + dim.w, dim.y + dim.h,
         GL_COLOR_BUFFER_BIT,
@@ -588,12 +612,22 @@ bool app::show_gui(bool * open) {
   if (show_settings_window) {
     gui::Begin("Settings", &show_settings_window);    
     gui::SliderInt("desktop view", &desktop_view, 0, countof(desktop_views) - 1);
+    gui::Checkbox("double buffer resolve", &quality.double_buffer); 
+    gui::SameLine();
+    gui::Checkbox("finish", &gl_finish_hack);
+    gui::SameLine();
+    gui::Checkbox("read pixel", &read_pixel_hack);
     gui::Text("%s", desktop_views[desktop_view]);
     bool seascape = enable_seascape; gui::Checkbox("seascape", &seascape); enable_seascape = seascape;
     gui::SliderFloat("exposure", &exposure, -30, 30);
     gui::SliderFloat("bloom exposure", &bloom_exposure, -30, 30);
     gui::SliderFloat("bloom magnitude", &bloom_magnitude, 0, 10);
     gui::SliderFloat("blur sigma", &blur_sigma, 0, 10);
+    gui::SliderFloat("flare exposure", &lens_flare_exposure, -30, 30);
+    bool lensflare = use_lens_flare; gui::Checkbox("lens flares", &lensflare); use_lens_flare = lensflare;
+    gui::SliderFloat("flare halo radius", &lens_flare_halo_radius, -2, 2);
+    gui::SliderInt("flare ghosts", &lens_flare_ghosts, 0, 20);
+    gui::SliderFloat("flare ghost dispersal", &lens_flare_ghost_dispersal, 0.001, 2);
     gui::End();
   }
 
@@ -632,12 +666,12 @@ int SDL_main(int argc, char ** argv) {
    spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
    shared_ptr<spdlog::logger> ignore_logs[]{
      spdlog::create<spdlog::sinks::null_sink_mt>("vr"),
-     //  spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
+     spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
      spdlog::create<spdlog::sinks::null_sink_mt>("al"),
-     //spdlog::create<spdlog::sinks::null_sink_mt>("main"),
-     // spdlog::create<spdlog::sinks::null_sink_mt>("app"),
+     spdlog::create<spdlog::sinks::null_sink_mt>("main"),
+      spdlog::create<spdlog::sinks::null_sink_mt>("app"),
      spdlog::create<spdlog::sinks::null_sink_mt>("post"),
-     spdlog::create<spdlog::sinks::null_sink_mt>("quality"),
+    // spdlog::create<spdlog::sinks::null_sink_mt>("quality"),
      spdlog::create<spdlog::sinks::null_sink_mt>("distortion"),
      spdlog::create<spdlog::sinks::null_sink_mt>("rendermodel"),
    };

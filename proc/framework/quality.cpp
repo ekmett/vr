@@ -13,19 +13,24 @@ namespace framework {
   static vr::Compositor_FrameTiming frame_timing{};
 
   quality::quality(int quality_level)
-  : quality_level(quality_level) {
+  : quality_level(quality_level)
+    , sync{ nullptr, nullptr }  {
     create_framebuffers();
   }
 
   quality::~quality() {
     delete_framebuffers();
+    for (auto & t : sync) if (t) glDeleteSync(t);
   }
 
-  void quality::new_frame(openvr::system & vr, float * render_buffer_usage, float * resolve_buffer_usage, int * render_target) {
+  void quality::new_frame(openvr::system & vr, float * render_buffer_usage, float * resolve_buffer_usage) {
     if (!suspended_rendering) {
       // adapt quality level
+      auto old_frame_index = frame_timing.m_nFrameIndex;
       frame_timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
       bool have_frame_timing = vr::VRCompositor()->GetFrameTiming(&frame_timing, 0);
+      if (frame_timing.m_nFrameIndex == old_frame_index)
+        log("quality")->warn("same frame");
       total_dropped_frames += frame_timing.m_nNumDroppedFrames;
 
       old_old_utilization = old_utilization;
@@ -105,16 +110,13 @@ namespace framework {
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // use premultiplied alpha
     glCullFace(GL_BACK);
 
-
     if (render_buffer_usage) *render_buffer_usage = actual_supersampling / render_target_metas[q.render_target].max_supersampling_factor;
     if (resolve_buffer_usage) *resolve_buffer_usage = actual_supersampling / max_supersampling_factor;
-    if (render_target) *render_target = q.render_target;
   }
 
   void quality::resolve(stereo_fbo & to) {
     static elapsed_timer timer("resolve msaa");
     timer_block timed(timer);
-
     auto & from  = current_render_fbo();
     glDisable(GL_MULTISAMPLE);
     for (int i=0;i<2;++i)
@@ -128,28 +130,67 @@ namespace framework {
       );
   }
 
-  void quality::present(bool srgb_resolve) {
-    if (suspended_rendering) return;
-    glFinish();    
+  void quality::submit(int v, int w, int h, bool read_pixel) {
+    if (read_pixel) {
+      unsigned char pixel[4];
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, resolve_target[v].fbo);
+      glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    }
     for (int i = 0;i < 2;++i) {
       vr::Texture_t eyeTexture{
-        (void*)intptr_t(resolve_target.texture_view[i]),
+        (void*)intptr_t(resolve_target[v].texture_view[i]),
         vr::API_OpenGL,
-        srgb_resolve ? vr::ColorSpace_Gamma : vr::ColorSpace_Linear
+        vr::ColorSpace_Gamma
       };
       vr::VRTextureBounds_t eyeBounds{
         0,
-        float(resolve_buffer_h - viewport_h) / resolve_buffer_h,
-        float(viewport_w) / resolve_buffer_w,
+        float(resolve_buffer_h - h) / resolve_buffer_h,
+        float(w) / resolve_buffer_w,
         1
       };
       vr::VRCompositor()->Submit(vr::EVREye(i), &eyeTexture, &eyeBounds, vr::Submit_Default);
     }
-    //compositor.PostPresentHandoff();
+    vr::VRCompositor()->PostPresentHandoff();
+  }
+
+  void quality::swap() {   
+    last_viewport_w = viewport_w;
+    last_viewport_h = viewport_h;
+    if (double_buffer) resolve_index = 1 - resolve_index;
+  }
+
+  void quality::present(bool read_pixel) {
+    if (suspended_rendering) return;
+
+    if (double_buffer) { 
+      int other_index = 1 - resolve_index;
+      if (sync[other_index]) {
+      retry:
+        switch (glClientWaitSync(sync[other_index], GL_SYNC_FLUSH_COMMANDS_BIT, 1000)) { // wait 1 microsecond
+          case GL_TIMEOUT_EXPIRED:
+            log("quality")->warn("fence timeout");
+            goto retry;
+          case GL_WAIT_FAILED:
+            die("fence sync failed: {}", glewGetErrorString(glGetError()));
+            break;
+          case GL_CONDITION_SATISFIED: break;
+          case GL_ALREADY_SIGNALED: break;
+          default:
+            die("unknown fence result");
+        }
+        glDeleteSync(sync[other_index]);
+        sync[other_index] = nullptr;
+        submit(other_index, last_viewport_w, last_viewport_h, read_pixel);
+      }
+      sync[resolve_index] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    } else {
+      submit(resolve_index, viewport_w, viewport_h, read_pixel);
+    }
   }
 
   void quality::delete_framebuffers() {
-    resolve_target.finalize();
+    for (auto & t : resolve_target) t.finalize();
     for (auto & t : render_target) t.finalize();
   }
 
@@ -159,8 +200,11 @@ namespace framework {
     resolve_buffer_w = GLsizei(recommended_w * max_supersampling_factor + 1) & ~1;
     resolve_buffer_h = GLsizei(recommended_h * max_supersampling_factor + 1) & ~1;
 
-    resolve_target.format = { resolve_buffer_w, resolve_buffer_h };
-    resolve_target.initialize("resolve", GL_RGBA8);
+    for (int i = 0;i < countof(resolve_target);++i) {
+      resolve_target[i].format = { resolve_buffer_w, resolve_buffer_h };
+      string name = fmt::format("resolve target {}", i);
+      resolve_target[i].initialize(name, GL_RGBA8);
+    }
 
     for (int i = 0;i < render_target_count;++i) {
       auto meta = render_target_metas[i];

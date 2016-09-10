@@ -198,7 +198,7 @@ namespace framework {
               u = u * 2.0f - 1.0f;
               v = v * 2.0f - 1.0f;
 
-              // account for distribution of texels
+              // compute the solid angle of the texel as weight
               const float temp = 1.0f + u*u + v*v;
               const float weight = 4.0f / (sqrt(temp) * temp);
 
