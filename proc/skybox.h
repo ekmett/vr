@@ -1,7 +1,7 @@
 #pragma once
 
 #include "spherical_harmonics.h"
-#include "glm.h"
+#include "math.h"
 #include "shader.h"
 #include "uniforms.h"
 #include "timer.h"

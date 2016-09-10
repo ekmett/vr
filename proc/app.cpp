@@ -3,20 +3,20 @@
 #include <functional>
 #include <omp.h>
 #include <random>
-#include "framework/distortion.h"
-#include "framework/gl.h"
-#include "framework/gui.h"
-#include "framework/filesystem.h"
-#include "framework/openal.h"
-#include "framework/post.h"
-#include "framework/quality.h"
-#include "framework/rendermodel.h"
-#include "framework/signal.h"
-#include "framework/skybox.h"
-#include "framework/spectrum.h"
-#include "framework/timer.h"
-#include "framework/worker.h"
-#include "framework/cds.h"
+#include "distortion.h"
+#include "gl.h"
+#include "gui.h"
+#include "filesystem.h"
+#include "openal.h"
+#include "post.h"
+#include "quality.h"
+#include "rendermodel.h"
+#include "signal.h"
+#include "skybox.h"
+#include "spectrum.h"
+#include "timer.h"
+#include "worker.h"
+#include "cds.h"
 #include "shaders/uniforms.h"
 #include "controllers.h"
 
@@ -138,11 +138,11 @@ app::app(path assets)
   ground_albedo = vec3(0.25f, 0.4f, 0.4f); 
   turbidity = 5.f;
   use_sun_area_light_approximation = true;
-
   
   enable_seascape = true;
   use_sun_area_light_approximation = true;
-  use_lens_flare = true;
+
+  use_lens_flare = false;
   lens_flare_exposure = -3.5;
   lens_flare_halo_radius = 0.433;
   lens_flare_ghosts = 8;
@@ -377,8 +377,11 @@ void app::run() {
     l->info("submit_uniforms");
     submit_uniforms();
 
+
     l->info("render_stencil");
     distorted.render_stencil();
+
+    // begin scene
 
     l->info("drawing rendermodels");
     rendermodels.draw(device_mask);
@@ -386,8 +389,7 @@ void app::run() {
     l->info("skybox");
     sky.render();
 
-    //l->info("drawing control vectors");
-    //controllers.render(controller_mask);
+    // end scene
 
     l->info("post");
     quality.resolve(post.presolve);

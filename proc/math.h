@@ -1,3 +1,4 @@
+#pragma once
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -8,9 +9,9 @@ namespace framework {
     vec3 a = abs(v);
     float m = std::min(std::min(a.x, a.y), a.z);
     return normalize(
-      (m == a.x) ? cross(v, vec3(1, 0, 0))
+        (m == a.x) ? cross(v, vec3(1, 0, 0))
       : (m == a.y) ? cross(v, vec3(0, 1, 0))
-      : cross(v, vec3(0, 0, 1))
+                   : cross(v, vec3(0, 0, 1))
     );
   }
 

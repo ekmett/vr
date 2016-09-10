@@ -40,7 +40,6 @@ namespace framework {
     float constexpr pow(float base, int exponent) {
       return exponent <  0 ? 1.f / pow(base, -exponent) 
            : exponent == 0 ? 1.f 
-           : exponent == 1 ? base 
                            : base * pow(base, exponent - 1);
     }
 
@@ -95,7 +94,5 @@ namespace framework {
            : m < 0 ? sqrt(2) * K(l, m) * sin(-m*phi) * legendre(l, -m, cos(theta))
                    : K(l, m) * legendre(l, 0, cos(theta));
     }
-
-    static const float test = spherical_harmonic(1, 2, 3, 4);
   }
 }

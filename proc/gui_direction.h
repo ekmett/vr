@@ -3,6 +3,7 @@
 #include "std.h"
 #include "glm.h"
 #include "gui.h"
+#include "math.h"
 #include <glm/gtx/euler_angles.hpp>
 
 namespace framework {

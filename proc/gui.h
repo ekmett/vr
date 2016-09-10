@@ -14,7 +14,7 @@
 
 #include "imgui.h"
 #include <imgui_internal.h>
-#include "imgui_table.h"
+#include "gui_table.h"
 #include "IconsFontAwesome.h"
 #include "IconsMaterialDesign.h"
 #include "IconsKenney.h"
