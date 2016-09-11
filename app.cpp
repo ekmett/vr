@@ -670,9 +670,10 @@ int SDL_main(int argc, char ** argv) {
   SetProcessDPIAware(); // lest SDL2 lie and always tell us that DPI = 96
   cds_main_thread_attachment<> main_thread; // Allow use of concurrent data structures in the main threads
   log("main")->info("pid: {}", GetCurrentProcessId());
+  // cd ../.. from the executable
   if (_wchdir(executable_path().parent_path().parent_path().parent_path().native().c_str()))
     log("main")->warn("unable to set working directory");
   app main;
-  main.run(); 
+  main.run();
   return 0;
 }

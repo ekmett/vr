@@ -4,15 +4,6 @@
 namespace framework {
   namespace detail {
 
-    // build constexpr variant?
-    float radical_inverse(uint32_t b) {
-      b = (b << 16u) | (b >> 16u);
-      b = ((b & 0x55555555u) << 1u) | ((b & 0xAAAAAAAAu) >> 1u);
-      b = ((b & 0x33333333u) << 2u) | ((b & 0xCCCCCCCCu) >> 2u);
-      b = ((b & 0x0F0F0F0Fu) << 4u) | ((b & 0xF0F0F0F0u) >> 4u);
-      b = ((b & 0x00FF00FFu) << 8u) | ((b & 0xFF00FF00u) >> 8u);
-      return float(b) * 2.3283064365386963e-10f; // / 0x100000000
-    }
 
     // Successive primitive binary-coefficient polynomials 
     //

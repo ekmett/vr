@@ -44,6 +44,7 @@
       <Filter>unused</Filter>
     </ClCompile>
     <ClCompile Include="sampling.cpp" />
+    <ClCompile Include="sobol.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imgui.h">
@@ -149,6 +150,8 @@
     <ClInclude Include="epoch.h">
       <Filter>unused</Filter>
     </ClInclude>
+    <ClInclude Include="hammersley.h" />
+    <ClInclude Include="sobol.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="third-party\glm\util\glm.natvis" />

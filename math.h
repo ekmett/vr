@@ -1,10 +1,19 @@
 #pragma once
 #define _USE_MATH_DEFINES
 #include <math.h>
-
+#include <type_traits>
+#include "math_constexpr.h"
 #include "glm.h"
 
 namespace framework {
+
+
+  // the simple case of the logistic map
+  // https://en.wikipedia.org/wiki/Logistic_function
+  inline float sigmoid(float x) {
+    return 1 / (1 + exp(-x));
+  }
+
   static inline vec3 perpendicular(const vec3 & v) {
     vec3 a = abs(v);
     float m = std::min(std::min(a.x, a.y), a.z);
@@ -49,4 +58,14 @@ namespace framework {
     return degrees * T(M_PI / 180.0);
 #pragma warning( pop )
   }
+
+  using std::pow;
+
+  template <int N> float pow(float x) {    
+    return N > 0  ? exp(x * log(N))
+         : N == 0 ? 1.0f
+                  : 1 / exp(x * log(N));
+  }
+
+
 }
