@@ -46,13 +46,15 @@ namespace framework {
 
   // input in (0,0) - (1,1)
   inline float constexpr sample_direction_cone_PDF(float cosThetaMax) {
-    return 1.0f / (2.0f * float(M_PI) * (1.0f - cosThetaMax));
+    return 1.0f / (float(2 * M_PI) * (1.0f - cosThetaMax));
   }
 
-  // Hammersley Points
+  //--------------------------------------------------------------------------
+  // Hammersley Low Discrepancy Sequence
+  //--------------------------------------------------------------------------
 
   namespace detail {
-    // build constexpr variant?
+    // TODO: build constexpr variant?
     float radical_inverse(uint32_t b);
   }
   
@@ -60,6 +62,10 @@ namespace framework {
   inline vec2 hammersley_2d(uint32_t i, uint32_t N) {
     return vec2(i * (1.0 / N), detail::radical_inverse(i));
   }
+
+  //--------------------------------------------------------------------------
+  // Halton Low Discrepancy Sequence
+  //--------------------------------------------------------------------------
 
   // may be useful if I add faure or halton
   namespace detail {
@@ -73,6 +79,11 @@ namespace framework {
       return result;
     }
   }
+
+  //--------------------------------------------------------------------------
+  // Sobol Low Discrepancy Sequence
+  //--------------------------------------------------------------------------
+
 
   namespace detail {
     static inline uint32_t ctz(uint32_t value) {
@@ -109,7 +120,7 @@ namespace framework {
         uint32_t a = detail::sobol_a[i - 1];
         uint32_t d = floor(log2<float>(a)); // use clz based integer log 2?
         for (uint32_t j = 0;j < d;++j)
-          m[i][j] = detail::sobol_minit[j][i - 1];
+          m[i][j] = detail::sobol_minit[j][i - 1]; // TODO: transpose sobol_minit
         for (uint32_t j = d; j < 32; ++j) {
           uint32_t ac = a;
           m[i][j] = m[i][j - d];
