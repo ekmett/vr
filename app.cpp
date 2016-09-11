@@ -19,6 +19,7 @@
 #include "cds.h"
 #include "shaders/uniforms.h"
 #include "controllers.h"
+#include "sampling.h"
 
 using namespace framework;
 using namespace filesystem;
@@ -672,6 +673,6 @@ int SDL_main(int argc, char ** argv) {
   if (_wchdir(executable_path().parent_path().parent_path().parent_path().native().c_str()))
     log("main")->warn("unable to set working directory");
   app main;
-  main.run();
+  main.run(); 
   return 0;
 }

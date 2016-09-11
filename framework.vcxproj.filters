@@ -43,6 +43,7 @@
     <ClCompile Include="epoch.cpp">
       <Filter>unused</Filter>
     </ClCompile>
+    <ClCompile Include="sampling.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imgui.h">

@@ -223,6 +223,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="sampling.cpp" />
     <ClCompile Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c" />
     <ClCompile Include="third-party\imgui\imgui.cpp" />
     <ClCompile Include="third-party\imgui\imgui_demo.cpp" />

@@ -236,8 +236,7 @@ namespace framework {
         for (size_t x = 0;x < num_samples; ++x)
           for (size_t y = 0;y < num_samples; ++y) {
             vec3 sample_dir = sun_orientation * sample_direction_cone(
-              (x + 0.5f) / num_samples,
-              (y + 0.5f) / num_samples,
+              vec2( (x + 0.5f) / num_samples, (y + 0.5f) / num_samples ),
               cos_physical_sun_angular_radius
             );
             float sample_theta_sun = angle_between(sample_dir, vec3(0, 1, 0));
