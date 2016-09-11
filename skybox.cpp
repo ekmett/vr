@@ -140,8 +140,8 @@ namespace framework {
     float theta_sun = angle_between(sun_dir, vec3(0, 1, 0));
     elevation = float(M_PI_2) - theta_sun;
 
-    alloca_array<tvec4<half>> cubemap_data(6 * N * N);
-    alloca_array<tvec4<uint8_t>> tonemapped_cubemap_data(6 * N*N);
+    vector<tvec4<half>> cubemap_data(6 * N * N);
+    vector<tvec4<uint8_t>> tonemapped_cubemap_data(6 * N*N);
 
     {
       // compute skybox and spherical harmonics ~2s

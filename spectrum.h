@@ -6,7 +6,6 @@
 #include <vector>
 #include "std.h"
 #include "glm.h"
-#include "alloca_array.h"
 #include <boost/range/irange.hpp>
 
 namespace framework {
@@ -239,13 +238,13 @@ namespace framework {
         std::sort(indices.begin(), indices.end(), [lambda](int a, int b) {
           return lambda[a] < lambda[b];
         });
-        alloca_array<float> slambda(n), sv(n);
+        vector<float> slambda(n), sv(n);
         for (int i = 0; i < n;++i) {
           int j = indices[i];
           slambda[i] = lambda[j];
           sv[i] = v[j];
         }
-        return from_sorted_samples(slambda.c_array(), sv.c_array(), n);
+        return from_sorted_samples(slambda.data(), sv.data(), n);
       } else {
         return from_sorted_samples(lambda, v, n);
       }

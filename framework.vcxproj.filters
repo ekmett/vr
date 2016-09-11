@@ -77,9 +77,6 @@
     <ClInclude Include="aligned_allocator.h">
       <Filter>concurrency</Filter>
     </ClInclude>
-    <ClInclude Include="alloca_array.h">
-      <Filter>concurrency</Filter>
-    </ClInclude>
     <ClInclude Include="apply.h" />
     <ClInclude Include="cache_isolated.h">
       <Filter>concurrency</Filter>

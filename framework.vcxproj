@@ -275,7 +275,6 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="framework.h" />
     <ClInclude Include="adsr.h" />
     <ClInclude Include="aligned_allocator.h" />
-    <ClInclude Include="alloca_array.h" />
     <ClInclude Include="apply.h" />
     <ClInclude Include="cache_isolated.h" />
     <ClInclude Include="cds.h" />
