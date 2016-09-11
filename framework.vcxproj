@@ -266,6 +266,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_Spectral.h" />
+    <ClInclude Include="third-party\imgui\imconfig.h" />
     <ClInclude Include="third-party\imgui\imgui.h" />
     <ClInclude Include="third-party\imgui\imgui_internal.h" />
     <ClInclude Include="third-party\imgui\stb_rect_pack.h" />
