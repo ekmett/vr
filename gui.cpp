@@ -198,7 +198,7 @@ namespace framework {
 
       float ddpi;
       SDL_GetDisplayDPI(display, &ddpi, nullptr, nullptr); // 96 default, 144 is 50% scale up
-      content_scale = ddpi / 96.0;
+      content_scale = ddpi / 96.0f;
 
       log("app")->info("Display DPI: {}, scale factor: {}%", ddpi, content_scale*100.0);
 

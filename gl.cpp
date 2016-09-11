@@ -16,7 +16,7 @@ namespace framework {
 
     string trim(const char * message) {
       string result = message;
-      int len = result.length();
+      size_t len = result.length();
       if (len > 0 && result[len - 1] == '\n')
         result.resize(len - 1);      
       return result;

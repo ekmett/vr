@@ -14,6 +14,8 @@
 namespace framework {
 
   namespace logging {
+
+
     using namespace spdlog;
 
 #if defined(_DEBUG) && defined(_WIN32)
@@ -85,6 +87,21 @@ namespace framework {
       if (!result) result = (*factory)(name);
       return result;
     }
+
+    struct harness {
+      template <typename ... Ts> 
+      harness(Ts ... args) {
+        for (auto && a : { args ... } )
+          ignored.push_back(spdlog::create<spdlog::sinks::null_sink_st>(a));
+        spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.      
+      }
+      ~harness() {
+        ignored.clear();
+        spdlog::details::registry::instance().apply_all([](shared_ptr<logger> logger) { logger->flush(); }); // make sure the logs are flushed before shutting down
+        spdlog::details::registry::instance().drop_all(); // allow any dangling logs with no references to more gracefully shutdown
+      }
+      vector<shared_ptr<logger>> ignored;
+    };
   }
 
   // pollute the framework namespace with common stuff

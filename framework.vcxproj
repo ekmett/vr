@@ -20,8 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4E658DEB-0CA1-4817-B404-2868AED2B0DC}</ProjectGuid>
-    <RootNamespace>proc</RootNamespace>
+    <RootNamespace>framework</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>framework</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -55,27 +56,27 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\properties\Win32.props" />
-    <Import Project="..\properties\Debug.props" />
-    <Import Project="..\properties\ThirdParty.props" />
+    <Import Project="properties\Win32.props" />
+    <Import Project="properties\Debug.props" />
+    <Import Project="properties\ThirdParty.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\properties\Win32.props" />
-    <Import Project="..\properties\Release.props" />
-    <Import Project="..\properties\ThirdParty.props" />
+    <Import Project="properties\Win32.props" />
+    <Import Project="properties\Release.props" />
+    <Import Project="properties\ThirdParty.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\properties\Win64.props" />
-    <Import Project="..\properties\Debug.props" />
-    <Import Project="..\properties\ThirdParty.props" />
+    <Import Project="properties\Win64.props" />
+    <Import Project="properties\Debug.props" />
+    <Import Project="properties\ThirdParty.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\properties\Win64.props" />
-    <Import Project="..\properties\Release.props" />
-    <Import Project="..\properties\ThirdParty.props" />
+    <Import Project="properties\Win64.props" />
+    <Import Project="properties\Release.props" />
+    <Import Project="properties\ThirdParty.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -104,6 +105,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)\shaders;$(SolutionDir)third-party\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <OpenMPSupport>true</OpenMPSupport>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -133,6 +135,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
       <AdditionalIncludeDirectories>$(ProjectDir)\shaders;$(SolutionDir)third-party\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <OpenMPSupport>true</OpenMPSupport>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -220,10 +223,10 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c" />
-    <ClCompile Include="..\third-party\imgui\imgui.cpp" />
-    <ClCompile Include="..\third-party\imgui\imgui_demo.cpp" />
-    <ClCompile Include="..\third-party\imgui\imgui_draw.cpp" />
+    <ClCompile Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c" />
+    <ClCompile Include="third-party\imgui\imgui.cpp" />
+    <ClCompile Include="third-party\imgui\imgui_demo.cpp" />
+    <ClCompile Include="third-party\imgui\imgui_draw.cpp" />
     <ClCompile Include="app.cpp" />
     <ClCompile Include="controllers.cpp" />
     <ClCompile Include="aligned_allocator.cpp" />
@@ -250,23 +253,23 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClCompile Include="overlay.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\cds.vcxproj">
+    <ProjectReference Include="cds.vcxproj">
       <Project>{408fe9bc-44f0-4e6a-89fa-d6f952584239}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h" />
-    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h" />
-    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h" />
-    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_Spectral.h" />
-    <ClInclude Include="..\third-party\imgui\imgui.h" />
-    <ClInclude Include="..\third-party\imgui\imgui_internal.h" />
-    <ClInclude Include="..\third-party\imgui\stb_rect_pack.h" />
-    <ClInclude Include="..\third-party\imgui\stb_textedit.h" />
-    <ClInclude Include="..\third-party\imgui\stb_truetype.h" />
+    <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h" />
+    <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h" />
+    <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h" />
+    <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_Spectral.h" />
+    <ClInclude Include="third-party\imgui\imgui.h" />
+    <ClInclude Include="third-party\imgui\imgui_internal.h" />
+    <ClInclude Include="third-party\imgui\stb_rect_pack.h" />
+    <ClInclude Include="third-party\imgui\stb_textedit.h" />
+    <ClInclude Include="third-party\imgui\stb_truetype.h" />
     <ClInclude Include="math.h" />
     <ClInclude Include="math_constexpr.h" />
-    <ClInclude Include="shaders\uniforms.h" />
+    <ClInclude Include="framework\shaders\uniforms.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="controllers.h" />
     <ClInclude Include="framework.h" />
@@ -323,7 +326,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="overlay.h" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="..\third-party\glm\util\glm.natvis" />
+    <Natvis Include="third-party\glm\util\glm.natvis" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\brdf.glsl" />

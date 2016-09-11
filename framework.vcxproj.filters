@@ -1,26 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="app.cpp" />
-    <ClCompile Include="stb.cpp" />
-    <ClCompile Include="..\third-party\imgui\imgui.cpp">
+    <ClCompile Include="third-party\imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\third-party\imgui\imgui_demo.cpp">
+    <ClCompile Include="third-party\imgui\imgui_demo.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\third-party\imgui\imgui_draw.cpp">
+    <ClCompile Include="third-party\imgui\imgui_draw.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c">
+    <ClCompile Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c">
       <Filter>hosek</Filter>
     </ClCompile>
+    <ClCompile Include="app.cpp" />
     <ClCompile Include="aligned_allocator.cpp">
       <Filter>concurrency</Filter>
     </ClCompile>
     <ClCompile Include="controllers.cpp" />
     <ClCompile Include="distortion.cpp" />
-    <ClCompile Include="epoch.cpp" />
     <ClCompile Include="filesystem.cpp" />
     <ClCompile Include="gl.cpp" />
     <ClCompile Include="gui.cpp" />
@@ -37,44 +35,45 @@
     <ClCompile Include="spdlog.cpp" />
     <ClCompile Include="spectrum.cpp" />
     <ClCompile Include="spherical_harmonics.cpp" />
+    <ClCompile Include="stb.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="worker.cpp">
       <Filter>concurrency</Filter>
     </ClCompile>
+    <ClCompile Include="epoch.cpp">
+      <Filter>unused</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="adsr.h" />
-    <ClInclude Include="stb.h" />
+    <ClInclude Include="third-party\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\stb_rect_pack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\stb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\stb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h">
+      <Filter>hosek</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h">
+      <Filter>hosek</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h">
+      <Filter>hosek</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_Spectral.h">
+      <Filter>hosek</Filter>
+    </ClInclude>
+    <ClInclude Include="framework\shaders\uniforms.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="..\third-party\imgui\imgui.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\imgui\imgui_internal.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\imgui\stb_rect_pack.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\imgui\stb_textedit.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\imgui\stb_truetype.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h">
-      <Filter>hosek</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h">
-      <Filter>hosek</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h">
-      <Filter>hosek</Filter>
-    </ClInclude>
-    <ClInclude Include="..\third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_Spectral.h">
-      <Filter>hosek</Filter>
-    </ClInclude>
-    <ClInclude Include="shaders\uniforms.h" />
     <ClInclude Include="aligned_allocator.h">
       <Filter>concurrency</Filter>
     </ClInclude>
@@ -94,14 +93,13 @@
     <ClInclude Include="circular_array.h">
       <Filter>concurrency</Filter>
     </ClInclude>
-    <ClInclude Include="composition.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="controllers.h" />
     <ClInclude Include="distortion.h" />
-    <ClInclude Include="epoch.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="filesystem.h" />
     <ClInclude Include="fmt.h" />
+    <ClInclude Include="framework.h" />
     <ClInclude Include="gl.h" />
     <ClInclude Include="glew.h" />
     <ClInclude Include="glm.h" />
@@ -135,6 +133,7 @@
     <ClInclude Include="spdlog.h" />
     <ClInclude Include="spectrum.h" />
     <ClInclude Include="spherical_harmonics.h" />
+    <ClInclude Include="stb.h" />
     <ClInclude Include="std.h" />
     <ClInclude Include="stereo_fbo.h" />
     <ClInclude Include="texturing.h" />
@@ -143,9 +142,18 @@
     <ClInclude Include="worker.h">
       <Filter>concurrency</Filter>
     </ClInclude>
+    <ClInclude Include="adsr.h">
+      <Filter>unused</Filter>
+    </ClInclude>
+    <ClInclude Include="composition.h">
+      <Filter>unused</Filter>
+    </ClInclude>
+    <ClInclude Include="epoch.h">
+      <Filter>unused</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="..\third-party\glm\util\glm.natvis" />
+    <Natvis Include="third-party\glm\util\glm.natvis" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\brdf.glsl" />
@@ -182,6 +190,9 @@
     </Filter>
     <Filter Include="concurrency">
       <UniqueIdentifier>{b2f1f083-025f-4d1b-b9ae-7bb617d91481}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="unused">
+      <UniqueIdentifier>{6477b688-f5ff-4ea4-8bc2-f05d88225175}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

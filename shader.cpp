@@ -180,7 +180,7 @@ namespace framework {
           string contents = read_file(real);
           string imaginary_name = imaginary.generic_string();
           string terminated_contents = contents + "\n"; // the spec is a little literal minded
-          glNamedStringARB(GL_SHADER_INCLUDE_ARB, imaginary_name.size(), imaginary_name.c_str(), terminated_contents.size(), terminated_contents.c_str());
+          glNamedStringARB(GL_SHADER_INCLUDE_ARB, GLint(imaginary_name.size()), imaginary_name.c_str(), GLint(terminated_contents.size()), terminated_contents.c_str());
         }
       } else {
         log("gl")->warn("ignoring file {}", real.string());

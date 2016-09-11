@@ -15,7 +15,7 @@ namespace framework {
     { 8, 1.4f },
   };
 
-  static const int render_target_count = countof(render_target_metas);
+  static const size_t render_target_count = countof(render_target_metas);
 
   static const struct quality_level {
     int render_target;
@@ -39,9 +39,9 @@ namespace framework {
     //, { 1, 1.8,  false }
   };
 
-  static const float max_supersampling_factor = 1.4;
+  static const float max_supersampling_factor = 1.4f;
 
-  static const int quality_level_count = countof(quality_levels);
+  static const size_t quality_level_count = countof(quality_levels);
 
   struct quality {
     quality(int quality_level = 4);

@@ -8,7 +8,7 @@ namespace framework {
   vec3 sample_direction_cone(float u1, float u2, float cosThetaMax) {
     float cosTheta = (1.0f - u1) + u1 * cosThetaMax;
     float sinTheta = std::sqrt(1.0f - cosTheta * cosTheta);
-    float phi = u2 * 2.0f * M_PI;
+    float phi = u2 * float(2 * M_PI);
     return vec3(std::cos(phi) * sinTheta, std::sin(phi) * sinTheta, cosTheta);
   }
 

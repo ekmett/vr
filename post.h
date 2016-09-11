@@ -51,7 +51,7 @@ namespace framework {
         //fbo[i].initialize(name, GL_R11F_G11F_B10F);
       }
       
-      glCreateProgramPipelines(countof(pipelines), pipelines);
+      glCreateProgramPipelines(GLsizei(countof(pipelines)), pipelines);
 
       glUniformBlockBinding(pass, 0, 0);
 
@@ -133,7 +133,7 @@ namespace framework {
       glDeleteTextures(1, &star);
       glDeleteTextures(1, &color);
       glDeleteVertexArrays(1, &vao);
-      glDeleteProgramPipelines(countof(pipelines), pipelines);
+      glDeleteProgramPipelines(GLsizei(countof(pipelines)), pipelines);
     }
 
     void process() {

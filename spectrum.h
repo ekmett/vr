@@ -220,7 +220,6 @@ namespace framework {
     static sampled_spectrum from_sorted_samples(const float * lambda, const float * v, int n) {
       sampled_spectrum result;
       auto start = float(sampled_lambda_start), end = float(sampled_lambda_end);
-#pragma omp parallel for
       for (int i = 0; i < spectral_samples; ++i) {
         float lambda0 = lerp(start, end, float(i));
         float lambda1 = lerp(start, end, float(i + 1));

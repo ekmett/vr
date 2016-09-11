@@ -48,7 +48,7 @@ namespace framework {
     for (int i = 0;i < 2;++i) {
       auto mesh = VRSystem()->GetHiddenAreaMesh(EVREye(i));
       if (mesh.unTriangleCount == 0) continue;
-      for (int j = 0; j < mesh.unTriangleCount * 3; ++j) {
+      for (uint32_t j = 0; j < mesh.unTriangleCount * 3; ++j) {
         auto v = mesh.pVertexData[j].v;
         hidden_verts.push_back(vec2(v[0] * 2 - 1, 1 - 2 * v[1]));
       }

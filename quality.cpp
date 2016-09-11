@@ -8,8 +8,8 @@
 
 namespace framework {
   static int total_dropped_frames = 0;
-  static int last_adapted = 0;
-  static float old_utilization = 0.8, old_old_utilization = 0.8, utilization = 0.8;
+  static uint32_t last_adapted = 0;
+  static float old_utilization = 0.8f, old_old_utilization = 0.8f, utilization = 0.8f;
   static vr::Compositor_FrameTiming frame_timing{};
 
   quality::quality(int quality_level)
@@ -69,7 +69,7 @@ namespace framework {
       gui::SliderInt("min quality", &minimum_quality_level, 0, quality_level_count - 1);
       gui::SliderInt("quality", &quality_level, 0, quality_level_count - 1);
       gui::SliderInt("max quality", &maximum_quality_level, 0, quality_level_count - 1);
-      gui::SliderFloat("super-sampling", &desired_supersampling, 0.3, framework::max_supersampling_factor);
+      gui::SliderFloat("super-sampling", &desired_supersampling, 0.3f, framework::max_supersampling_factor);
       gui::Checkbox("force interleaved reprojection", &force_interleaved_reprojection);
       gui::End();
     }
@@ -101,7 +101,7 @@ namespace framework {
     current_render_fbo().bind();
 
     glStencilMask(1);
-    glClearColor(0.18, 0.18, 0.18, 0);
+    glClearColor(0.18f, 0.18f, 0.18f, 0.f);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glViewport(0, 0, viewport_w, viewport_h);

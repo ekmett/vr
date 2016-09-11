@@ -110,7 +110,7 @@ namespace framework {
     uniforms.turbidity = clamp(uniforms.turbidity, 1.f, 10.f);
     uniforms.sky_cubemap = cubemap_handle;
 
-    static const float epsilon = 1e-6;
+    static const float epsilon = 1e-6f;
     
     // check if we need to update
     if (initialized) { // always run if not initialized
@@ -138,7 +138,7 @@ namespace framework {
     ground_albedo = uniforms.ground_albedo;
 
     float theta_sun = angle_between(sun_dir, vec3(0, 1, 0));
-    elevation = M_PI_2 - theta_sun;
+    elevation = float(M_PI_2) - theta_sun;
 
     alloca_array<tvec4<half>> cubemap_data(6 * N * N);
     alloca_array<tvec4<uint8_t>> tonemapped_cubemap_data(6 * N*N);
@@ -185,9 +185,9 @@ namespace framework {
               if (flip[s]) i = (s + 1) * N*N - 1 - y*N - x;
 
               tonemapped_cubemap_data[i] = tvec4<uint8_t>{
-                uint8_t(clamp<float>(128.0 * radiance.r / (radiance.r + 1),0.f, 255.f)),
-                uint8_t(clamp<float>(128.0 * radiance.g / (radiance.g + 1),0.f, 255.f)),
-                uint8_t(clamp<float>(128.0 * radiance.b / (radiance.b + 1),0.f, 255.f)),
+                uint8_t(clamp<float>(128.0f * radiance.r / (radiance.r + 1),0.f, 255.f)),
+                uint8_t(clamp<float>(128.0f * radiance.g / (radiance.g + 1),0.f, 255.f)),
+                uint8_t(clamp<float>(128.0f * radiance.b / (radiance.b + 1),0.f, 255.f)),
                 255
               };
 

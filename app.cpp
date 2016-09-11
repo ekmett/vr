@@ -68,7 +68,7 @@ viewport_dim fit_viewport(float aspectRatio, int w, int h, bool bottom_justified
 }
 
 struct app : app_uniforms {
-  app(path assets);
+  app();
   ~app();
 
   void run();
@@ -116,10 +116,10 @@ private:
 };
 
 
-app::app(path assets)
-  : window("proc", { 4, 5, gl::profile::core }, true, 50, 50, 1280, 1024)
+app::app()
+  : window("framework", { 4, 5, gl::profile::core }, true, 50, 50, 1280, 1024)
   , vr()
-  , compiler(path(assets).append("shaders"))
+  , compiler(path("shaders"))
   , gui(window)
   , quality(3)
   , post(quality)
@@ -143,10 +143,10 @@ app::app(path assets)
   use_sun_area_light_approximation = true;
 
   use_lens_flare = false;
-  lens_flare_exposure = -3.5;
-  lens_flare_halo_radius = 0.433;
+  lens_flare_exposure = -3.5f;
+  lens_flare_halo_radius = 0.433f;
   lens_flare_ghosts = 8;
-  lens_flare_ghost_dispersal = 0.11;
+  lens_flare_ghost_dispersal = 0.11f;
 
   rendermodel_metallic = 0.1f;
   rendermodel_roughness = 0.05f;
@@ -613,7 +613,7 @@ bool app::show_gui(bool * open) {
 
   if (show_settings_window) {
     gui::Begin("Settings", &show_settings_window);    
-    gui::SliderInt("desktop view", &desktop_view, 0, countof(desktop_views) - 1);
+    gui::SliderInt("desktop view", &desktop_view, 0, int(countof(desktop_views) - 1));
     gui::Checkbox("double buffer resolve", &quality.double_buffer); 
     gui::SameLine();
     gui::Checkbox("finish", &gl_finish_hack);
@@ -629,7 +629,7 @@ bool app::show_gui(bool * open) {
     bool lensflare = use_lens_flare; gui::Checkbox("lens flares", &lensflare); use_lens_flare = lensflare;
     gui::SliderFloat("flare halo radius", &lens_flare_halo_radius, -2, 2);
     gui::SliderInt("flare ghosts", &lens_flare_ghosts, 0, 20);
-    gui::SliderFloat("flare ghost dispersal", &lens_flare_ghost_dispersal, 0.001, 2);
+    gui::SliderFloat("flare ghost dispersal", &lens_flare_ghost_dispersal, 0.001f, 2.f);
     gui::End();
   }
 
@@ -665,38 +665,13 @@ bool app::show_gui(bool * open) {
 }
 
 int SDL_main(int argc, char ** argv) {
-   spdlog::set_pattern("%a %b %m %Y %H:%M:%S.%e - %n %l: %v"); // [thread %t]"); // close enough to the native notifications from openvr that the debug log is readable.
-   shared_ptr<spdlog::logger> ignore_logs[]{
-     spdlog::create<spdlog::sinks::null_sink_mt>("vr"),
-     spdlog::create<spdlog::sinks::null_sink_mt>("gl"),
-     spdlog::create<spdlog::sinks::null_sink_mt>("al"),
-     spdlog::create<spdlog::sinks::null_sink_mt>("main"),
-      spdlog::create<spdlog::sinks::null_sink_mt>("app"),
-     spdlog::create<spdlog::sinks::null_sink_mt>("post"),
-    // spdlog::create<spdlog::sinks::null_sink_mt>("quality"),
-     spdlog::create<spdlog::sinks::null_sink_mt>("distortion"),
-     spdlog::create<spdlog::sinks::null_sink_mt>("rendermodel"),
-   };
-
-#ifdef _WIN32
-  SetProcessDPIAware(); // if we don't call this, then SDL2 will lie and always tell us that DPI = 96
-#endif
-
-  log("main")->info("pid: {}", GetCurrentProcessId());
-
-  //omp_set_dynamic(6);
-
-  //path exe = executable_path();
-  //path asset_dir = path(exe.parent_path().parent_path().parent_path()).append("proc\\assets");
-  path asset_dir = R"(d:\vr\proc)";
-  _wchdir(asset_dir.native().c_str());
-
+  logging::harness logs("vr", "gl", "al", "main", "app", "post", "distortion", "rendermodel");
+  SetProcessDPIAware(); // lest SDL2 lie and always tell us that DPI = 96
   cds_main_thread_attachment<> main_thread; // Allow use of concurrent data structures in the main threads
-
-  app main("");
+  log("main")->info("pid: {}", GetCurrentProcessId());
+  if (_wchdir(executable_path().parent_path().parent_path().parent_path().native().c_str()))
+    log("main")->warn("unable to set working directory");
+  app main;
   main.run();
-
-  spdlog::details::registry::instance().apply_all([](shared_ptr<logger> logger) { logger->flush(); }); // make sure the logs are flushed before shutting down
-  spdlog::details::registry::instance().drop_all(); // allow any dangling logs with no references to more gracefully shutdown
   return 0;
 }

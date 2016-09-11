@@ -88,8 +88,7 @@ namespace framework {
       ImDrawList* drawList = ImGui::GetWindowDrawList();
 
       auto line = [&](vec3 a, vec3 b) {
-        float z = (a.z + b.z)/2;
-        z = pow(z, 2.2);
+        float z = pow((a.z + b.z)/2,2.2f);
         ImColor color(1.0f, 1.0f, 0.f, z);
         drawList->AddLine(vec2(a), vec2(b), color);
       };
@@ -112,7 +111,7 @@ namespace framework {
       auto rot = [&](float theta, float r = 1.0f) { return canvas(view3 * r * vec3(cos(theta), 0, -sin(theta))); };
 
       if (convert_to_view_space) {
-        line(rot(0, 0.9), rot(0, 1.1));
+        line(rot(0, 0.9f), rot(0, 1.1f));
         float lo = .7f;
         float hi = .85f;
         float w = float(-M_PI / 30);
