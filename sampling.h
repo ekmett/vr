@@ -7,7 +7,7 @@
 namespace framework {
   // Sample uniformly from the surface of a sphere using 
   // [Archimedes' Hat-Box Theorem](http://mathworld.wolfram.com/ArchimedesHat-BoxTheorem.html).
-  extern vec3 sample_sphere(vec2 uv) noexcept;
+  vec3 sample_sphere(vec2 uv) noexcept;
   static constexpr const float sample_sphere_pdf = float(0.25 / M_PI);
 
   // Sample, cosine weighted, from the surface of a sphere
@@ -18,11 +18,16 @@ namespace framework {
   static constexpr const float sample_ball_pdf = float(0.75 / M_PI);
 
   // Sample from the surface of a hemisphere using concentric disc sampling.
-  extern vec3 sample_hemisphere(vec2 uv) noexcept;
+  vec3 sample_hemisphere(vec2 uv) noexcept;
   static constexpr const float sample_hemisphere_pdf = float(0.5 / M_PI);
 
   // Sample from a cosine weighted hemisphere using concentric disc sampling.
-  extern vec3 sample_hemisphere_cos(vec2 uv, float * pdf = nullptr) noexcept;
+  vec3 sample_hemisphere_cos(vec2 uv, float * pdf = nullptr) noexcept;
+
+  // Sample from a hemisphere weighted with a phong-like power cosine. 
+  // sample_hemisphere and sample_hemisphere_cos are special cases
+  // TODO: concentric discs
+  vec3 sample_hemisphere_power_cos(vec2 uv, float exponent, float * pdf = nullptr) noexcept;
 
   // Sample from a directional cone using Archimedes hat box.
   vec3 sample_cone(vec2 uv, float cosThetaMax) noexcept;
@@ -31,14 +36,14 @@ namespace framework {
   }
 
   // Direct sampling from an annulus on a disc using polar projection
-  extern vec2 sample_annulus(vec2 uv, float r_min, float r_max) noexcept;
+  vec2 sample_annulus(vec2 uv, float r_min, float r_max) noexcept;
   static constexpr float sample_annulus_pdf(float r_min, float r_max) noexcept {
     return 2 / (r_max*r_max - r_min*r_min);
   }
 
   // draw samples from polar coordinates drawn uniformly from the disc of radius 1
-  extern polar sample_polar(vec2 uv) noexcept;
-  extern vec2 unsample_polar(polar p) noexcept;
+  polar sample_polar(vec2 uv) noexcept;
+  vec2 unsample_polar(polar p) noexcept;
 
   // sample uniformly from a disc of radius 1.
   vec2 sample_disc(vec2 uv) noexcept;

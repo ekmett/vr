@@ -48,11 +48,11 @@ namespace framework {
   }
 
   // sample hemisphere with cosine weighting by concentric disc mapping
-  vec3 sample_hemisphere_cos(vec2 uv, float * weight) noexcept {
+  vec3 sample_hemisphere_cos(vec2 uv, float * pdf) noexcept {
     polar p = sample_polar(uv);
     vec2 xy = p.to_disc();
-    if (weight) *weight = sin2cos(uv.x) * float(M_1_PI); // cos theta / pi
-    return vec3(xy, sqrt(std::max(0.f, 1.f - p.r*p.r)));
+    if (pdf) *pdf = sin2cos(uv.x) * float(M_1_PI); // cos theta / pi
+    return vec3(xy, sin2cos(p.r));
   }
 
   // Archimedes' hat box
@@ -66,7 +66,15 @@ namespace framework {
   // Generate points on a disc and project
     float phi = uv.y * tau;
     float cosTheta = sqrt(std::max(0.f, 1.0f - uv.x));
-    float sinTheta = sqrt(std::max(0.f,1.0f - cosTheta * cosTheta));
+    float sinTheta = cos2sin(cosTheta);
+    return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+  }
+
+  vec3 sample_hemisphere_power_cos(vec2 uv, float exponent, float * pdf) noexcept {
+    float phi = uv.y * tau;
+    float cosTheta = pow(uv.x, rcp(exponent + 1));
+    float sinTheta = cos2sin(cosTheta);
+    if (pdf) *pdf = pow(cosTheta, exponent) * (exponent + 1) * float(0.5 * M_PI);
     return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
   }
 

@@ -9,6 +9,7 @@ namespace framework {
   static constexpr float pi = float(M_PI);
   static constexpr float pi_2 = float(M_PI_2);
   static constexpr float pi_4 = float(M_PI_4);
+
   static constexpr float tau = float(2 * M_PI);
 
   using math_constexpr::square;
@@ -16,11 +17,16 @@ namespace framework {
 
   // the simple case of the logistic map
   // https://en.wikipedia.org/wiki/Logistic_function
-  inline float sigmoid(float x) {
+  static inline float sigmoid(float x) noexcept {
     return 1 / (1 + exp(-x));
   }
 
-  static inline vec3 perpendicular(const vec3 & v) {
+  static constexpr inline float rcp(float x) noexcept {
+    return 1.f / x;
+  }
+
+
+  static inline vec3 perpendicular(const vec3 & v) noexcept {
     vec3 a = abs(v);
     float m = std::min(std::min(a.x, a.y), a.z);
     return normalize(
@@ -30,12 +36,12 @@ namespace framework {
     );
   }
 
-  constexpr inline float operator "" _degrees(long double d) noexcept {
-    return float(d * M_PI / 180.f);
+  static constexpr inline float operator "" _degrees(long double d) noexcept {
+    return float(d * M_PI / 180);
   }
 
   // input: azimuth & elevation
-  inline vec3 spherical_to_cartesian(vec2 s) {
+  static inline vec3 spherical_to_cartesian(vec2 s) {
     auto cy = std::cos(s.y);
     return vec3{
       std::cos(s.x) * cy,
@@ -44,21 +50,21 @@ namespace framework {
     };
   }
 
-  inline vec2 cartesian_to_spherical(vec3 c) {
+  static inline vec2 cartesian_to_spherical(vec3 c) {
     float azimuth = std::atan2(c.z, c.x);
     if (azimuth < 0.0f)
-      azimuth = 2.0f * float(M_PI) + azimuth;
+      azimuth = tau + azimuth;
     return vec2(azimuth, std::asin(c.y));
   }
 
-  template <typename T> T radians_to_degrees(T radians) {
+  template <typename T> static inline T radians_to_degrees(T radians) {
 #pragma warning( push )
 #pragma warning( disable : 4305 )
     return radians * T(180.0 / M_PI);
 #pragma warning( pop )
   }
 
-  template <typename T> T degrees_to_radians(T degrees) {
+  template <typename T> static inline T degrees_to_radians(T degrees) {
 #pragma warning( push )
 #pragma warning( disable : 4305 )
     return degrees * T(M_PI / 180.0);
@@ -67,7 +73,7 @@ namespace framework {
 
   using std::pow;
 
-  template <int N> float pow(float x) {    
+  template <int N> static inline float pow(float x) {    
     return N > 0  ? exp(x * log(N))
          : N == 0 ? 1.0f
                   : 1 / exp(x * log(N));
@@ -81,17 +87,16 @@ namespace framework {
         r * std::sin(phi)
       );
     }
-    static polar from_disc(vec2 xy) {
+    static inline polar from_disc(vec2 xy) {
       return polar{ sqrt(xy.x * xy.x + xy.y * xy.y), atan2(xy.y, xy.x) };
     }
   };
 
-  inline float cos2sin(float x) noexcept { 
+  static inline float cos2sin(float x) noexcept { 
     return sqrt(std::max(0.f, 1.f - x*x)); 
   }
 
-  inline float sin2cos(float x) noexcept { 
+  static inline float sin2cos(float x) noexcept { 
     return sqrt(std::max(0.f, 1.f - x*x)); 
   }
-
 }
