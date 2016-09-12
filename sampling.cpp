@@ -157,7 +157,9 @@ namespace framework {
       gui::RadioButton("ball", &e, 5); gui::SameLine();
       gui::RadioButton("disc", &e, 6); gui::SameLine();
       gui::RadioButton("annulus", &e, 7);
-
+      static bool compute_pi_4 = true;
+      if (e == 0)
+        gui::Checkbox("compute pi/4", &compute_pi_4);
       if (e == 3)
         gui::SliderInt("variant", &variant, 0, 2);      
       if (e == 4)
@@ -191,7 +193,7 @@ namespace framework {
             case 0: 
               q = vec3(vec2(p) * 2.0f - 1.0f, 0.5f);
               w = 1;
-              f_x = length(vec2(p)) < 1.f ? 1.f : 0.f;
+              f_x = !compute_pi_4 || length(vec2(p)) < 1.f ? 1.f : 0.f;
               break;
             case 1: 
               q = mat3(V) * sample_sphere(vec2(p)); 
@@ -260,8 +262,8 @@ namespace framework {
         }
       }
 
-      if (gui::CollapsingHeader("Bridson Fast Poisson Disc")) {
-        static float r = 0.2;
+      if (gui::CollapsingHeader("Bridson")) {
+        static float r = 0.05;
         static bool stable = true;
         static std::mt19937 rng;
         gui::SliderFloat("radius", &r, 0, 2); gui::SameLine();
@@ -278,13 +280,12 @@ namespace framework {
                 gui::text("{} samples", i);
                 break;
               }
-              //gui::text("{}", p);
               point(vec3(p, 0));
             }
           });
         }
       }
-      if (gui::CollapsingHeader("Mersenne Twister")) {
+      if (gui::CollapsingHeader("Mersenne")) {
         static bool stable = true;
         gui::Checkbox("stable", &stable);
         static std::mt19937 rng;

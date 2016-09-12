@@ -9,6 +9,14 @@ namespace framework {
     return d(rng);
   }
 
+  // for additional shape-based rejection sampling.
+  inline bool unit_bounds_check(const vec2 & candidate) noexcept {
+    return candidate.x >= 0 
+        && candidate.x <= 1 
+        && candidate.y >= 0 
+        && candidate.y <= 1;
+  }
+
   // 2d fast poisson disk sampling
   struct bridson {
     const float r;
@@ -22,8 +30,8 @@ namespace framework {
     
     bridson(float r) noexcept : r(std::max(r, 0.001f)) {}
 
-    template <typename RNG>
-    bool next(RNG rng, vec2 & result) noexcept {
+    template <typename RNG, typename OK = bool(const vec2 &)>
+    bool next(RNG & rng, vec2 & result, OK ok = unit_bounds_check) noexcept {
       if (!initialized) {
         result = vec2(runif(rng), runif(rng));
         samples.push_back(result);
@@ -38,13 +46,13 @@ namespace framework {
         for (int t = 0;t < tries;++t) {
           vec2 uv = vec2(runif(rng), runif(rng));
           vec2 candidate = center + sample_annulus(uv, r, 2 * r);
-          if (candidate.x < 0 || candidate.x > 1 || candidate.y < 0 || candidate.y > 1) continue; // out of bounds, reject
+          if (!ok(candidate)) continue;
           size_t x = pos(candidate.x), y = pos(candidate.y); 
           for (int i = bound(x - 2), i_max = bound(x + 2); i <= i_max; ++i) {
             for (int j = bound(y - 2), j_max = bound(y + 2); j <= j_max; ++j) {
               int g = grid[N * i + j];
               if (g != -1 && length(samples[g] - candidate) <= r) {
-                goto reject;
+                goto reject; // too close to an existing sample
               }
             }
           }
@@ -61,6 +69,7 @@ namespace framework {
         active[index] = active.back();
         active.pop_back();
       }     
+      // no active samples
       return false;
     }
     int bound(int x) const noexcept {
