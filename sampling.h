@@ -1,55 +1,62 @@
 #pragma once
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-#include <intrin.h>
-#include <type_traits>
-#include "glm.h"
+#include "math.h"
+#include "sampling_sobol.h"
+#include "sampling_hammersley.h"
 
 namespace framework {
 
-  // sample uniformly from a sphere using [Archimedes' Hat-Box Theorem](http://mathworld.wolfram.com/ArchimedesHat-BoxTheorem.html).
-  // input in (0,0) - (1,1)
-  inline vec3 sample_sphere_uniform(vec2 uv) {
-    float phi = uv.y * float(2 * M_PI);
-    float cosTheta = 1 - 2 * uv.x;
-    float sinTheta = sqrt(1 - cosTheta*cosTheta);
-    return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+  // Sample uniformly from the surface of a sphere using 
+  // [Archimedes' Hat-Box Theorem](http://mathworld.wolfram.com/ArchimedesHat-BoxTheorem.html).
+  vec3 sample_sphere(vec2 uv) noexcept;
+  static constexpr const float sample_sphere_pdf = float(0.25 / M_PI);
+
+  // [Random sampling inside a sphere](http://6degreesoffreedom.co/circle-random-sampling/)
+  inline vec3 sample_ball(vec3 uvw) noexcept {
+    return sample_sphere(vec2(uvw)) *  cbrt(uvw.z);
+  }  
+  static constexpr const float sample_ball_pdf = float(0.75 / M_PI);
+
+  // Sample from the surface of a hemisphere using concentric disc sampling. This produces less variance in jittered samples than Archimedes.
+  vec3 sample_hemisphere(vec2 uv) noexcept;
+  static constexpr const float sample_hemisphere_pdf = float(0.5 / M_PI);
+
+  // sample from the surface of a cosine weighted hemisphere by mapping to the unit disc with concentric disc sampling and then projecting.
+  vec3 sample_hemisphere_cos(vec2 uv) noexcept;
+
+  // cos theta / pi
+  inline float sample_hemisphere_cos_pdf(vec2 uv) noexcept { 
+    return sqrt(std::max(0.f, 1.f - uv.x)) * float(M_1_PI);
   }
 
-  // sample uniformly from a hemisphere using [Archimedes' Hat-Box Theorem](http://mathworld.wolfram.com/ArchimedesHat-BoxTheorem.html)
-  // input in (0,0) - (1,1)
-  inline vec3 sample_hemisphere_uniform(vec2 uv) {
-    float phi = uv.y * float(2 * M_PI);
-    float cosTheta = 1.0f - uv.x;
-    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
-    return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+  // Archimedes hat box.
+  vec3 sample_cone(vec2 uv, float cosThetaMax) noexcept;
+  inline float constexpr sample_cone_pdf(float cosThetaMax) noexcept {
+    return 1.f / (tau * (1.f - cosThetaMax));
   }
 
-  // Another hat box
-  // input in (0,0) - (1,1)
-  inline vec3 sample_hemisphere_cos(vec2 uv, float cosThetaMax) {
-    float phi = uv.y * float(2 * M_PI);
-    float cosTheta = sqrt(1.0f - uv.x);
-    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
-    return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+  extern vec2 sample_annulus(vec2 uv, float r_min, float r_max) noexcept;
+  inline float constexpr sample_annulus_pdf(float r_min, float r_max) noexcept {
+    return 2 / (r_max*r_max - r_min*r_min);
+  }
+  
+  extern polar sample_polar(vec2 uv) noexcept;
+  extern vec2 unsample_polar(polar p) noexcept;
+
+  inline vec2 unsample_disc(vec2 xy) noexcept {
+    return unsample_polar(polar::from_disc(xy));
   }
 
-  // Another hat box
-  // input in (0,0) - (1,1)
-  inline vec3 sample_direction_cone(vec2 uv, float cosThetaMax) {
-    float phi = uv.y * float(2 * M_PI);
-    float cosTheta = (1.0f - uv.x) + uv.x * cosThetaMax;
-    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
-    return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+  inline vec2 sample_disc(vec2 uv, float n, float weight) noexcept {
+    polar p = sample_polar(uv);
+    float polygon_modifier = cos(pi / n) / cos(p.phi - (pi / n) * floor((n * p.phi + pi) / tau));
+    p.r *= mix(1.f, polygon_modifier, weight);
+    return p.to_disc();
   }
 
-  // input in (0,0) - (1,1)
-  inline float constexpr sample_direction_cone_PDF(float cosThetaMax) {
-    return 1.0f / (float(2 * M_PI) * (1.0f - cosThetaMax));
-  }
+  static constexpr const float sample_disc_pdf = float(M_1_PI);
 
-
+  float sample_ggx_pdf(float roughness, vec3 N, vec3 H, vec3 V) noexcept; // no need for L
   //--------------------------------------------------------------------------
   // Halton Low Discrepancy Sequence
   //--------------------------------------------------------------------------
@@ -67,4 +74,12 @@ namespace framework {
     }
   }
 
+  // used for debugging
+  void sampling_debug_window(bool * open, mat4 V);
+
 };
+
+// The modification to include the polygon morphing modification for lens diaphram simulation from 
+// ["CryEngine3 Graphics Gems" (slide 36)](http://www.crytek.com/download/Sousa_Graphics_Gems_CryENGINE3.pdf)
+// by Tiago Sousa was drawn from [MJP's DX12 Sample Framework](http://mynameismjp.wordpress.com/) and 
+// is licensed under the MIT license.

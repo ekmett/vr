@@ -43,8 +43,9 @@
     <ClCompile Include="epoch.cpp">
       <Filter>unused</Filter>
     </ClCompile>
+    <ClCompile Include="sampling_sobol.cpp" />
     <ClCompile Include="sampling.cpp" />
-    <ClCompile Include="sobol.cpp" />
+    <ClCompile Include="sampling_bridson.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imgui.h">
@@ -150,11 +151,12 @@
     <ClInclude Include="epoch.h">
       <Filter>unused</Filter>
     </ClInclude>
-    <ClInclude Include="hammersley.h" />
-    <ClInclude Include="sobol.h" />
     <ClInclude Include="third-party\imgui\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="sampling_hammersley.h" />
+    <ClInclude Include="sampling_sobol.h" />
+    <ClInclude Include="sampling_bridson.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="third-party\glm\util\glm.natvis" />

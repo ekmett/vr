@@ -89,6 +89,15 @@ namespace framework {
     uint32_t skips = delta & ~(delta - 1);
     for (int i=0;i<skips;++i) next();
   }
+
+  // draw N samples from a D dimensional Sobol sequence with skip based warm up
+  template <typename D, typename F>
+  inline void for_sobol(int N, F f) {
+    sobol<D> s;
+    s.skip(N);
+    for (int i = 0;i < N; ++i)
+      f(s.next());
+  }
 }
 
 /*

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "sobol.h"
+#include "sampling_sobol.h"
 
 namespace framework {
   namespace detail {

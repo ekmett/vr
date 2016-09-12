@@ -83,6 +83,9 @@ namespace framework {
     void initialize(const string & name, GLenum internalformat = GL_RGBA16F) {
       finalize();
 
+
+      gl::debug_group debug("stereo_fbo {} initialization", name);
+
       glCreateFramebuffers(1, &fbo);
       glCreateTextures(target, 1, &texture);
       glCreateFramebuffers(N, fbo_view);
@@ -109,6 +112,8 @@ namespace framework {
 
     void finalize() {
       if (initialized) {
+        gl::debug_group debug("stereo_fbo finalization");
+
         for (auto h : texture_view_handle) glMakeTextureHandleNonResidentARB(h);
         glMakeTextureHandleNonResidentARB(texture_handle);
         glDeleteFramebuffers(1, &fbo);

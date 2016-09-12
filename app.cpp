@@ -99,7 +99,7 @@ struct app : app_uniforms {
   bool show_controllers_window = false;
   bool gl_finish_hack = true;
   bool read_pixel_hack = false;
-  bool show_distributions_window = true;
+  bool show_sampling_debug_window = true;
   
   gui::system gui;
   controllers controllers;
@@ -564,83 +564,7 @@ void app::desktop_display() {
   glViewport(0, 0, w, h);
 }
 
-#include "sobol.h"
-#include "hammersley.h"
-#include "sampling.h"
 
-// debugging tool for sampling distributions
-void distributions_window(bool * open, mat4 V) {
-  ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiSetCond_FirstUseEver);
-  if (open && gui::Begin("Distributions", open)) {
-    static int e = 0;
-    static int N = 1000;
-    static float thetaMax = physical_sun_angular_radius * 4;
-    gui::SliderInt("points", &N, 0, 20000);
-    gui::RadioButton("square", &e, 0); gui::SameLine();
-    gui::RadioButton("sphere", &e, 1); gui::SameLine();
-    gui::RadioButton("hemisphere", &e, 2); 
-    gui::RadioButton("hemisphere cos", &e, 3); gui::SameLine(); 
-    gui::RadioButton("cone dir", &e, 4); 
-    if (e == 3 || e == 4) {
-      gui::SliderFloat("theta max", &thetaMax, 0, 90.0_degrees);
-    }
-    auto panel = [&](auto f) {
-      auto draw_list = ImGui::GetWindowDrawList();
-      vec2 canvas_pos = ImGui::GetCursorScreenPos();
-      vec2 canvas_size = ImGui::GetContentRegionAvail();
-      
-      float m = std::max(std::min(canvas_size.x, canvas_size.y),50.0f);
-      canvas_size = vec2(m, m);
-      vec2 canvas_end = canvas_pos + canvas_size;
-      if (e == 0) {
-        draw_list->AddRect(canvas_pos, canvas_pos + canvas_size, ImColor(0.5f, 0.5f, 0.5f, 0.5f));
-      } else {
-        draw_list->AddCircleFilled(canvas_pos + canvas_size * 0.5f, m * 0.5f, ImColor(0.5f, 0.5f, 0.5f, 0.5f), 40);
-      }
-      ImGui::InvisibleButton("sobol", canvas_size);
-      auto point = [&](vec2 p) {
-        vec3 q;
-        switch (e) {
-          case 0: q = vec3(p * 2.0f - 1.0f, 0.5f); break;
-          case 1: q = -sample_sphere_uniform(p) * mat3(V); break;
-          case 2: q = -sample_hemisphere_uniform(p) * mat3(V); break;
-          case 3: q = -sample_hemisphere_cos(p, cos(thetaMax)) * mat3(V); break;     
-          case 4: q = -sample_direction_cone(p, cos(thetaMax)) * mat3(V); break;
-        }
-        draw_list->AddCircleFilled(canvas_pos + canvas_size * (vec2(q) * 0.5f + 0.5f), 1, ImColor(1.f, 1.f, 0.f, q.z), 6);        
-      };
-      f(point);
-    };
-    
-    if (gui::CollapsingHeader("Sobol")) {
-      static bool skip = true;
-      gui::Checkbox("skip", &skip);
-      panel([&](auto point) {
-        sobol<2> seq;
-        if (skip) seq.skip(N);
-        for (int i = 0;i < N;++i)
-          point(seq.next());
-      });
-    }
-    if (gui::CollapsingHeader("Hammersley")) {
-      panel([&](auto point) {
-        for (int i = 0;i < N;++i)
-          point(hammersley_2d(i, N));
-      });
-    }
-
-    if (gui::CollapsingHeader("Mersenne Twister")) {
-      panel([&](auto point) {
-        mt19937 rng;
-        uniform_real_distribution<float> dist(0.0f,1.0f);
-        for (int i = 0;i < N;++i)
-          point(vec2(dist(rng), dist(rng)));
-      });
-    }
-
-    gui::End();
-  }
-}
 
 bool app::show_gui(bool * open) {
   if (gui::BeginMainMenuBar()) {
@@ -684,15 +608,15 @@ bool app::show_gui(bool * open) {
       gui::MenuItem("Skybox", nullptr, &sky.show_skybox_window);
       gui::MenuItem("Render Models", nullptr, &show_rendermodel_window);
       gui::MenuItem("Controllers", nullptr, &show_controllers_window);
-      gui::MenuItem("Distributions", nullptr, &show_distributions_window);
+      gui::MenuItem("Distributions", nullptr, &show_sampling_debug_window);
       gui::EndMenu();
     }
 
     gui::EndMainMenuBar();
   }
 
-  if (show_distributions_window) distributions_window(&show_distributions_window, predicted_world_to_head);
-
+  if (show_sampling_debug_window)
+    sampling_debug_window(&show_sampling_debug_window, predicted_world_to_head);
 
   if (show_settings_window) {
     ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiSetCond_FirstUseEver);

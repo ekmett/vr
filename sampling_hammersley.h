@@ -19,11 +19,16 @@ namespace framework {
       return float(b) * 2.3283064365386963e-10f; // 1 / 0x100000000
     }
   }
-
   
   // 2D Hammersley Point Set
   // http://mathworld.wolfram.com/HammersleyPointSet.html
   inline vec2 hammersley_2d(uint32_t i, uint32_t N) {
     return vec2(i * (1.0 / N), detail::radical_inverse(i));
+  }
+
+  template <typename F> 
+  inline void for_hammersley(size_t N, F f) {
+    for (size_t i = 0;i < N; ++i)
+      f(hammersley_2d(i, N));
   }
 }

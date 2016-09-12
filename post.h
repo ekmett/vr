@@ -137,6 +137,7 @@ namespace framework {
     }
 
     void process() {
+      gl::debug_group debug("post");
       static elapsed_timer post_timer("post");
       timer_block timed(post_timer);
       int vw = quality.viewport_w, vh = quality.viewport_h;

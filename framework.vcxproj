@@ -223,8 +223,9 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="sobol.cpp" />
     <ClCompile Include="sampling.cpp" />
+    <ClCompile Include="sampling_bridson.cpp" />
+    <ClCompile Include="sampling_sobol.cpp" />
     <ClCompile Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c" />
     <ClCompile Include="third-party\imgui\imgui.cpp" />
     <ClCompile Include="third-party\imgui\imgui_demo.cpp" />
@@ -260,8 +261,9 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="hammersley.h" />
-    <ClInclude Include="sobol.h" />
+    <ClInclude Include="sampling_bridson.h" />
+    <ClInclude Include="sampling_hammersley.h" />
+    <ClInclude Include="sampling_sobol.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h" />

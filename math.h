@@ -6,7 +6,13 @@
 #include "glm.h"
 
 namespace framework {
+  static constexpr float pi = float(M_PI);
+  static constexpr float pi_2 = float(M_PI_2);
+  static constexpr float pi_4 = float(M_PI_4);
+  static constexpr float tau = float(2 * M_PI);
 
+  using math_constexpr::square;
+  using math_constexpr::cube;
 
   // the simple case of the logistic map
   // https://en.wikipedia.org/wiki/Logistic_function
@@ -67,5 +73,17 @@ namespace framework {
                   : 1 / exp(x * log(N));
   }
 
+  struct polar {
+    float r, phi;
+    vec2 to_disc() const {
+      return vec2(
+        r * std::cos(phi),
+        r * std::sin(phi)
+      );
+    }
+    static polar from_disc(vec2 xy) {
+      return polar{ sqrt(xy.x * xy.x + xy.y * xy.y), atan2(xy.y, xy.x) };
+    }
+  };
 
 }

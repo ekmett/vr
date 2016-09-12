@@ -40,6 +40,7 @@ namespace framework {
     : cubemap(0)
     , program("skybox")
     , direction_editor("sun_dir", "sun dir", vec3(1,0,0),true) {
+    gl::debug_group debug("sky::sky");
     direction_editor.hemisphere = true;
     glCreateVertexArrays(1, &vao);
     glUniformBlockBinding(program.programId, 0, 0);
@@ -235,7 +236,7 @@ namespace framework {
         // #pragma omp parallel for collapse(2) reduction(+:sun_irradiance)
         for (size_t x = 0;x < num_samples; ++x)
           for (size_t y = 0;y < num_samples; ++y) {
-            vec3 sample_dir = sun_orientation * sample_direction_cone(
+            vec3 sample_dir = sun_orientation * sample_cone(
               vec2( (x + 0.5f) / num_samples, (y + 0.5f) / num_samples ),
               cos_physical_sun_angular_radius
             );
@@ -255,7 +256,7 @@ namespace framework {
             sun_irradiance += solar_radiance.to_rgb() * saturate<float, highp>(dot(sample_dir, sun_dir));
           }
 
-        sun_irradiance *= (1.0f / num_samples) * (1.0f / num_samples) * (1.0f / sample_direction_cone_PDF(cos_physical_sun_angular_radius));
+        sun_irradiance *= (1.0f / num_samples) * (1.0f / num_samples) * (1.0f / sample_cone_pdf(cos_physical_sun_angular_radius));
 
         // standard luminous efficiency 683 lm/W, coordinate system scaling & scaling to fit into the dynamic range of a 16 bit float
         sun_irradiance *= 683.0f * 100.0f * fp16_scale;
@@ -270,8 +271,10 @@ namespace framework {
 
         last_solar_radiance_update_time = SDL_GetTicks() - solar_start;
       }
-
     }
+
+    gl::debug_group debug("sky::update");
+
 
     // load cubemap into opengl
     glTextureSubImage3D(cubemap, 0, 0, 0, 0, N, N, 6, GL_RGBA, GL_HALF_FLOAT, cubemap_data.data());
@@ -296,6 +299,7 @@ namespace framework {
   }
 
   sky::~sky() {
+    gl::debug_group debug("sky::~sky()");
     glMakeTextureHandleNonResidentARB(cubemap_handle);
     glDeleteVertexArrays(1, &vao);
     glDeleteTextures(1, &cubemap);
@@ -303,6 +307,7 @@ namespace framework {
   }
 
   void sky::render() const {
+    gl::debug_group debug("sky::render");
     static elapsed_timer timer("sky");
     timer_block timed(timer);
     glDisable(GL_BLEND);

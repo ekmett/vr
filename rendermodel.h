@@ -78,6 +78,8 @@ namespace framework {
     string component_model(std::string model, std::string cname);
 
     void draw(int device_mask) {
+      gl::debug_group debug("rendermodels");
+
       static elapsed_timer timer("rendermodels");
       timer_block timed(timer);
 
