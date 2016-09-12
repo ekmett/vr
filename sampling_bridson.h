@@ -84,4 +84,9 @@ namespace framework {
       return N * pos(sample.x) + pos(sample.y);
     }
   };
+
+  template <typename RNG, typename BOUNDS_CHECK, typename F>
+  void for_bridson(float radius, RNG rng, F f) {
+
+  }
 }

@@ -9,8 +9,29 @@ namespace framework {
   vec3 sample_sphere(vec2 uv) noexcept {
     float phi = uv.y * tau;
     float cosTheta = 1 - 2 * uv.x;
-    float sinTheta = sqrt(std::max(0.f, 1 - cosTheta*cosTheta));
-    return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+    float sinTheta = cos2sin(cosTheta);
+    return vec3(
+      cos(phi) * sinTheta, 
+      sin(phi) * sinTheta, 
+      cosTheta
+    );
+  }
+
+  vec3 sample_sphere_cos(vec2 uv, float * pdf) noexcept {
+    float phi = uv.y * tau;
+    float w = 2 * uv.x - 1;
+    float cosTheta = sign(w) * sqrt(abs(w));
+    float sinTheta = cos2sin(cosTheta);
+    if (pdf) *pdf = abs(cosTheta) * float(M_2_PI);
+    return vec3(
+      cos(phi) * sinTheta,
+      sin(phi) * sinTheta,
+      cosTheta
+    );
+  }
+
+  vec3 sample_ball(vec3 uvw) noexcept {
+    return sample_sphere(vec2(uvw)) * cbrt(uvw.z);
   }
 
   // sample hemisphere by concentric disc mapping
@@ -27,9 +48,10 @@ namespace framework {
   }
 
   // sample hemisphere with cosine weighting by concentric disc mapping
-  vec3 sample_hemisphere_cos(vec2 uv) noexcept {
+  vec3 sample_hemisphere_cos(vec2 uv, float * weight) noexcept {
     polar p = sample_polar(uv);
     vec2 xy = p.to_disc();
+    if (weight) *weight = sin2cos(uv.x) * float(M_1_PI); // cos theta / pi
     return vec3(xy, sqrt(std::max(0.f, 1.f - p.r*p.r)));
   }
 
@@ -57,16 +79,29 @@ namespace framework {
 
   // Weight for a particular GGX sample
   float sample_ggx_pdf(float roughness, vec3 N, vec3 H, vec3 V) noexcept {
-    float NdH = clamp(dot(N, H),0.f,1.f);
-    float HdV = clamp(dot(H, V),0.f,1.f);
+    float NdH = clamp(dot(N, H), 0.f, 1.f);
+    float HdV = clamp(dot(H, V), 0.f, 1.f);
     float r2 = roughness * roughness;
     float d = r2 / (pi * square(NdH * NdH * (r2 - 1) + 1));
     return (d * NdH) / (4 * HdV);
   }
 
-  extern vec2 sample_annulus(vec2 uv, float r_min, float r_max) noexcept {
+  // sample a GGX distribution (in world space), optionally retrieves the pdf
+  vec3 sample_ggx(float roughness, vec3 N, mat3 TtoW, vec2 uv, vec3 V, float * pdf) noexcept {
+    float theta = std::atan2(roughness * std::sqrt(uv.x), std::sqrt(1 - uv.x));
+    float phi = uv.y * tau;
+    vec3 H = TtoW * vec3( sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta) );
+    if (pdf) *pdf = sample_ggx_pdf(roughness, N, H, V);
+    float HdV = abs(dot(H, V));
+    return normalize(2.f * HdV * H - V);
+  }
+
+
+  vec2 sample_annulus(vec2 uv, float r_min, float r_max) noexcept {
+    float r_min2 = r_min*r_min;
+    float r_max2 = r_max*r_max;
     float theta = uv.y * tau;
-    float r = sqrt(mix(r_min*r_min, r_max*r_max, uv.x));
+    float r = sqrt(mix(r_min2, r_max2, uv.x));
     return vec2(r * cos(theta), r * sin(theta));
   }
 
@@ -99,12 +134,6 @@ namespace framework {
     return polar{ r, phi };
   }
 
-  vec2 sample_disc(vec2 uv) noexcept {
-    return sample_polar(uv).to_disc();
-  }
-
-  // Modification to include the polygon morphing modification from "CryEngine3 Graphics Gems" by Tiago Sousa
-  // drawn from [MJP's DX12 Sample Framework](http://mynameismjp.wordpress.com/) and licensed under the MIT license.
 
   // ["A Low Distortion Map Between Disk and Square"](https://pdfs.semanticscholar.org/4322/6a3916a85025acbb3a58c17f6dc0756b35ac.pdf)
   // by Shirley and Chiu.
@@ -135,6 +164,24 @@ namespace framework {
     );
   }
 
+  vec2 sample_disc(vec2 uv) noexcept {
+    return sample_polar(uv).to_disc();
+  }
+
+  vec2 unsample_disc(vec2 xy) noexcept {
+    return unsample_polar(polar::from_disc(xy));
+  }
+
+  // The modification to include the polygon morphing modification for lens diaphram simulation from 
+  // ["CryEngine3 Graphics Gems" (slide 36)](http://www.crytek.com/download/Sousa_Graphics_Gems_CryENGINE3.pdf)
+  // by Tiago Sousa was drawn from [MJP's DX12 Sample Framework](http://mynameismjp.wordpress.com/) and 
+  // is licensed under the MIT license.
+  vec2 sample_disc(vec2 uv, float n, float blend_weight) noexcept {
+    polar p = sample_polar(uv);
+    float polygon_modifier = cos(pi / n) / cos(p.phi - (pi / n) * floor((n * p.phi + pi) / tau));
+    p.r *= mix(1.f, polygon_modifier, blend_weight);
+    return p.to_disc();
+  }
 
   // debugging tool for sampling distributions
   void sampling_debug_window(bool * open, mat4 V) {
@@ -157,6 +204,7 @@ namespace framework {
       gui::RadioButton("ball", &e, 5); gui::SameLine();
       gui::RadioButton("disc", &e, 6); gui::SameLine();
       gui::RadioButton("annulus", &e, 7);
+      gui::RadioButton("sphere cos", &e, 8);
       static bool compute_pi_4 = true;
       if (e == 0)
         gui::Checkbox("compute pi/4", &compute_pi_4);
@@ -199,16 +247,16 @@ namespace framework {
               q = mat3(V) * sample_sphere(vec2(p)); 
               w = sample_sphere_pdf;
               break;
+
             case 2: 
               q = mat3(V) * sample_hemisphere(vec2(p)); 
               w = sample_hemisphere_pdf;
               break;
             case 3: {
-              auto f = variant == 0 ? sample_hemisphere_cos :
+              /*auto f = variant == 0 ? sample_hemisphere_cos :
                 variant == 1 ? sample_hemisphere_cos_naive1 :
-                sample_hemisphere_cos_naive2;
-              q = mat3(V) * f(vec2(p));
-              w = sample_hemisphere_cos_pdf(vec2(p));
+                sample_hemisphere_cos_naive2; */
+              q = mat3(V) * sample_hemisphere_cos(vec2(p), &w);
               break;
             }
             case 4: 
@@ -226,6 +274,9 @@ namespace framework {
             case 7:
               q = vec3(sample_annulus(vec2(p), r_min, r_max), 0.5f);
               w = sample_annulus_pdf(r_min, r_max);
+              break;
+            case 8:
+              q = mat3(V) * sample_sphere_cos(vec2(p), &w);
               break;
           }
           draw_list->AddCircleFilled(canvas_pos + canvas_size * (vec2(q) * 0.5f + 0.5f), 1, ImColor(f_x, f_x, 0.0f, pow(1 - q.z, 1 / 2.2f)), 6);

@@ -86,4 +86,12 @@ namespace framework {
     }
   };
 
+  inline float cos2sin(float x) noexcept { 
+    return sqrt(std::max(0.f, 1.f - x*x)); 
+  }
+
+  inline float sin2cos(float x) noexcept { 
+    return sqrt(std::max(0.f, 1.f - x*x)); 
+  }
+
 }
