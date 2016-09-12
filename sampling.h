@@ -17,6 +17,60 @@ namespace framework {
   vec3 sample_ball(vec3 uvw) noexcept;
   static constexpr const float sample_ball_pdf = float(0.75 / M_PI);
 
+  template <typename T> 
+  inline T sample_triangle(T A, T B, T C, vec2 uv) noexcept {
+    float su = sqrt(uv.x);
+    return C + (1.f - su) * (A - C) + (uv.y * su) * (B - C);
+  }
+
+  namespace detail {
+    // Optimal sorting of three elements
+    // based on the vector-algorithms implementation by Dan Doel
+    template <typename T>
+    void sort3(T & a0, T & a1, T & a2) {
+      if (a0 > a1) {
+        if (a0 > a2) {
+          if (a1 > a2) {
+            std::swap(a0, a2); // a2,a1,a0
+          } else {           
+            // use a temporary and std::move?
+            std::swap(a0, a1); // a1,a0,a2
+            std::swap(a1, a2); // a1,a2,a0
+          }
+        } else {
+          std::swap(a0, a1);   // a1,a0,a2
+        }
+      } else if (a1 > a2) {
+        if (a0 > a2) {
+          // use a temporary and std::move?
+          std::swap(a1, a2);  // a0,a2,a1
+          std::swap(a0, a1);  // a2,a0,a1
+        } else {
+          std::swap(a1, a2)   // a0,a2,a1
+        }
+      }                       // a0,a1,a2
+    }
+  }
+
+  // [Heron's formula](https://en.wikipedia.org/wiki/Heron%27s_formula) for computing an area.
+  // [Miscalculating Area and Angles of a Needle-like Triangle](https://people.eecs.berkeley.edu/~wkahan/Triangle.pdf) by William Kahan
+  template <typename T>
+  inline float sample_triangle_pdf(const T & A, const T & B, const T & C) noexcept {
+    float a = length(A - B);
+    float b = length(B - C);
+    float c = length(C - A);
+    sort3(c, b, a); // c <= b <= a
+    return 4.0f / sqrt((a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c))); // the parens matter
+  }
+
+  // reference implementation
+  inline float sample_triangle_pdf_naive(vec3 A, vec3 B, vec3 C) noexcept {
+    vec3 x = A - C, y = B - C;
+    return 2.0f / sqrt(square(x.y*y.z - x.z*y.y) + square(x.z*y.x - x.x*y.z) + square(x.x*y.y - x.y*y.x));
+  }
+
+  float sample_triangle_pdf(vec3 A, vec3 B, vec3 C) noexcept;
+
   // Sample from the surface of a hemisphere using concentric disc sampling.
   vec3 sample_hemisphere(vec2 uv) noexcept;
   static constexpr const float sample_hemisphere_pdf = float(0.5 / M_PI);

@@ -36,6 +36,14 @@ namespace framework {
     );
   }
 
+  // construct an arbitrary orthogonal coordinate frame with Z oriented towards N
+  static inline mat3 frame(vec3 N) {
+    vec3 X1 = vec3(0.0f, N.z, -N.y);
+    vec3 X2 = vec3(-N.z, 0.0f, N.x);
+    vec3 X = normalize(dot(X1, X1) <= dot(X2, X2) ? X2 : X1);
+    return mat3(X, normalize(cross(N,X)), N);
+  }
+
   static constexpr inline float operator "" _degrees(long double d) noexcept {
     return float(d * M_PI / 180);
   }

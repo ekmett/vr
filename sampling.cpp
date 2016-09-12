@@ -191,6 +191,7 @@ namespace framework {
     return p.to_disc();
   }
 
+
   // debugging tool for sampling distributions
   void sampling_debug_window(bool * open, mat4 V) {
     gui::SetNextWindowSize(ImVec2(500, 500), ImGuiSetCond_FirstUseEver);
