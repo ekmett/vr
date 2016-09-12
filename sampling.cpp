@@ -202,6 +202,7 @@ namespace framework {
       static int variant = 0;
       static float r_min = 0.5;
       static float r_max = 1;
+      static float power = 2;
       gui::SliderInt("scale", &scale, 50, 800);
       gui::SliderInt("points", &N, 0, 20000);
       gui::RadioButton("square", &e, 0); gui::SameLine();
@@ -212,7 +213,8 @@ namespace framework {
       gui::RadioButton("ball", &e, 5); gui::SameLine();
       gui::RadioButton("disc", &e, 6); gui::SameLine();
       gui::RadioButton("annulus", &e, 7);
-      gui::RadioButton("sphere cos", &e, 8);
+      gui::RadioButton("sphere cos", &e, 8); gui::SameLine();
+      gui::RadioButton("hemisphere power cos", &e, 9);
       static bool compute_pi_4 = true;
       if (e == 0)
         gui::Checkbox("compute pi/4", &compute_pi_4);
@@ -225,6 +227,9 @@ namespace framework {
         gui::SliderFloat("r_max", &r_max, 0, 1);
         r_min = std::min(r_min, r_max);
         r_max = std::max(r_min, r_max);
+      }
+      if (e == 9) {
+        gui::SliderFloat("power", &power, 0, 20);
       }
       auto panel = [&](auto f) {
         auto draw_list = ImGui::GetWindowDrawList();
@@ -239,9 +244,20 @@ namespace framework {
         ImGui::InvisibleButton("sobol", canvas_size);
         float tally = 0.0f;
         int points = 0;
-          tally = 0.f;
-          points = 0;
-        auto point = [&](vec3 p) {
+
+        auto canvas = [&](auto p) {
+          return canvas_pos + canvas_size * (vec2(p) * 0.5f + 0.5f);
+        };
+
+        auto line = [&](vec3 p, vec3 q, vec3 color = vec3(1, 1, 0)) {
+          draw_list->AddLine(canvas(p), canvas(q), ImColor(color.x, color.y, color.z, pow(1 - (p.z + q.z)*0.5, 1 / 2.2f)));
+        };
+        if (e != 0 && e != 6 && e != 7) {
+          line(vec3(0, 0, 0), mat3(V)*vec3(1, 0, 0), vec3(1, 0, 0));
+          line(vec3(0, 0, 0), mat3(V)*vec3(0, 1, 0), vec3(0, 1, 0));
+          line(vec3(0, 0, 0), mat3(V)*vec3(0, 0, 1), vec3(0, 0, 1));
+        }
+        auto point = [&](vec3 p, vec3 color = vec3(1,1,0)) {
           vec3 q;
           float w;
           float f_x = 1;
@@ -286,8 +302,11 @@ namespace framework {
             case 8:
               q = mat3(V) * sample_sphere_cos(vec2(p), &w);
               break;
+            case 9:
+              q = mat3(V) * sample_hemisphere_power_cos(vec2(p), power, &w);
+              break;
           }
-          draw_list->AddCircleFilled(canvas_pos + canvas_size * (vec2(q) * 0.5f + 0.5f), 1, ImColor(f_x, f_x, 0.0f, pow(1 - q.z, 1 / 2.2f)), 6);
+          draw_list->AddCircleFilled(canvas(q), 1, ImColor(color.x*f_x, color.y*f_x, color.z*f_x, pow(1 - q.z, 1 / 2.2f)), 6);
           tally += w * f_x;
           ++points;
         };

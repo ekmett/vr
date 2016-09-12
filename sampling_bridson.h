@@ -21,6 +21,7 @@ namespace framework {
   struct bridson {
     const float r;
     const size_t N = sqrt(2) / r;
+    // TODO: if the grid is large and the number of samples expected is small we should switch to a map, this can take crushing amounts of memory
     vector<int> grid = vector<int>(N*N, -1);
     vector<int> active;
     vector<vec2> samples;
