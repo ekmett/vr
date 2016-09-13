@@ -111,8 +111,7 @@ float D_beckmann(float smoothness, float NdH) {
 // 
 // 1/pi incorporated.
 float D_ggx(float smoothness, float NdH) {
-  float t = 1.f - NdH * NdH * smoothness;
-  return (1.f - smoothness) / (3.14159f * t * t);
+  return (1.f - smoothness) / (pi * sqr(1.f - NdH * NdH * smoothness));
 }
 
 // 1/pi incorporated.
