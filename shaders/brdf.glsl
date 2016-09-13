@@ -35,8 +35,24 @@ float F_schlick(float f0, float f90, float LdH) {
   return fresnel;
 }
 
+
+// https://seblagarde.wordpress.com/2011/08/17/hello-world/
+// https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel/
+float spherical_gaussian_approx(float cosX, float modified_specular_power) {
+  return exp2(modified_specular_power * cosX - modified_specular_power);
+}
+
 float F_schlick(float f0, float LdH) {
   return F_schlick(f0, 1, LdH);
+}
+
+// 6/ln(2) ~ 8.656170, 6 = 5 (specular power) + 1
+float F_schlick_opt(float f0, float f90, float LdH) {
+  return mix(f0, f90, exp2(-8.656170 * LdH));
+}
+
+float F_schlick_opt(float f0, float LdH) {
+  return F_schlick_opt(f0, 1, LdH);
 }
 
 float F_cook_torrance(float f0, float LdH) {
@@ -129,6 +145,10 @@ float calc_roughness(float smoothness) {
   return sqrt(1 - smoothness);
 }
 
+float specular_power_to_smoothness(float n) {
+  return 1 - sqrt(2 / (n + 2));
+}
+
 // ----------------------------------------------------
 // Geometry Term
 // ----------------------------------------------------
@@ -179,6 +199,11 @@ float G_beckmann(float NdV, float smoothness) {
   float c = NdV / ((1 - smoothness)  * cos2sin(NdV));
   float c2 = c*c;
   return c < 1.6 ? (3.535*c + 2.181*c2) / (1 + 2.276*c + 2.577*c2) : 1;
+}
+
+float G_ue4(float NdV, float smoothness) {
+  float k = (1 - smoothness) / 2;
+  return NdV / (NdV * (1 - k) + k);
 }
 
 // ----------------------------------------------------

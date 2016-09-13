@@ -135,14 +135,12 @@ app::app()
   bloom_magnitude = 1.000f;
   quality.maximum_quality_level = 4;
 
-  sun_dir = vec3(0.228f, 0.242f, 0.912f);
+  sun_dir = vec3(0.228f, 0.9f, 0.912f);
   sun_angular_radius = physical_sun_angular_radius * 2;
   ground_albedo = vec3(0.25f, 0.4f, 0.4f); 
   turbidity = 5.f;
-  use_sun_area_light_approximation = true;
-  
+  use_sun_area_light_approximation = true; 
   enable_seascape = true;
-  use_sun_area_light_approximation = true;
 
   use_lens_flare = false;
   lens_flare_exposure = -3.5f;

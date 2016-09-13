@@ -122,11 +122,15 @@ vec3 getSeaColor(vec3 p, vec3 N, vec3 L, vec3 I, vec3 dist) {
   float NdH = saturate(dot(N, H));
   float NdL = saturate(dot(N, L));
   float LdH = saturate(dot(L, H));
-  if (NdL >= 0) {    
+
+  // diffuse sunlight
+  color += 0.001 * SEA_WATER_COLOR / pi * (1.0f - F_schlick(f0_water, NdL)) * NdL * sun_irradiance / (turbidity*turbidity);
+  if (NdL >= 0) {
     vec3 F = F_schlick(f0_water, LdH);
     float smoothness = calc_smoothness(0.01);
     float D = D_ggx(smoothness, NdH);
     float G = G_ggx(smoothness, NdL, NdV);
+    // specular sunlight
     color += NdL * F * D * G * sun_irradiance / (turbidity*turbidity);
   }
   return color;
