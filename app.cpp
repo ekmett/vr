@@ -20,6 +20,7 @@
 #include "shaders/uniforms.h"
 #include "controllers.h"
 #include "sampling.h"
+#include "mesh.h"
 
 using namespace framework;
 using namespace filesystem;
@@ -674,6 +675,8 @@ bool app::show_gui(bool * open) {
 int SDL_main(int argc, char ** argv) {
   logging::harness logs("vr", "gl", "al", "main", "app", "post", "distortion", "rendermodel");
   SetProcessDPIAware(); // lest SDL2 lie and always tell us that DPI = 96
+  mesh dragon("objects/dragon.obj");
+
   cds_main_thread_attachment<> main_thread; // Allow use of concurrent data structures in the main threads
   log("main")->info("pid: {}", GetCurrentProcessId());
   // cd ../.. from the executable
@@ -681,5 +684,6 @@ int SDL_main(int argc, char ** argv) {
     log("main")->warn("unable to set working directory");
   app main;
   main.run();
+
   return 0;
 }

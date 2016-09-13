@@ -8,29 +8,15 @@ using namespace framework;
 using namespace glm;
 using namespace openvr;
 
-struct vertex {
-  vec3 pos;
-  vec3 color;
-  GLushort controller;
-};
-
 namespace framework {
-  controllers::controllers() : program("controllers") {
-    glUniformBlockBinding(program.programId, 0, 0);
-    glCreateVertexArrays(1, &vao);
-    gl::label(GL_VERTEX_ARRAY, vao, "controller vao");
-    glCreateBuffers(1, &vbo);
-    gl::label(GL_BUFFER, vbo, "controller vbo");
-    glEnableVertexArrayAttrib(vao, 0);
-    glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(vertex, pos));
-    glVertexArrayAttribBinding(vao, 0, 0);
-    glEnableVertexArrayAttrib(vao, 1);
-    glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(vertex, color));
-    glVertexArrayAttribBinding(vao, 1, 0);
-    glEnableVertexArrayAttrib(vao, 2);
-    glVertexArrayAttribIFormat(vao, 2, 1, GL_UNSIGNED_SHORT, offsetof(vertex, controller));
-    glVertexArrayAttribBinding(vao, 2, 0);
-    glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(vertex));
+  controllers::controllers() 
+    : program("controllers")
+    , vao("controller", false, 
+      attrib{ 3, GL_FLOAT, GL_FALSE, offsetof(vertex, pos) },
+      attrib{ 3, GL_FLOAT, GL_FALSE, offsetof(vertex, color) },
+      iattrib{ 1, GL_UNSIGNED_SHORT, offsetof(vertex, controller) }
+    ) {
+    glUniformBlockBinding(program.programId, 0, 0);    
     std::vector<vertex> verts;
     for (GLushort controller = 0;controller < 2; ++controller) {
       for (int i = 0; i < 3; ++i) {
@@ -46,12 +32,10 @@ namespace framework {
       verts.push_back(vertex{ vec4(0, 0, -0.02f, 1), color, controller });
       verts.push_back(vertex{ vec4(0, 0, -39.f, 1), color, controller });
     }
-    glNamedBufferData(vbo, sizeof(vertex) * verts.size(), verts.data(), GL_STREAM_DRAW);
+    vao.load(verts);
   }
 
   controllers::~controllers() {
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
   }
 
   void controllers::render(int controller_mask) {

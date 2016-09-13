@@ -223,6 +223,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="obj.cpp" />
     <ClCompile Include="sampling.cpp" />
     <ClCompile Include="sampling_bridson.cpp" />
     <ClCompile Include="sampling_sobol.cpp" />
@@ -261,10 +262,12 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="obj.h" />
     <ClInclude Include="sampling_bridson.h" />
     <ClInclude Include="sampling_hammersley.h" />
     <ClInclude Include="sampling_sobol.h" />
     <ClInclude Include="shaders\common.glsl" />
+    <ClInclude Include="mesh.h" />
     <ClInclude Include="shaders\uniforms.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h" />
@@ -328,6 +331,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="texturing.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="utf8.h" />
+    <ClInclude Include="vao.h" />
     <ClInclude Include="worker.h" />
     <ClInclude Include="overlay.h" />
   </ItemGroup>

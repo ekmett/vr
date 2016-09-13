@@ -10,6 +10,7 @@
 #include "gui.h"
 #include "fmt.h"
 #include "timer.h"
+#include "vao.h"
 
 namespace framework {
 
@@ -37,9 +38,7 @@ namespace framework {
           && components.begin() != components.end();
     }
 
-    GLuint vbo;
-    GLuint ibo;
-    GLuint vao;
+    vertex_array<vr::RenderModel_Vertex_t> vao;
     GLsizei vertexCount;
 
     string name;
@@ -98,7 +97,7 @@ namespace framework {
           if (!model || !model->diffuse) continue;
           log("rendermodel")->info("model {}", i);
           if (model->components.empty() || model->missing_components) {
-            glBindVertexArray(model->vao);  // sort by model?
+            model->vao.bind();  // sort by model?
             mat4 id(1.f);
             glProgramUniformMatrix4fv(shader, 0, 1, false, &id[0][0]);
             glProgramUniform1i(shader, 1, i);
@@ -120,7 +119,7 @@ namespace framework {
               vrrm->GetComponentState(model->name.c_str(), name.c_str(), &controller_state, &controller_mode_state, &component_state);
               if (!(component_state.uProperties & vr::VRComponentProperty_IsVisible)) continue;
               mat4 tracking_to_component = openvr::hmd_mat3x4(component_state.mTrackingToComponentRenderModel);
-              glBindVertexArray(component->vao);
+              component->vao.bind();
               glProgramUniformMatrix4fv(shader, 0, 1, false, &tracking_to_component[0][0]);
               glProgramUniformHandleui64ARB(shader, 2, component->diffuse->handle);
               glDrawElementsInstanced(GL_TRIANGLES, component->vertexCount, GL_UNSIGNED_SHORT, nullptr, 2);

@@ -92,6 +92,7 @@
     <ClCompile Include="timer.cpp">
       <Filter>gl</Filter>
     </ClCompile>
+    <ClCompile Include="obj.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imgui.h">
@@ -297,6 +298,9 @@
     <ClInclude Include="utf8.h">
       <Filter>misc</Filter>
     </ClInclude>
+    <ClInclude Include="mesh.h" />
+    <ClInclude Include="obj.h" />
+    <ClInclude Include="vao.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\distortion_mask.frag">

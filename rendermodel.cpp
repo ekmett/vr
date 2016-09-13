@@ -13,40 +13,17 @@ namespace framework {
     , diffuse(nullptr)
     , vr_texture_id(model.diffuseTextureId)
     , name(name)
-    , missing_components(missing_components) {
-    glCreateVertexArrays(1, &vao);
-
-    string nice_name = filesystem::path(name).filename().generic_string();
-
-    gl::label(GL_VERTEX_ARRAY, vao, "rendermodel vao {}", nice_name);
-
-    glCreateBuffers(1, &vbo);
-    gl::label(GL_BUFFER, vbo, "rendermodel vbo {}", nice_name);
-    glNamedBufferData(vbo, sizeof(vr::RenderModel_Vertex_t) * model.unVertexCount, model.rVertexData, GL_STATIC_DRAW);
-
-    for (int i = 0;i < 3;++i) {
-      glEnableVertexArrayAttrib(vao, i);
-      glVertexArrayAttribBinding(vao, i, 0);
-    }
-
-    glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(vr::RenderModel_Vertex_t, vPosition));
-    glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(vr::RenderModel_Vertex_t, vNormal));
-    glVertexArrayAttribFormat(vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vr::RenderModel_Vertex_t, rfTextureCoord));
-
-    glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(vr::RenderModel_Vertex_t)); // bind the data
-
-    glCreateBuffers(1, &ibo);
-    gl::label(GL_BUFFER, ibo, "rendermodel ibo {}", nice_name);
-    glNamedBufferData(ibo, sizeof(uint16_t) * model.unTriangleCount * 3, model.rIndexData, GL_STATIC_DRAW);
-    glVertexArrayElementBuffer(vao, ibo);
+    , missing_components(missing_components)
+    , vao(name, true, 
+        attrib { 3, GL_FLOAT, GL_FALSE, offsetof(vr::RenderModel_Vertex_t, vPosition)  },
+        attrib { 3, GL_FLOAT, GL_FALSE, offsetof(vr::RenderModel_Vertex_t, vNormal) },
+        attrib { 2, GL_FLOAT, GL_FALSE, offsetof(vr::RenderModel_Vertex_t, rfTextureCoord) }
+    ){
+    vao.load(model.rVertexData, model.unVertexCount);
+    vao.load_elements(model.rIndexData, model.unTriangleCount * 3);
   }
 
-  rendermodel::~rendermodel() {
-    glDeleteBuffers(1, &ibo);
-    glDeleteBuffers(1, &vbo);
-    glDeleteVertexArrays(1, &vao);
-  }
-
+  rendermodel::~rendermodel() {}
 
   rendermodel_texture::rendermodel_texture(const std::string & name, vr::RenderModel_TextureMap_t & diffuse) {
     log("rendermodel")->info("create texture {} begin: {} x {}", name, diffuse.unWidth, diffuse.unHeight);
