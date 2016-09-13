@@ -102,7 +102,7 @@ float map_detailed(vec3 p) {
 
 vec3 getSeaColor(vec3 p, vec3 N, vec3 L, vec3 I, vec3 dist) {
   vec3 V = -I;
-  float NdV = saturate(dot(N, V));
+  float NdV = clamp(dot(N, V),0.00001f, 1.0f); // epsilon avoids precision problems in G
   vec3 R = reflect(I, N);
   /*
   if (use_sun_area_light_approximation != 0) {

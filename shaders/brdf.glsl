@@ -178,8 +178,8 @@ float G_implicit(float NdL, float NdV) {
 float G_beckmann(float NdV, float smoothness) {
   float c = NdV / ((1 - smoothness)  * cos2sin(NdV));
   float c2 = c*c;
-  return c < 1.6 : (3.535*c + 2.181*c2) / (1 + 2.276*c + 2.577*c2) : 1;
-};
+  return c < 1.6 ? (3.535*c + 2.181*c2) / (1 + 2.276*c + 2.577*c2) : 1;
+}
 
 // ----------------------------------------------------
 // The Cook-Torrance BRDF
@@ -218,7 +218,7 @@ vec3 calc_lighting(
     vec3 H = normalize(L + V);
     float LdH = saturate(dot(L, H));
     float NdH = saturate(dot(N, H));
-    float NdV = saturate(dot(N, V)); // move earlier + return 0 if this is negative?
+    float NdV = clamp(dot(N, V),0.001f, 1.0f); // avoid precision problems in G
     vec3  F = F_schlick(f0, LdH);
     float D = D_ggx(smoothness, NdH);
     float G = G_ggx(smoothness, NdL, NdV);
