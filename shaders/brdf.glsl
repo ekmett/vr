@@ -39,6 +39,13 @@ float F_schlick(float f0, float LdH) {
   return F_schlick(f0, 1, LdH);
 }
 
+float F_cook_torrance(float f0, float LdH) {
+  float sqrt_f0 = sqrt(f0);
+  float eta = (1 + sqrt_f0) / (1 - sqrt_f0);
+  float g = sqrt(eta*eta + LdH*LdH - 1);
+  return 0.5 * sqr((g - LdH) / (g + LdH)) * (1 + sqr(((g + LdH)*LdH - 1) / ((g - LdH)*LdH + 1)));
+}
+
 // physically based reflection coefficients terms
 const vec3 f0_water = vec3(0.02, 0.02, 0.02);
 const vec3 f0_plastic = vec3(0.03, 0.03, 0.03);
