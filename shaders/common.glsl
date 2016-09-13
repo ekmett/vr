@@ -26,5 +26,36 @@ vec4 sqr(vec4 x) {
   return x*x;
 }
 
+float cos2sin(float c) {
+  return sqrt(1 - c*c);
+}
+
+vec2 cos2sin(vec2 c) {
+  return sqrt(1 - c*c);
+}
+
+vec3 cos2sin(vec3 c) {
+  return sqrt(1 - c*c);
+}
+
+vec4 cos2sin(vec4 c) {
+  return sqrt(1 - c*c);
+}
+
+float sin2cos(float s) {
+  return sqrt(1 - s*s);
+}
+
+vec2 sin2cos(vec2 s) {
+  return sqrt(1 - s*s);
+}
+
+vec3 sin2cos(vec3 s) {
+  return sqrt(1 - s*s);
+}
+
+vec4 sin2cos(vec4 s) {
+  return sqrt(1 - s*s);
+}
 
 #endif

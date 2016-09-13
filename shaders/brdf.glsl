@@ -96,22 +96,30 @@ float calc_f0(float n2) {
 
 // Beckmann's microfacet distribution.
 //
-// 1/pi correction incorporated
+// 1/pi incorporated
 float D_beckmann(float smoothness, float NdH) {
   float cosAlpha = max(NdH, 0.0001f);
   float cosAlpha2 = cosAlpha*cosAlpha;              // cos^2(alpha)
-  float tanAlpha2 = (cosAlpha2 - 1.0f) / cosAlpha2; // tan^2(alpha)
   float roughness2 = 1 - smoothness;
-  return exp(tanAlpha2 / roughness2) / (pi*cosAlpha2*cosAlpha2*roughness2);
+  return exp((cosAlpha2 - 1.0f) / (cosAlpha2 * roughness2)) / (pi*cosAlpha2*cosAlpha2*roughness2);
 }
 
 // [Microfacet Models for Refraction Through Rough Surfaces](https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html)
 // by Walter, Marschner, Li and Torrance (2007).
 //
-// 1/pi correction incorporated.
+// Trowbridge-Reitz
+// 
+// 1/pi incorporated.
 float D_ggx(float smoothness, float NdH) {
   float t = 1.f - NdH * NdH * smoothness;
   return (1.f - smoothness) / (3.14159f * t * t);
+}
+
+// 1/pi incorporated.
+float D_blinn_phong(float smoothness, float NdH) {
+  float alpha = 1 - smoothness;
+  float alpha2 = alpha * alpha;
+  return pow(NdH, 2 / alpha2 - 2) / (pi * alpha2);
 }
 
 float calc_smoothness(float roughness) {
@@ -160,13 +168,19 @@ float G_ashikhmin_premoze(float NdL, float NdV) {
   return 1.0f / (NdL + NdV - NdL*NdV);
 }
 
-float G_kelemen(float LdV) {
-  return 0.5 / (1 + LdV);
+float G_kelemen(float LdH) {
+  return 0.25 / sqr(LdH);
 }
 
 float G_implicit(float NdL, float NdV) {
   return NdL * NdV;
 }
+
+float G_beckmann(float NdV, float smoothness) {
+  float c = NdV / ((1 - smoothness)  * cos2sin(NdV));
+  float c2 = c*c;
+  return c < 1.6 : (3.535*c + 2.181*c2) / (1 + 2.276*c + 2.577*c2) : 1;
+};
 
 // ----------------------------------------------------
 // The Cook-Torrance BRDF
