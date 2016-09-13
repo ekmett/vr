@@ -34,3 +34,6 @@
 [submodule "third-party/stb"]
 	path = third-party/stb
 	url = http://github.com/nothings/stb.git
+[submodule "third-party/MaskedOcclusionCulling"]
+	path = third-party/MaskedOcclusionCulling
+	url = https://github.com/GameTechDev/MaskedOcclusionCulling.git
