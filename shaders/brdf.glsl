@@ -141,7 +141,7 @@ float rcp_G_smith_g1(float roughness2, float NdX) {
 
 float G_smith(float smoothness, float NdL, float NdV) {
   float roughness2 = 1 - smoothness;
-  return 4.0f / rcp_G_smith_g1(roughness2, NdL) * rcp_G_smith_g1(roughness2, NdV);
+  return 4.0f / (rcp_G_smith_g1(roughness2, NdL) * rcp_G_smith_g1(roughness2, NdV));
 }
 
 float G_neumann(float NdL, float NdV) {
@@ -162,6 +162,10 @@ float G_ashikhmin_premoze(float NdL, float NdV) {
 
 float G_kelemen(float LdV) {
   return 0.5 / (1 + LdV);
+}
+
+float G_implicit(float NdL, float NdV) {
+  return NdL * NdV;
 }
 
 // ----------------------------------------------------
