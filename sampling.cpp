@@ -81,7 +81,7 @@ namespace framework {
   vec3 sample_cone(vec2 uv, float cosThetaMax) noexcept {
     float phi = uv.y * tau;
     float cosTheta = (1.0f - uv.x) + uv.x * cosThetaMax;
-    float sinTheta = sqrt(std::max(0.f,1.0f - cosTheta * cosTheta));
+    float sinTheta = cos2sin(cosTheta);
     return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
   }
 
@@ -230,7 +230,7 @@ namespace framework {
         r_max = std::max(r_min, r_max);
       }
       if (e == 9) {
-        gui::SliderFloat("power", &power, 0, 20);
+        gui::SliderFloat("power", &power, 0, 2048);
       }
       auto panel = [&](auto f) {
         auto draw_list = ImGui::GetWindowDrawList();

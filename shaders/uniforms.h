@@ -28,7 +28,7 @@ namespace framework {
 // monolithic ubo for common scene info, mostly sorted by size
 UNIFORM_STRUCT(1) app_uniforms {  
   // render model utilities
-  UNIFORM_ALIGN(4) float rendermodel_roughness;
+  UNIFORM_ALIGN(4) float rendermodel_smoothness;
   UNIFORM_ALIGN(4) float rendermodel_metallic;
   UNIFORM_ALIGN(4) float rendermodel_ambient;
   UNIFORM_ALIGN(4) float rendermodel_albedo;

@@ -157,6 +157,7 @@
     <ClInclude Include="sampling_hammersley.h" />
     <ClInclude Include="sampling_sobol.h" />
     <ClInclude Include="sampling_bridson.h" />
+    <ClInclude Include="shaders\common.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="third-party\glm\util\glm.natvis" />

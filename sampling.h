@@ -27,28 +27,31 @@ namespace framework {
     // Optimal sorting of three elements
     // based on the vector-algorithms implementation by Dan Doel
     template <typename T>
-    void sort3(T & a0, T & a1, T & a2) {
+    void sort3(T & a0, T & a1, T & a2) noexcept {
+      static_assert(std::is_nothrow_move_constructible<T>::value || std::is_nothrow_copy_constructible<T>::value, "both move and copy constructor may throw");
       if (a0 > a1) {
         if (a0 > a2) {
           if (a1 > a2) {
             std::swap(a0, a2); // a2,a1,a0
           } else {           
-            // use a temporary and std::move?
-            std::swap(a0, a1); // a1,a0,a2
-            std::swap(a1, a2); // a1,a2,a0
+            T t = std::move_if_nothrow(a0);
+            a0 = std::move_if_nothrow(a1);
+            a1 = std::move_if_nothrow(a2);
+            a2 = std::move_if_nothrow(t); // a1,a2,a0
           }
         } else {
-          std::swap(a0, a1);   // a1,a0,a2
+          std::swap(a0, a1); // a1,a0,a2
         }
       } else if (a1 > a2) {
         if (a0 > a2) {
-          // use a temporary and std::move?
-          std::swap(a1, a2);  // a0,a2,a1
-          std::swap(a0, a1);  // a2,a0,a1
+          T t = std::move_if_nothrow(a2);
+          a2 = std::move_if_nothrow(a1);
+          a1 = std::move_if_nothrow(a0);
+          a0 = std::move_if_nothrow(t); // a2,a0,a1
         } else {
-          std::swap(a1, a2)   // a0,a2,a1
+          std::swap(a1, a2) // a0,a2,a1
         }
-      }                       // a0,a1,a2
+      } // a0,a1,a2
     }
   }
 
@@ -81,6 +84,8 @@ namespace framework {
   // Sample from a hemisphere weighted with a phong-like power cosine. 
   // sample_hemisphere and sample_hemisphere_cos are special cases
   // TODO: concentric discs
+  //
+  // http://blog.tobias-franke.eu/2014/03/30/notes_on_importance_sampling.html
   vec3 sample_hemisphere_power_cos(vec2 uv, float exponent, float * pdf = nullptr) noexcept;
 
   // Sample from a directional cone using Archimedes hat box.
@@ -108,6 +113,6 @@ namespace framework {
   // ggx sample and pdf calculation
   vec3 sample_ggx(float roughness, vec3 N, mat3 TtoW, vec2 uv, vec3 V, float * pdf = nullptr) noexcept;
 
-  // used for debugging
+    // used for debugging
   void sampling_debug_window(bool * open, mat4 V);
 };

@@ -151,7 +151,7 @@ app::app()
   lens_flare_ghost_dispersal = 0.11f;
 
   rendermodel_metallic = 0.1f;
-  rendermodel_roughness = 0.05f;
+  rendermodel_smoothness = 1 - 0.05f*0.05f;
   rendermodel_ambient = 0.8f; // bug open scene
   rendermodel_albedo = 1;
 
@@ -644,7 +644,7 @@ bool app::show_gui(bool * open) {
   if (show_rendermodel_window) {
     ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiSetCond_FirstUseEver);
     gui::Begin("Rendermodels", &show_rendermodel_window);
-    gui::SliderFloat("roughness", &rendermodel_roughness, 0, 1);
+    gui::SliderFloat("smoothness", &rendermodel_smoothness, 0, 1);
     gui::SliderFloat("metallic",  &rendermodel_metallic, 0, 1);
     gui::SliderFloat("ambient",   &rendermodel_ambient, 0, 1);
     gui::SliderFloat("albedo",    &rendermodel_albedo, 0, 1);

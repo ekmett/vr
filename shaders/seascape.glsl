@@ -100,25 +100,35 @@ float map_detailed(vec3 p) {
     return p.y - h;
 }
 
-// this really needs temporal aa
 vec3 getSeaColor(vec3 p, vec3 N, vec3 L, vec3 I, vec3 dist) {
   vec3 V = -I;
   vec3 R = reflect(I, N);
-  vec3 H = normalize(V + L);
-  float NdV = clamp(dot(N, V), 0, 1);
+
+  /*
   if (use_sun_area_light_approximation != 0) {
-    float apparent_angular_radius = sun_angular_radius;
-    float c = cos(apparent_angular_radius);
-    float s = sin(apparent_angular_radius);
+    float c = cos_sun_angular_radius;
+    float s = sin_sun_angular_radius;
     float LdR = dot(L, R);
     L = LdR < c ? normalize(c * L + s * normalize(R - LdR * L)) : R;
   }
-  float fresnel = 1.0 - NdV;
-  fresnel = pow(fresnel,3.0) * 0.65;
+  */
+  
+
+  vec3 H = normalize(V + L);
+  float NdH = saturate(dot(N, H));
+  float NdV = saturate(dot(N, V));
+  float NdL = saturate(dot(N, L));
+
+  // the fresnel term here is a total hack
+  // use F_schlick(f0_water, LdH)
+  float fresnel = pow(1.0 - NdV,3.0) * 0.98;
   vec3 reflected = (SEA_BASE + SEA_WATER_COLOR)/2 * eval_sh9_irradiance(R, sky_sh9) / 3.14159;
   vec3 refracted = SEA_BASE + diffuse(N, L, 80.0) * SEA_WATER_COLOR * 0.12;
-  reflected += GGX_specular(0.01, N, H, V, L) * sun_irradiance / (turbidity*turbidity);
+  float smoothness = 1 - 0.01*0.01;
+  float DG = D_ggx(smoothness, NdH) * G_ggx(smoothness, NdL, NdV);
+  reflected += DG * sun_irradiance / (turbidity*turbidity);
   vec3 color = mix(refracted,reflected,fresnel);
+
   float atten = max(1.0 - dot(dist,dist) * 0.001, 0.0);
   color += SEA_WATER_COLOR * (p.y - SEA_HEIGHT) * 0.18 * atten * eval_sh9_irradiance(N, sky_sh9) / 3.14159;
   return color;
