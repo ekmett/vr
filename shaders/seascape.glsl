@@ -104,14 +104,12 @@ vec3 getSeaColor(vec3 p, vec3 N, vec3 L, vec3 I, vec3 dist) {
   vec3 V = -I;
   vec3 R = reflect(I, N);
 
-  /*
   if (use_sun_area_light_approximation != 0) {
     float c = cos_sun_angular_radius;
     float s = sin_sun_angular_radius;
     float LdR = dot(L, R);
     L = LdR < c ? normalize(c * L + s * normalize(R - LdR * L)) : R;
   }
-  */
   
 
   vec3 H = normalize(V + L);

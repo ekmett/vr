@@ -264,7 +264,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="sampling_bridson.h" />
     <ClInclude Include="sampling_hammersley.h" />
     <ClInclude Include="sampling_sobol.h" />
-    <ClInclude Include="shaders\common.h" />
+    <ClInclude Include="shaders\common.glsl" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h" />

@@ -11,37 +11,16 @@
 // 3.) integral_Omega f_r(omega_i, omega_r) cos theta_i domega_i <= i -- conservation of energy
 
 // ----------------------------------------------------
-// The Cook-Torrance BRDF
-// ----------------------------------------------------
-
-//         D*F*G
-// R_s = ----------
-//       (N.L)(N.V)
-//
-// It is alternately written with a 1/4 or 1/pi factor here the 1/pi factor is assumed baked into D.
-//
-// D is the microfacet slope distribution, e.g. Beckmann, GGX.
-// F is the Fresnel term.
-// G is the geometric attentuation factor
-//
-// unit vectors:
-// -------------------------------------------
-// V points back to the viewer
-// L points to the light
-// N is the surface normal
-// H is the half angle vector between L and V.
-
-// ----------------------------------------------------
 // Fresnel Term
 // ----------------------------------------------------
 
 // F = (1 + V.N)^lambda
 
 // Schlick's approximation of the fresnel term
-// f0 is reflection coefficient (or specular albedo)
-// f is fresnel albedo
-vec3 F_schlick(vec3 f0, vec3 f, float LdH) {
-  vec3 fresnel = mix(f0, f, pow(1 - LdH, 5.0f));
+// f0 is specular albedo: the reflection coefficient for light incoming parallel to the normal vector
+// f90 is fresnel albedo: the reflection coefficient for light grazing the surface
+vec3 F_schlick(vec3 f0, vec3 f90, float LdH) {
+  vec3 fresnel = mix(f0, f90, pow(1 - LdH, 5.0f));
   fresnel *= saturate(dot(f0, vec3(333.3f)));
   return fresnel;
 }
@@ -50,8 +29,8 @@ vec3 F_schlick(vec3 f0, float LdH) {
   return F_schlick(f0, vec3(1), LdH);
 }
 
-float F_schlick(float f0, float f, float LdH) {
-  float fresnel = mix(f0, f, pow(1 - LdH, 5.0f));
+float F_schlick(float f0, float f90, float LdH) {
+  float fresnel = mix(f0, f90, pow(1 - LdH, 5.0f));
   fresnel *= saturate(f0 * 1000.0f);
   return fresnel;
 }
@@ -88,7 +67,7 @@ const float n_sugar_solution_80 = 1.49;
 const float n_crown_glass = 1.52;
 const float n_spectacle_crown = 1.523;
 const float n_sodium_chloride = 1.54;
-const float n_polystyrene = 1.55
+const float n_polystyrene = 1.55;
 const float n_polystyrene_high = 1.59;
 const float n_flint_glasses = 1.57;
 const float n_sapphire = 1.77;
@@ -108,13 +87,25 @@ float calc_f0(float n2) {
 // Specular D Term
 // ----------------------------------------------------
 
+// Beckmann's microfacet distribution.
+//
+// 1/pi correction incorporated
+float D_beckmann(float smoothness, float NdH) {
+  float cosAlpha = max(NdH, 0.0001f);
+  float cosAlpha2 = cosAlpha*cosAlpha;              // cos^2(alpha)
+  float tanAlpha2 = (cosAlpha2 - 1.0f) / cosAlpha2; // tan^2(alpha)
+  float roughness2 = 1 - smoothness;
+  return exp(tanAlpha2 / roughness2) / (pi*cosAlpha2*cosAlpha2*roughness2);
+}
+
 // [Microfacet Models for Refraction Through Rough Surfaces](https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html)
 // by Walter, Marschner, Li and Torrance (2007).
+//
+// 1/pi correction incorporated.
 float D_ggx(float smoothness, float NdH) {
   float t = 1.f - NdH * NdH * smoothness;
   return (1.f - smoothness) / (3.14159f * t * t);
 }
-
 
 float calc_smoothness(float roughness) {
   return 1 - roughness*roughness;
@@ -128,8 +119,6 @@ float calc_roughness(float smoothness) {
 // Geometry Term
 // ----------------------------------------------------
 
-
-// 1 / partial ggx visibility term
 float rcp_G_ggx_v1(float smoothness, float NdX) {
   return NdX + sqrt(1 + smoothness * (NdX*NdX - 1));
 }
@@ -138,6 +127,58 @@ float G_ggx(float smoothness, float NdL, float NdV) {
   return 1.0f / (rcp_G_ggx_v1(smoothness, NdL) * rcp_G_ggx_v1(smoothness, NdV));
 }
 
+float rcp_G_smith_g1(float roughness2, float NdX) {
+  float NdX2 = NdX*NdX;
+  return 1 + sqrt(1 + roughness2 * (1 - NdX2) / NdX2);
+}
+
+float G_smith(float smoothness, float NdL, float NdV) {
+  float roughness2 = 1 - smoothness;
+  return 4.0f / rcp_G_smith_g1(roughness2, NdL) * rcp_G_smith_g1(roughness2, NdV);
+}
+
+float G_neumann(float NdL, float NdV) {
+  return (NdL * NdV) / max(NdL, NdV);
+}
+
+float G_ward(float NdL, float NdV) {
+  return inversesqrt(NdL * NdV);
+}
+
+float G_ashikhmin_shirley(float NdL, float NdV, float LdH) {
+  return 1.0f / (LdH * max(NdL, NdV));
+}
+
+float G_ashikhmin_premoze(float NdL, float NdV) {
+  return 1.0f / (NdL + NdV - NdL*NdV);
+}
+
+float G_kelemen(float LdV) {
+  return 0.5 / (1 + LdV);
+}
+
+// ----------------------------------------------------
+// The Cook-Torrance BRDF
+// ----------------------------------------------------
+
+//         D*F*G
+// R_s = ----------
+//       (N.L)(N.V)
+//
+// It is alternately written with a 1/4 or 1/pi factor here the 1/pi factor is assumed baked into D.
+//
+// D is the microfacet slope distribution, e.g. Beckmann, GGX.
+// F is the Fresnel term.
+// G is the geometric attentuation factor
+//
+// unit vectors:
+// -------------------------------------------
+// V points back to the viewer
+// L points to the light
+// N is the surface normal
+// H is the half angle vector between L and V.
+//
+// This is pretty much the stock video game physically based BRDF
 vec3 calc_lighting(
   vec3 peak_irradiance,
   vec3 diffuse_albedo,
@@ -153,7 +194,7 @@ vec3 calc_lighting(
     vec3 H = normalize(L + V);
     float LdH = saturate(dot(L, H));
     float NdH = saturate(dot(N, H));
-    float NdV = saturate(dot(N, V));
+    float NdV = saturate(dot(N, V)); // move earlier + return 0 if this is negative?
     vec3  F = F_schlick(f0, LdH);
     float D = D_ggx(smoothness, NdH);
     float G = G_ggx(smoothness, NdL, NdV);
@@ -161,7 +202,5 @@ vec3 calc_lighting(
   }
   return lighting * NdL * peak_irradiance;
 }
-
-
 
 #endif
