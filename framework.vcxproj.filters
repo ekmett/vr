@@ -2,85 +2,128 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="third-party\imgui\imgui.cpp">
-      <Filter>imgui</Filter>
+      <Filter>display\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third-party\imgui\imgui_demo.cpp">
-      <Filter>imgui</Filter>
+      <Filter>display\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third-party\imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
+      <Filter>display\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.c">
-      <Filter>hosek</Filter>
+      <Filter>sky\hosek</Filter>
     </ClCompile>
     <ClCompile Include="app.cpp" />
     <ClCompile Include="aligned_allocator.cpp">
       <Filter>concurrency</Filter>
     </ClCompile>
-    <ClCompile Include="controllers.cpp" />
-    <ClCompile Include="distortion.cpp" />
-    <ClCompile Include="filesystem.cpp" />
-    <ClCompile Include="gl.cpp" />
-    <ClCompile Include="gui.cpp" />
-    <ClCompile Include="openal.cpp" />
-    <ClCompile Include="openvr.cpp" />
-    <ClCompile Include="openvr_system.cpp" />
-    <ClCompile Include="overlay.cpp" />
-    <ClCompile Include="quality.cpp" />
-    <ClCompile Include="rendermodel.cpp" />
-    <ClCompile Include="sdl_system.cpp" />
-    <ClCompile Include="sdl_window.cpp" />
-    <ClCompile Include="shader.cpp" />
-    <ClCompile Include="skybox.cpp" />
-    <ClCompile Include="spdlog.cpp" />
-    <ClCompile Include="spectrum.cpp" />
-    <ClCompile Include="spherical_harmonics.cpp" />
-    <ClCompile Include="stb.cpp" />
-    <ClCompile Include="timer.cpp" />
     <ClCompile Include="worker.cpp">
       <Filter>concurrency</Filter>
     </ClCompile>
     <ClCompile Include="epoch.cpp">
       <Filter>unused</Filter>
     </ClCompile>
-    <ClCompile Include="sampling_sobol.cpp" />
-    <ClCompile Include="sampling.cpp" />
-    <ClCompile Include="sampling_bridson.cpp" />
+    <ClCompile Include="distortion.cpp">
+      <Filter>distortion</Filter>
+    </ClCompile>
+    <ClCompile Include="controllers.cpp">
+      <Filter>controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="sampling.cpp">
+      <Filter>sampling</Filter>
+    </ClCompile>
+    <ClCompile Include="sampling_bridson.cpp">
+      <Filter>sampling</Filter>
+    </ClCompile>
+    <ClCompile Include="sampling_sobol.cpp">
+      <Filter>sampling</Filter>
+    </ClCompile>
+    <ClCompile Include="rendermodel.cpp">
+      <Filter>controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="openvr.cpp">
+      <Filter>display\openvr</Filter>
+    </ClCompile>
+    <ClCompile Include="openvr_system.cpp">
+      <Filter>display\openvr</Filter>
+    </ClCompile>
+    <ClCompile Include="sdl_system.cpp">
+      <Filter>sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="sdl_window.cpp">
+      <Filter>sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="skybox.cpp">
+      <Filter>sky</Filter>
+    </ClCompile>
+    <ClCompile Include="spherical_harmonics.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="quality.cpp">
+      <Filter>display</Filter>
+    </ClCompile>
+    <ClCompile Include="overlay.cpp">
+      <Filter>display</Filter>
+    </ClCompile>
+    <ClCompile Include="gui.cpp">
+      <Filter>display</Filter>
+    </ClCompile>
+    <ClCompile Include="openal.cpp">
+      <Filter>sound</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
+    <ClCompile Include="filesystem.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
+    <ClCompile Include="spdlog.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
+    <ClCompile Include="stb.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
+    <ClCompile Include="gl.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
+    <ClCompile Include="spectrum.cpp">
+      <Filter>sky</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imgui.h">
-      <Filter>imgui</Filter>
+      <Filter>display\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third-party\imgui\imgui_internal.h">
-      <Filter>imgui</Filter>
+      <Filter>display\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third-party\imgui\stb_rect_pack.h">
-      <Filter>imgui</Filter>
+      <Filter>display\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third-party\imgui\stb_textedit.h">
-      <Filter>imgui</Filter>
+      <Filter>display\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third-party\imgui\stb_truetype.h">
-      <Filter>imgui</Filter>
+      <Filter>display\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h">
-      <Filter>hosek</Filter>
+      <Filter>sky\hosek</Filter>
     </ClInclude>
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h">
-      <Filter>hosek</Filter>
+      <Filter>sky\hosek</Filter>
     </ClInclude>
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h">
-      <Filter>hosek</Filter>
+      <Filter>sky\hosek</Filter>
     </ClInclude>
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_Spectral.h">
-      <Filter>hosek</Filter>
+      <Filter>sky\hosek</Filter>
     </ClInclude>
-    <ClInclude Include="framework\shaders\uniforms.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="aligned_allocator.h">
       <Filter>concurrency</Filter>
     </ClInclude>
-    <ClInclude Include="apply.h" />
     <ClInclude Include="cache_isolated.h">
       <Filter>concurrency</Filter>
     </ClInclude>
@@ -94,51 +137,9 @@
       <Filter>concurrency</Filter>
     </ClInclude>
     <ClInclude Include="config.h" />
-    <ClInclude Include="controllers.h" />
-    <ClInclude Include="distortion.h" />
-    <ClInclude Include="error.h" />
-    <ClInclude Include="filesystem.h" />
-    <ClInclude Include="fmt.h" />
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="gl.h" />
-    <ClInclude Include="glew.h" />
-    <ClInclude Include="glm.h" />
-    <ClInclude Include="grammar.h" />
-    <ClInclude Include="gui.h" />
-    <ClInclude Include="gui_direction.h" />
     <ClInclude Include="gui_table.h">
-      <Filter>imgui</Filter>
+      <Filter>display\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="half.h" />
-    <ClInclude Include="math.h" />
-    <ClInclude Include="math_constexpr.h" />
-    <ClInclude Include="noncopyable.h" />
-    <ClInclude Include="oculus.h" />
-    <ClInclude Include="openal.h" />
-    <ClInclude Include="openvr.h" />
-    <ClInclude Include="openvr_system.h" />
-    <ClInclude Include="opt.h" />
-    <ClInclude Include="overlay.h" />
-    <ClInclude Include="post.h" />
-    <ClInclude Include="quality.h" />
-    <ClInclude Include="rendermodel.h" />
-    <ClInclude Include="sampling.h" />
-    <ClInclude Include="sdl.h" />
-    <ClInclude Include="sdl_system.h" />
-    <ClInclude Include="sdl_window.h" />
-    <ClInclude Include="serialization.h" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="signal.h" />
-    <ClInclude Include="skybox.h" />
-    <ClInclude Include="spdlog.h" />
-    <ClInclude Include="spectrum.h" />
-    <ClInclude Include="spherical_harmonics.h" />
-    <ClInclude Include="stb.h" />
-    <ClInclude Include="std.h" />
-    <ClInclude Include="stereo_fbo.h" />
-    <ClInclude Include="texturing.h" />
-    <ClInclude Include="timer.h" />
-    <ClInclude Include="utf8.h" />
     <ClInclude Include="worker.h">
       <Filter>concurrency</Filter>
     </ClInclude>
@@ -152,54 +153,281 @@
       <Filter>unused</Filter>
     </ClInclude>
     <ClInclude Include="third-party\imgui\imconfig.h">
-      <Filter>imgui</Filter>
+      <Filter>display\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="sampling_hammersley.h" />
-    <ClInclude Include="sampling_sobol.h" />
-    <ClInclude Include="sampling_bridson.h" />
-    <ClInclude Include="shaders\common.glsl" />
+    <ClInclude Include="distortion.h">
+      <Filter>distortion</Filter>
+    </ClInclude>
+    <ClInclude Include="controllers.h">
+      <Filter>controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="post.h">
+      <Filter>post</Filter>
+    </ClInclude>
+    <ClInclude Include="sampling.h">
+      <Filter>sampling</Filter>
+    </ClInclude>
+    <ClInclude Include="sampling_bridson.h">
+      <Filter>sampling</Filter>
+    </ClInclude>
+    <ClInclude Include="sampling_hammersley.h">
+      <Filter>sampling</Filter>
+    </ClInclude>
+    <ClInclude Include="sampling_sobol.h">
+      <Filter>sampling</Filter>
+    </ClInclude>
+    <ClInclude Include="rendermodel.h">
+      <Filter>controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="half.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="math.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="math_constexpr.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="openvr.h">
+      <Filter>display\openvr</Filter>
+    </ClInclude>
+    <ClInclude Include="openvr_system.h">
+      <Filter>display\openvr</Filter>
+    </ClInclude>
+    <ClInclude Include="sdl_window.h">
+      <Filter>sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="sdl.h">
+      <Filter>sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="sdl_system.h">
+      <Filter>sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="skybox.h">
+      <Filter>sky</Filter>
+    </ClInclude>
+    <ClInclude Include="spherical_harmonics.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="texturing.h">
+      <Filter>shading</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\uniforms.h" />
+    <ClInclude Include="quality.h">
+      <Filter>display</Filter>
+    </ClInclude>
+    <ClInclude Include="stereo_fbo.h">
+      <Filter>display</Filter>
+    </ClInclude>
+    <ClInclude Include="overlay.h">
+      <Filter>display</Filter>
+    </ClInclude>
+    <ClInclude Include="oculus.h">
+      <Filter>display</Filter>
+    </ClInclude>
+    <ClInclude Include="openal.h">
+      <Filter>sound</Filter>
+    </ClInclude>
+    <ClInclude Include="fmt.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="opt.h">
+      <Filter>unused</Filter>
+    </ClInclude>
+    <ClInclude Include="filesystem.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="serialization.h">
+      <Filter>unused</Filter>
+    </ClInclude>
+    <ClInclude Include="noncopyable.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="error.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="apply.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="stb.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="std.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="gui.h">
+      <Filter>display</Filter>
+    </ClInclude>
+    <ClInclude Include="gui_direction.h">
+      <Filter>display</Filter>
+    </ClInclude>
+    <ClInclude Include="gl.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="glew.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="glm.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\common.glsl">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="spectrum.h">
+      <Filter>sky</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="signal.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="grammar.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="utf8.h">
+      <Filter>misc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="third-party\glm\util\glm.natvis" />
+    <None Include="shaders\distortion_mask.frag">
+      <Filter>distortion</Filter>
+    </None>
+    <None Include="shaders\distortion_mask.vert">
+      <Filter>distortion</Filter>
+    </None>
+    <None Include="shaders\distortion_warp.frag">
+      <Filter>distortion</Filter>
+    </None>
+    <None Include="shaders\distortion_warp.vert">
+      <Filter>distortion</Filter>
+    </None>
+    <None Include="shaders\controllers.frag">
+      <Filter>controllers</Filter>
+    </None>
+    <None Include="shaders\controllers.vert">
+      <Filter>controllers</Filter>
+    </None>
+    <None Include="shaders\post_blur.glsl">
+      <Filter>post</Filter>
+    </None>
+    <None Include="shaders\post_blur_h.frag">
+      <Filter>post</Filter>
+    </None>
+    <None Include="shaders\post_blur_v.frag">
+      <Filter>post</Filter>
+    </None>
+    <None Include="shaders\post_downsample.frag">
+      <Filter>post</Filter>
+    </None>
+    <None Include="shaders\post_pass.vert">
+      <Filter>post</Filter>
+    </None>
+    <None Include="shaders\post_tonemap.frag">
+      <Filter>post</Filter>
+    </None>
+    <None Include="shaders\rendermodel.frag">
+      <Filter>controllers</Filter>
+    </None>
+    <None Include="shaders\rendermodel.vert">
+      <Filter>controllers</Filter>
+    </None>
+    <None Include="shaders\cotangent.glsl">
+      <Filter>math</Filter>
+    </None>
+    <None Include="shaders\skybox.frag">
+      <Filter>sky</Filter>
+    </None>
+    <None Include="shaders\skybox.vert">
+      <Filter>sky</Filter>
+    </None>
+    <None Include="shaders\seascape.glsl">
+      <Filter>sky</Filter>
+    </None>
+    <None Include="shaders\spherical_harmonics.glsl">
+      <Filter>math</Filter>
+    </None>
+    <None Include="shaders\brdf.glsl">
+      <Filter>shading</Filter>
+    </None>
+    <None Include="shaders\color.glsl">
+      <Filter>shading</Filter>
+    </None>
+    <None Include="shaders\oct.glsl">
+      <Filter>shading</Filter>
+    </None>
+    <None Include="shaders\gui.frag">
+      <Filter>display</Filter>
+    </None>
+    <None Include="shaders\gui.vert">
+      <Filter>display</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\brdf.glsl" />
-    <None Include="shaders\controllers.frag" />
-    <None Include="shaders\controllers.vert" />
-    <None Include="shaders\cotangent.glsl" />
-    <None Include="shaders\distortion_mask.frag" />
-    <None Include="shaders\distortion_mask.vert" />
-    <None Include="shaders\distortion_warp.frag" />
-    <None Include="shaders\distortion_warp.vert" />
-    <None Include="shaders\gui.frag" />
-    <None Include="shaders\gui.vert" />
-    <None Include="shaders\oct.glsl" />
-    <None Include="shaders\post_blur.glsl" />
-    <None Include="shaders\post_blur_h.frag" />
-    <None Include="shaders\post_blur_v.frag" />
-    <None Include="shaders\post_downsample.frag" />
-    <None Include="shaders\post_pass.vert" />
-    <None Include="shaders\post_tonemap.frag" />
-    <None Include="shaders\rendermodel.frag" />
-    <None Include="shaders\rendermodel.vert" />
-    <None Include="shaders\seascape.glsl" />
-    <None Include="shaders\skybox.frag" />
-    <None Include="shaders\skybox.vert" />
-    <None Include="shaders\spherical_harmonics.glsl" />
-    <None Include="shaders\color.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="imgui">
-      <UniqueIdentifier>{aee0de28-c747-4e2e-88bf-6c3486e9c7fc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="hosek">
-      <UniqueIdentifier>{0290da32-a70c-4c17-9e98-2cee84f1732a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="concurrency">
       <UniqueIdentifier>{b2f1f083-025f-4d1b-b9ae-7bb617d91481}</UniqueIdentifier>
     </Filter>
     <Filter Include="unused">
       <UniqueIdentifier>{6477b688-f5ff-4ea4-8bc2-f05d88225175}</UniqueIdentifier>
     </Filter>
+    <Filter Include="distortion">
+      <UniqueIdentifier>{63427cf5-507a-451b-9e97-4374515dfeea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="controllers">
+      <UniqueIdentifier>{fa474e58-3367-4c09-bb49-ec91a997e225}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="post">
+      <UniqueIdentifier>{24e2f657-6d58-416d-82b1-0376850db742}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sampling">
+      <UniqueIdentifier>{5566525e-d309-4256-a853-8044138de79a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{8e4d11ff-e7e6-43d0-afca-7bb6dde7f20f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sdl">
+      <UniqueIdentifier>{063b29d4-920f-41f3-9271-d5b7e085b7c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sky">
+      <UniqueIdentifier>{fc1787f9-cf99-47fc-a983-e509e0ba7476}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sky\hosek">
+      <UniqueIdentifier>{0290da32-a70c-4c17-9e98-2cee84f1732a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shading">
+      <UniqueIdentifier>{e444d4e2-4bf6-440a-8754-0e746471cf29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="display">
+      <UniqueIdentifier>{936ad4b5-704f-4abd-9e2e-468b7f6dc2b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="display\openvr">
+      <UniqueIdentifier>{f31a5dfe-0d9e-4b2e-b8b7-f6e6669cc42e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="display\imgui">
+      <UniqueIdentifier>{aee0de28-c747-4e2e-88bf-6c3486e9c7fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sound">
+      <UniqueIdentifier>{d162e0d4-f91b-4cf4-b88b-687abd199b1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="misc">
+      <UniqueIdentifier>{65103fbd-9527-4f71-9ad2-a7a2e4fbfb2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gl">
+      <UniqueIdentifier>{68948f9a-587b-4118-b416-43fec910ed3e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="third-party\glm\util\glm.natvis">
+      <Filter>gl</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

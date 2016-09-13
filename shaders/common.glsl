@@ -9,15 +9,19 @@ const float pi_4 = 0.78539816339744830962f;   // pi/4
 const float tau = 2 * pi;
 
 #define saturate(x) clamp(x,0.f,1.f)
+
 float sqr(float x) {
   return x*x;
 }
+
 vec2 sqr(vec2 x) {
   return x*x;
 }
+
 vec3 sqr(vec3 x) {
   return x*x;
 }
+
 vec4 sqr(vec4 x) {
   return x*x;
 }
