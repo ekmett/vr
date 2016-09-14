@@ -673,7 +673,7 @@ bool app::show_gui(bool * open) {
 }
 
 int SDL_main(int argc, char ** argv) {
-  logging::harness logs("vr", "gl", "al", "main", "app", "post", "distortion", "rendermodel");
+  logging::harness logs("vr", "al", "main", "post", "distortion", "rendermodel");
   SetProcessDPIAware(); // lest SDL2 lie and always tell us that DPI = 96
   mesh dragon("objects/dragon.obj");
 
