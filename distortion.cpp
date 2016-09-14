@@ -33,16 +33,22 @@ static bool point_in_mesh(vec2 p, vec2 * mesh, int vertices) {
 
 namespace framework {
 
-  distortion::distortion(GLushort segmentsH, GLushort segmentsV) : mask("distortion_mask"), warp("distortion_warp") {   
+  distortion::distortion(GLushort segmentsH, GLushort segmentsV) 
+    : mask("distortion_mask")
+    , warp("distortion_warp") 
+    , vao("distortion", true, 
+      attrib { 2, GL_FLOAT, GL_FALSE, offsetof(vertex, p) },
+      attrib { 2, GL_FLOAT, GL_FALSE, offsetof(vertex, r) },
+      attrib { 2, GL_FLOAT, GL_FALSE, offsetof(vertex, g) },
+      attrib{ 2, GL_FLOAT, GL_FALSE, offsetof(vertex, b) },
+      iattrib { 1, GL_UNSIGNED_SHORT, offsetof(vertex, eye) }
+    ), hidden_vao("distortion hidden", false,
+      attrib{ 2, GL_FLOAT, GL_FALSE, 0 }
+    ) {
     glUniformBlockBinding(warp.programId, 0, 0);
 
     float w = (float)(1.0 / float(segmentsH - 1)),
       h = (float)(1.0 / float(segmentsV - 1));
-
-    struct vertex {
-      vec2 p, r, g, b;
-      GLushort eye;
-    };
 
     vector<vec2> hidden_verts;
     for (int i = 0;i < 2;++i) {
@@ -55,9 +61,7 @@ namespace framework {
       if (i == 0) n_hidden_left = int(hidden_verts.size());
     }
     glProgramUniform1i(mask.programId, 0, n_hidden_left);
-
     n_hidden = int(hidden_verts.size());
-
 
     auto want = [&](float v[2], int i) -> bool {
       vec2 p(v[0] * 2 - 1, 1 - 2 * v[1]);
@@ -150,48 +154,13 @@ namespace framework {
         }
       }
     }
-
     n_indices = int(indices.size());
-
-    glCreateVertexArrays(2, array);
-    gl::label(GL_VERTEX_ARRAY, vao, "distortion vao");
-    gl::label(GL_VERTEX_ARRAY, hidden_vao, "distortion hidden vao");
-
-    glCreateBuffers(3, buffer);
-
-    gl::label(GL_BUFFER, vbo, "distortion vbo");
-    glNamedBufferData(vbo, verts.size() * sizeof(vertex), verts.data(), GL_STATIC_DRAW);
-
-    gl::label(GL_BUFFER, hidden_vbo, "distortion hidden vbo");
-    glNamedBufferData(hidden_vbo, hidden_verts.size() * sizeof(vec2), hidden_verts.data(), GL_STATIC_DRAW);
-
-    gl::label(GL_BUFFER, ibo, "distortion ibo");
-    glNamedBufferData(ibo, indices.size() * sizeof(GLushort), indices.data(), GL_STATIC_DRAW);
-
-    for (int i = 0;i < 5;++i) {
-      glEnableVertexArrayAttrib(vao, i);
-      glVertexArrayAttribBinding(vao, i, 0);
-    }
-
-    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, p));
-    glVertexArrayAttribFormat(vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, r));
-    glVertexArrayAttribFormat(vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, g));
-    glVertexArrayAttribFormat(vao, 3, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, b));
-    glVertexArrayAttribIFormat(vao, 4, 1, GL_UNSIGNED_SHORT, offsetof(vertex, eye));
-
-    glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(vertex)); // bind the data
-    glVertexArrayElementBuffer(vao, ibo);
-
-    glEnableVertexArrayAttrib(hidden_vao, 0);
-    glVertexArrayAttribFormat(hidden_vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
-    glVertexArrayAttribBinding(hidden_vao, 0, 0);
-    glVertexArrayVertexBuffer(hidden_vao, 0, hidden_vbo, 0, sizeof(vec2));
+    vao.load(verts);
+    vao.load_elements(indices);
+    hidden_vao.load(hidden_verts);
   }
 
-  distortion::~distortion() {
-    glDeleteBuffers(3, buffer);
-    glDeleteVertexArrays(2, array);
-  }
+  distortion::~distortion() {}
 
   void distortion::render_stencil() {
     static elapsed_timer timer("stencil");
@@ -206,13 +175,11 @@ namespace framework {
     glStencilFunc(GL_ALWAYS, 1, 1);
     glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
     if (debug_wireframe_render_stencil) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    glUseProgram(mask.programId);
-    glBindVertexArray(hidden_vao);
+    glUseProgram(mask);
+    hidden_vao.bind();
     glDrawArrays(GL_TRIANGLES, 0, n_hidden); // put 1 in the stencil mask everywhere the hidden mesh lies
     glBindVertexArray(0);
     glUseProgram(0);
-
     if (debug_wireframe_render_stencil) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    
     glStencilFunc(GL_EQUAL, 0, 1);                    // restore stencil
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);           // use the stencil mask to disable writes   
@@ -224,21 +191,17 @@ namespace framework {
   void distortion::render(int view_mask, GLuint64 handle, float resolve_buffer_usage) {
     static elapsed_timer timer("distortion");
     timer_block timed(timer);
-
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
     glStencilMask(1);
-
-    glUseProgram(warp.programId);
-    glBindVertexArray(vao);
-    glProgramUniformHandleui64ARB(warp.programId, 0, handle);
-    glProgramUniform1f(warp.programId, 1, resolve_buffer_usage);
+    glUseProgram(warp);
+    vao.bind();
+    glProgramUniformHandleui64ARB(warp, 0, handle);
+    glProgramUniform1f(warp, 1, resolve_buffer_usage);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, n_indices, GL_UNSIGNED_SHORT, nullptr);
     if (debug_wireframe_render) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glUseProgram(0);
     glBindVertexArray(0);
-
   }
-
 }

@@ -11,7 +11,7 @@ namespace framework {
     GLboolean normalized;
     GLuint relative_offset;
     void set(GLuint vao, int i) const {
-      log("vao")->info("attrib: {}, size: {}", i, size);
+      log("vao")->info("attrib: {}, size: {}, type: {}, normalized: {}, offset: {}", i, size, type, normalized, relative_offset);
       glEnableVertexArrayAttrib(vao, i);
       glVertexArrayAttribFormat(vao, i, size, type, normalized, relative_offset);
       glVertexArrayAttribBinding(vao, i, 0);
@@ -23,7 +23,7 @@ namespace framework {
     GLenum type;
     GLuint relative_offset;
     void set(GLuint vao, int i) const {
-      log("vao")->info("iattrib: {}, size: {}", i, size);
+      log("vao")->info("iattrib: {}, size: {}, type: {}, offset: {}", i, size, type, relative_offset);
       glEnableVertexArrayAttrib(vao, i);
       glVertexArrayAttribIFormat(vao, i, size, type, relative_offset);
       glVertexArrayAttribBinding(vao, i, 0);
@@ -39,14 +39,13 @@ namespace framework {
       glCreateVertexArrays(1, &vao);
       gl::label(GL_VERTEX_ARRAY, vao, "{} vao", name);
       glCreateBuffers(1, &vbo);
+      glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(T));
       gl::label(GL_BUFFER, vbo, "{} vertices", name);
       if (element_array_buffer) {
         glCreateBuffers(1, &ibo);
         gl::label(GL_BUFFER, ibo, "{} indices", name);
-        glVertexArrayElementBuffer(vao, ibo);
       } else ibo = 0;
       attributes(0, attribs ...);
-      glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(T));
     }
     ~vertex_array() {
       if (ibo) {
@@ -77,9 +76,10 @@ namespace framework {
     void load_elements(const GLushort * indices, size_t count, GLenum usage = GL_STREAM_DRAW) const {
       if (!ibo) die("no element array buffer");
       glNamedBufferData(ibo, sizeof(GLushort) * count, indices, usage);
+      glVertexArrayElementBuffer(vao, ibo);
     }
 
-    void load_elements(const std::vector<T> & v, GLenum usage = GL_STREAM_DRAW) const {
+    void load_elements(const std::vector<GLushort> & v, GLenum usage = GL_STREAM_DRAW) const {
       load_elements(v.data(), v.size(), usage);
     }
 

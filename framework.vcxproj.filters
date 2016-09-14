@@ -300,7 +300,9 @@
     </ClInclude>
     <ClInclude Include="mesh.h" />
     <ClInclude Include="obj.h" />
-    <ClInclude Include="vao.h" />
+    <ClInclude Include="vao.h">
+      <Filter>gl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\distortion_mask.frag">

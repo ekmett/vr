@@ -23,7 +23,7 @@ namespace framework {
         vec3 color(0);
         vec4 point(0, 0, 0, 1);
         point[i] += 0.05f;  // X, Y, Z
-        color[i] = 1.0; // 1.0;     // R, G, B
+        color[i] = 1.0;     // R, G, B
         if (controller == 0) color[2] = 1.0;
         verts.push_back(vertex{ vec4(0,0,0,1), color, controller });
         verts.push_back(vertex{ point, color, controller });

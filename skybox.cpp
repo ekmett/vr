@@ -66,7 +66,7 @@ namespace framework {
       glTextureParameteri(cubemap_views[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
       glTextureParameteri(cubemap_views[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
       glTextureParameteri(cubemap_views[i], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      glTextureStorage2D(cubemap_views[i], 7, GL_RGBA8, N, N);
+      glTextureStorage2D(cubemap_views[i], 3, GL_RGBA8, N, N);
     }
 
     initialized = false;
