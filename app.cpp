@@ -81,14 +81,13 @@ struct app : app_uniforms {
 
   void calculate_composite_frustum();
  
-  sdl::window window; // must come before anything that needs opengl support in this object, implicitly supplies gl context
-  gl::compiler compiler; // must come before anything that uses includes in opengl
-  openvr::system vr;  // must come before anything that uses openvr in this object, implicitly supplies vr::VRSystem(), etc.
-  openal::system al;  // must come before anything that uses sound
-  rendermodel_manager rendermodels;
-
-  quality quality;    // requires vr
-  post post;          // post processor, requires quality
+  sdl::window window { "framework", { 4, 5, gl::profile::core }, true, 50, 50, 1280, 1024 };  
+  gl::compiler compiler { path("shaders") };
+  openvr::system vr;
+  openal::system al;
+  rendermodel_manager rendermodels { vr };
+  quality quality { 3 };
+  post post { quality };
   GLuint ubo;
   GLuint dummy_vao;
   framework::sky sky;
@@ -102,7 +101,8 @@ struct app : app_uniforms {
   bool read_pixel_hack = false;
   bool show_sampling_debug_window = true;
   
-  gui::system gui;
+ // mesh dragon{ "dragon" }; // , "objects/dragon.obj"
+  gui::system gui { window };
   controllers controllers;
   std::mt19937 rng; // for the main thread  
   int desktop_view = 1;
@@ -119,15 +119,7 @@ private:
 };
 
 
-app::app()
-  : window("framework", { 4, 5, gl::profile::core }, true, 50, 50, 1280, 1024)
-  , vr()
-  , compiler(path("shaders"))
-  , gui(window)
-  , quality(3)
-  , post(quality)
-  , rendermodels(vr)
-  {
+app::app() {
   nearClip = 0.1f;
   farClip = 50.f;
   bloom_exposure = -6.f;
@@ -135,7 +127,6 @@ app::app()
   blur_sigma = 2.5f;
   bloom_magnitude = 1.000f;
   quality.maximum_quality_level = 4;
-
   sun_dir = vec3(0.228f, 0.9f, 0.912f);
   sun_angular_radius = physical_sun_angular_radius * 2;
   ground_albedo = vec3(0.25f, 0.4f, 0.4f); 
@@ -675,8 +666,6 @@ bool app::show_gui(bool * open) {
 int SDL_main(int argc, char ** argv) {
   logging::harness logs("vr", "al", "main", "post", "distortion", "rendermodel");
   SetProcessDPIAware(); // lest SDL2 lie and always tell us that DPI = 96
-  mesh dragon("objects/dragon.obj");
-
   cds_main_thread_attachment<> main_thread; // Allow use of concurrent data structures in the main threads
   log("main")->info("pid: {}", GetCurrentProcessId());
   // cd ../.. from the executable
@@ -684,6 +673,5 @@ int SDL_main(int argc, char ** argv) {
     log("main")->warn("unable to set working directory");
   app main;
   main.run();
-
   return 0;
 }

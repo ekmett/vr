@@ -262,6 +262,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="gl_types-x.h" />
     <ClInclude Include="obj.h" />
     <ClInclude Include="sampling_bridson.h" />
     <ClInclude Include="sampling_hammersley.h" />

@@ -37,14 +37,12 @@ namespace framework {
     : mask("distortion_mask")
     , warp("distortion_warp") 
     , vao("distortion", true, 
-      attrib { 2, GL_FLOAT, GL_FALSE, offsetof(vertex, p) },
-      attrib { 2, GL_FLOAT, GL_FALSE, offsetof(vertex, r) },
-      attrib { 2, GL_FLOAT, GL_FALSE, offsetof(vertex, g) },
-      attrib{ 2, GL_FLOAT, GL_FALSE, offsetof(vertex, b) },
-      iattrib { 1, GL_UNSIGNED_SHORT, offsetof(vertex, eye) }
-    ), hidden_vao("distortion hidden", false,
-      attrib{ 2, GL_FLOAT, GL_FALSE, 0 }
-    ) {
+      make_attrib(&vertex::p),
+      make_attrib(&vertex::r),
+      make_attrib(&vertex::g),
+      make_attrib(&vertex::b),
+      make_iattrib(&vertex::eye)
+    ), hidden_vao("distortion hidden", false, self_attrib<vec2>()) {
     glUniformBlockBinding(warp.programId, 0, 0);
 
     float w = (float)(1.0 / float(segmentsH - 1)),

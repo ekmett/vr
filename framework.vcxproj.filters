@@ -303,6 +303,9 @@
     <ClInclude Include="vao.h">
       <Filter>gl</Filter>
     </ClInclude>
+    <ClInclude Include="gl_types-x.h">
+      <Filter>gl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\distortion_mask.frag">

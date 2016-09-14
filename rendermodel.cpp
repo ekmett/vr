@@ -15,10 +15,10 @@ namespace framework {
     , name(name)
     , missing_components(missing_components)
     , vao(name, true, 
-        attrib { 3, GL_FLOAT, GL_FALSE, offsetof(vr::RenderModel_Vertex_t, vPosition)  },
-        attrib { 3, GL_FLOAT, GL_FALSE, offsetof(vr::RenderModel_Vertex_t, vNormal) },
-        attrib { 2, GL_FLOAT, GL_FALSE, offsetof(vr::RenderModel_Vertex_t, rfTextureCoord) }
-    ){
+      make_attrib(&vr::RenderModel_Vertex_t::vPosition),
+      make_attrib(&vr::RenderModel_Vertex_t::vNormal),
+      make_attrib(&vr::RenderModel_Vertex_t::rfTextureCoord)
+    ) {
     vao.load(model.rVertexData, model.unVertexCount);
     vao.load_elements(model.rIndexData, model.unTriangleCount * 3);
   }

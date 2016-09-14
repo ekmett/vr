@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+#include "half.h"
 
 #ifdef FRAMEWORK_SUPPORTS_OPENGL
 
@@ -65,6 +66,25 @@ namespace framework {
         glPopDebugGroup();
       }
     };
+
+
+    template <GLenum E> struct enum_type {};
+    template <typename T> struct type_enum {};
+    template <> struct enum_type<GL_FIXED> { typedef GLfixed type; }; // non-injective, GLfixed = int
+#define X_TYPE(T,E) \
+    template <> struct enum_type<E> { typedef typename T type; }; \
+    template <> struct type_enum<typename T> { static const GLenum value = E; };
+#include "gl_types-x.h"
+#undef X_TYPE
+
+    static const char * show_enum_type(GLenum e) {
+      switch (e) {
+#define X_TYPE(T,E) case E: return #T; break;
+#include "gl_types-x.h"
+#undef X_TYPE
+      default: return "unknown";
+      }
+    }
   }
 }
 

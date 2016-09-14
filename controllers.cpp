@@ -11,10 +11,10 @@ using namespace openvr;
 namespace framework {
   controllers::controllers() 
     : program("controllers")
-    , vao("controller", false, 
-      attrib{ 3, GL_FLOAT, GL_FALSE, offsetof(vertex, pos) },
-      attrib{ 3, GL_FLOAT, GL_FALSE, offsetof(vertex, color) },
-      iattrib{ 1, GL_UNSIGNED_SHORT, offsetof(vertex, controller) }
+    , vao("controller", false,
+      make_attrib(&vertex::pos),
+      make_attrib(&vertex::color),
+      make_iattrib(&vertex::controller)
     ) {
     glUniformBlockBinding(program.programId, 0, 0);    
     std::vector<vertex> verts;

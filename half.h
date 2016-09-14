@@ -14,18 +14,18 @@ namespace framework {
     uint16_t data;
   };
 
-  template <typename ostream> ostream & operator << (ostream & os, half h) {
+  template <typename ostream> static inline ostream & operator << (ostream & os, half h) {
     return os << float(h);
   }
 
-  template <typename istream> istream & operator >> (istream & is, half & h) {
+  template <typename istream> static inline istream & operator >> (istream & is, half & h) {
     float f;
     is >> f;
     h = f;
     return is;
   }
 
-  half operator "" _half(long double f) {
+  static inline half operator "" _half(long double f) {
     return half(float(f));
   }
 
