@@ -12,7 +12,7 @@ vec2 iResolution = vec2(1024.,768.);
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 // lighting model replaced
 
-const int NUM_STEPS = 6;
+const int NUM_STEPS = 8;
 const float PI         = 3.14159;
 const float EPSILON    = 1e-3;
 float EPSILON_NRM    = 0.1 / iResolution.x;
@@ -21,10 +21,10 @@ float EPSILON_NRM    = 0.1 / iResolution.x;
 const int ITER_GEOMETRY = 3;
 const int ITER_FRAGMENT = 6;
 
-const float SEA_HEIGHT = 0.3;
-const float SEA_CHOPPY = 2.0;
-const float SEA_SPEED = 0.8;
-const float SEA_FREQ = 0.16;
+const float SEA_HEIGHT = 0.5; // 0.3
+const float SEA_CHOPPY = 1.0; //2.0
+const float SEA_SPEED = 1.3; // 0.8
+const float SEA_FREQ = 0.16; // 0.16
 
 const vec3 SEA_BASE = vec3(0.1,0.19,0.22);
 
@@ -113,8 +113,9 @@ vec3 getSeaColor(vec3 p, vec3 N, vec3 L, vec3 I, vec3 dist) {
   }
   */
   float atten = max(1.0 - dot(dist, dist) * 0.001, 0.0);
-  vec3 refracted = mix(SEA_BASE,SEA_WATER_COLOR, 0.4*atten) * eval_sh9_irradiance(N, sky_sh9) / 3.14159; // diffuse/"ambient"
-  vec3 reflected = R.y > 0 ? mix(SEA_BASE, SEA_WATER_COLOR, 0.5*atten) * getSkyColor(R) / 3.14159 : refracted;
+  vec3 refracted_base = mix(SEA_BASE, SEA_WATER_COLOR, 0.4*atten);
+  vec3 refracted = refracted_base * eval_sh9_irradiance(N, sky_sh9) / 3.14159; // diffuse/"ambient"
+  vec3 reflected = R.y > 0 ? mix(SEA_BASE, SEA_WATER_COLOR, 0.6*atten) * getSkyColor(R) / 3.14159 : refracted;
   vec3 color = mix(reflected, refracted, F_schlick(f0_water, NdV)); // sun independent factors
 
   // sunlight
@@ -124,10 +125,10 @@ vec3 getSeaColor(vec3 p, vec3 N, vec3 L, vec3 I, vec3 dist) {
   float LdH = saturate(dot(L, H));
 
   // diffuse sunlight
-  color += 0.001 * SEA_WATER_COLOR / pi * (1.0f - F_schlick(f0_water, NdL)) * NdL * sun_irradiance / (turbidity*turbidity);
+  //color += 0.03 * refracted_base / pi * (1.0f - F_schlick(f0_water, NdL)) * NdL * sun_irradiance / (turbidity*turbidity);
   if (NdL >= 0) {
     vec3 F = F_schlick(f0_water, LdH);
-    float smoothness = calc_smoothness(0.01);
+    float smoothness = calc_smoothness(0.06 - 0.05 * clamp(pow(length(dist)/100, 2.f),0f,1f));
     float D = D_ggx(smoothness, NdH);
     float G = G_ggx(smoothness, NdL, NdV);
     // specular sunlight

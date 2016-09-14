@@ -48,10 +48,10 @@
       <Filter>display\openvr</Filter>
     </ClCompile>
     <ClCompile Include="sdl_system.cpp">
-      <Filter>sdl</Filter>
+      <Filter>display\sdl</Filter>
     </ClCompile>
     <ClCompile Include="sdl_window.cpp">
-      <Filter>sdl</Filter>
+      <Filter>display\sdl</Filter>
     </ClCompile>
     <ClCompile Include="skybox.cpp">
       <Filter>sky</Filter>
@@ -196,13 +196,13 @@
       <Filter>display\openvr</Filter>
     </ClInclude>
     <ClInclude Include="sdl_window.h">
-      <Filter>sdl</Filter>
+      <Filter>display\sdl</Filter>
     </ClInclude>
     <ClInclude Include="sdl.h">
-      <Filter>sdl</Filter>
+      <Filter>display\sdl</Filter>
     </ClInclude>
     <ClInclude Include="sdl_system.h">
-      <Filter>sdl</Filter>
+      <Filter>display\sdl</Filter>
     </ClInclude>
     <ClInclude Include="skybox.h">
       <Filter>sky</Filter>
@@ -403,9 +403,6 @@
     <Filter Include="math">
       <UniqueIdentifier>{8e4d11ff-e7e6-43d0-afca-7bb6dde7f20f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sdl">
-      <UniqueIdentifier>{063b29d4-920f-41f3-9271-d5b7e085b7c9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="sky">
       <UniqueIdentifier>{fc1787f9-cf99-47fc-a983-e509e0ba7476}</UniqueIdentifier>
     </Filter>
@@ -432,6 +429,9 @@
     </Filter>
     <Filter Include="gl">
       <UniqueIdentifier>{68948f9a-587b-4118-b416-43fec910ed3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="display\sdl">
+      <UniqueIdentifier>{063b29d4-920f-41f3-9271-d5b7e085b7c9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
