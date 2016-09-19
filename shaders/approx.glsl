@@ -1,5 +1,5 @@
-#ifndef INCLUDED_SHADERS_APPROX_GLSL_hlasdfjhl
-#define INCLUDED_SHADERS_APPROX_GLSL_hlasdfjhl
+#ifndef INCLUDED_APPROX_GLSL
+#define INCLUDED_APPROX_GLSL
 
 #include "common.glsl"
 

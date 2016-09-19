@@ -267,9 +267,11 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="sampling_bridson.h" />
     <ClInclude Include="sampling_hammersley.h" />
     <ClInclude Include="sampling_sobol.h" />
+    <ClInclude Include="wip\scene.h" />
     <ClInclude Include="shaders\common.glsl" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="shaders\uniforms.h" />
+    <ClInclude Include="wip\shadows.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModel.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_CIEXYZ.h" />
     <ClInclude Include="third-party\HosekWilkie_SkylightModel_C_Source.1.4a\ArHosekSkyModelData_RGB.h" />
@@ -340,6 +342,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <Natvis Include="third-party\glm\util\glm.natvis" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\aabb.glsl" />
     <None Include="shaders\brdf.glsl" />
     <None Include="shaders\color.glsl" />
     <None Include="shaders\controllers.frag" />
@@ -349,21 +352,27 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <None Include="shaders\distortion_mask.vert" />
     <None Include="shaders\distortion_warp.frag" />
     <None Include="shaders\distortion_warp.vert" />
+    <None Include="shaders\frustum.glsl" />
     <None Include="shaders\gui.frag" />
     <None Include="shaders\gui.vert" />
+    <None Include="shaders\mesh.vert" />
     <None Include="shaders\oct.glsl" />
+    <None Include="shaders\plane.glsl" />
     <None Include="shaders\post_blur.glsl" />
     <None Include="shaders\post_blur_h.frag" />
     <None Include="shaders\post_blur_v.frag" />
     <None Include="shaders\post_downsample.frag" />
     <None Include="shaders\post_pass.vert" />
     <None Include="shaders\post_tonemap.frag" />
+    <None Include="shaders\quat.glsl" />
     <None Include="shaders\rendermodel.frag" />
     <None Include="shaders\rendermodel.vert" />
     <None Include="shaders\seascape.glsl" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
+    <None Include="shaders\sphere.glsl" />
     <None Include="shaders\spherical_harmonics.glsl" />
+    <None Include="shaders\terrain.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

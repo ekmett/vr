@@ -1,5 +1,5 @@
-#ifndef INCLUDED_SHADERS_BRDF_GLSL
-#define INCLUDED_SHADERS_BRDF_GLSL
+#ifndef INCLUDED_BRDF_GLSL
+#define INCLUDED_BRDF_GLSL
 
 #include "common.glsl"
 

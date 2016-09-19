@@ -306,6 +306,8 @@
     <ClInclude Include="gl_types-x.h">
       <Filter>gl</Filter>
     </ClInclude>
+    <ClInclude Include="wip\shadows.h" />
+    <ClInclude Include="wip\scene.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\distortion_mask.frag">
@@ -380,6 +382,13 @@
     <None Include="shaders\gui.vert">
       <Filter>display</Filter>
     </None>
+    <None Include="shaders\mesh.vert" />
+    <None Include="shaders\terrain.glsl" />
+    <None Include="shaders\frustum.glsl" />
+    <None Include="shaders\sphere.glsl" />
+    <None Include="shaders\aabb.glsl" />
+    <None Include="shaders\plane.glsl" />
+    <None Include="shaders\quat.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="concurrency">

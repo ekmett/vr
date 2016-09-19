@@ -7,6 +7,7 @@ const float pi = 3.14159265358979323846f;     // pi
 const float pi_2 = 1.57079632679489661923f;   // pi/2
 const float pi_4 = 0.78539816339744830962f;   // pi/4
 const float tau = 2 * pi;
+const float epsilon = 0.00001f; // largest legal FLT_EPSILON
 
 #define saturate(x) clamp(x,0.f,1.f)
 
@@ -57,5 +58,46 @@ vec3 sin2cos(vec3 s) {
 vec4 sin2cos(vec4 s) {
   return sqrt(1 - s*s);
 }
+
+float quadrance(vec2 v) {
+  return dot(v, v);
+}
+
+float quadrance(vec3 v) {
+  return dot(v, v);
+}
+
+float quadrance(vec4 v) {
+  return dot(v, v);
+}
+
+float quadrance(vec2 u, vec2 v) {
+  return quadrance(u - v);
+}
+
+float quadrance(vec3 u, vec3 v) {
+  return quadrance(u - v);
+}
+
+float quadrance(vec4 u, vec4 v) {
+  return quadrance(u - v);
+}
+
+float rcp(float f) {
+  return 1.f / f;
+}
+
+vec2 rcp(vec2 f) {
+  return 1.f / f;
+}
+
+vec3 rcp(vec3 f) {
+  return 1.f / f;
+}
+
+vec4 rcp(vec4 f) {
+  return 1.f / f;
+}
+
 
 #endif

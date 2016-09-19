@@ -1,5 +1,5 @@
-#ifndef INCLUDED_SHADERS_COLOR_GLSL
-#define INCLUDED_SHADERS_COLOR_GLSL
+#ifndef INCLUDED_COLOR_GLSL
+#define INCLUDED_COLOR_GLSL
 
 float luminance(vec3 rgb) {
   const vec3 kY = vec3(0.2126, 0.7152, 0.0722);
@@ -14,7 +14,6 @@ float linearDepth(float depth, mat4 projMatrix) {
 float autokey(in float lum) {
 	return 1.03 - 2.0 / (2.0 + log2(lum + 1.0)/log2(10.0f));
 }
-
 
 // ALU driven approximation of Duiker's film stock curve
 // by Jim Hejl and Richard Burgess-Dawson.

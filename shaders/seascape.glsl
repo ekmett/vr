@@ -1,5 +1,5 @@
-#ifndef INCLUDED_SHADERS_SEASCAPE_GLSL
-#define INCLUDED_SHADERS_SEASCAPE_GLSL
+#ifndef INCLUDED_SEASCAPE_GLSL
+#define INCLUDED_SEASCAPE_GLSL
 
 #include "brdf.glsl"
 #include "spherical_harmonics.glsl"

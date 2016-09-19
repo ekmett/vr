@@ -1,5 +1,5 @@
-#ifndef INCLUDED_SHADERS_COTANGENT_GLSL
-#define INCLUDED_SHADERS_COTANGENT_GLSL
+#ifndef INCLUDED_COTANGENT_GLSL
+#define INCLUDED_COTANGENT_GLSL
 
 // [Normal Mapping Without Precomputed Tangents](http://www.thetenthplanet.de/archives/1180)
 // by Christian Schuler
