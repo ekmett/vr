@@ -26,77 +26,77 @@ namespace framework {
     sh(Ts && ... ts) : array { ts... } {}
 
     template <typename F>
-    inline auto map(F f) -> sh<decltype(f(_Elems[0])), N> const {
-      sh<decltype(f(_Elems[0])), N> result{};
-      for (size_t i = 0; i < N; ++i) result[i] = f(_Elems[i]);
+    inline auto map(F f) -> sh<decltype(f(data()[0])), N> const {
+      sh<decltype(f(data()[0])), N> result{};
+      for (size_t i = 0; i < N; ++i) result[i] = f(data()[i]);
       return result;
     }
 
     // in place modification
     template <typename F, typename ... T> inline sh & modify(const sh<T, N> & ... args, F f) {
-      for (size_t i = 0;i < N; ++i) f(_Elems[i], args[i]...);
+      for (size_t i = 0;i < N; ++i) f(data()[i], args[i]...);
       return *this;
     }
 
     inline sh & operator+=(const sh & that) {
-      for (size_t i = 0; i < N; ++i) _Elems[i] += that[i];
+      for (size_t i = 0; i < N; ++i) data()[i] += that[i];
       return *this;
     }
     
     inline sh operator+(const sh & that) const {
       sh result;
-      for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] + that[i];
+      for (size_t i = 0; i < N; ++i) result[i] = data()[i] + that[i];
       return result;
     }
 
     inline sh & operator-=(const sh & that) {
-      for (size_t i = 0; i < N; ++i) _Elems[i] -= that[i];
+      for (size_t i = 0; i < N; ++i) data()[i] -= that[i];
       return *this;
     }
 
     inline sh operator-(const sh & that) const {
       sh result;
-      for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] - that[i];
+      for (size_t i = 0; i < N; ++i) result[i] = data()[i] - that[i];
       return result;
     }
 
     template <typename U>
     inline sh operator*=(const U & scale) {
-      for (size_t i = 0; i < N; ++i) _Elems[i] *= scale;
+      for (size_t i = 0; i < N; ++i) data()[i] *= scale;
       return *this;
     }
 
     template <typename U>
-    inline auto operator*(const U& scale) -> sh<decltype(_Elems[0] * scale), N> const {
-      sh<decltype(_Elems[0] * scale), N> result;
-      for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] * scale;
+    inline auto operator*(const U& scale) -> sh<decltype(data()[0] * scale), N> const {
+      sh<decltype(data()[0] * scale), N> result;
+      for (size_t i = 0; i < N; ++i) result[i] = data()[i] * scale;
       return result;
     }
     template <typename U>
     sh operator/=(const U & scale) {
-      for (size_t i = 0; i < N; ++i) _Elems[i] /= scale;
+      for (size_t i = 0; i < N; ++i) data()[i] /= scale;
       return *this;
     }
 
     template <typename U>
-    inline auto operator/(const T& scale) -> sh<decltype(_Elems[0] * scale), N> const {
-      sh<decltype(_Elems[0] / scale), N> result;
-      for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] / scale;
+    inline auto operator/(const T& scale) -> sh<decltype(data()[0] * scale), N> const {
+      sh<decltype(data()[0] / scale), N> result;
+      for (size_t i = 0; i < N; ++i) result[i] = data()[i] / scale;
       return result;
     }
 
     template <typename U>
-    friend inline auto operator * (U scale, const sh & that) -> sh<decltype(scale*_Elems[0]), N> {
-      sh<decltype(scale * _Elems[0]), N> result;
-      for (size_t i = 0; i < N; ++i) result[i] = scale * that._Elems[i];
+    friend inline auto operator * (U scale, const sh & that) -> sh<decltype(scale*data()[0]), N> {
+      sh<decltype(scale * data()[0]), N> result;
+      for (size_t i = 0; i < N; ++i) result[i] = scale * that.data()[i];
       return result;
     }
 
     // this generalization lets us use scalar-vector products for the members.
     template <typename U>
-    auto dot(const sh<U, N> & that) -> decltype(_Elems[0] * that._Elems[0]) const {
-      decltype(_Elems[0] * that._Elems[i]) result;
-      for (size_t i = 0; i < N; ++i) result += _Elems[i] * that._Elems[i];
+    auto dot(const sh<U, N> & that) -> decltype(data()[0] * that.data()[0]) const {
+      decltype(data()[0] * that.data()[i]) result;
+      for (size_t i = 0; i < N; ++i) result += data()[i] * that.data()[i];
       return result;
     }
 
@@ -107,9 +107,9 @@ namespace framework {
       static const float cosA2 = M_PI_4;
 
       sh result{};
-      if (N > 0) result[0] = _Elems[0] * cosA0;
-      for (int i = 0;i < min(4, N);++i) result[i] = _Elems[i] * cosA1;
-      for (int i = 4;i < min(9, N);++i) result[i] = _Elems[i] * cosA2;
+      if (N > 0) result[0] = data()[0] * cosA0;
+      for (int i = 0;i < min(4, N);++i) result[i] = data()[i] * cosA1;
+      for (int i = 4;i < min(9, N);++i) result[i] = data()[i] * cosA2;
       // truncate any remaining terms for now
       return result;
     }

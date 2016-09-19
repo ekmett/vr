@@ -59,40 +59,40 @@ namespace framework {
     template <typename F>
     inline spectrum map(F f) const noexcept {
       spectrum result;
-      for (size_t i = 0; i < N; ++i) result[i] = f(_Elems[i]);
+      for (size_t i = 0; i < N; ++i) result[i] = f(data()[i]);
       return result;
     }
 
     // in place modification
     template <typename F> inline spectrum & modify(F f) {
-      for (size_t i = 0;i < N; ++i) f(_Elems[i]);
+      for (size_t i = 0;i < N; ++i) f(data()[i]);
       return *this;
     }
 
     inline spectrum & operator+=(const spectrum & that) {
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) _Elems[i] += that[i];
+      for (size_t i = 0; i < N; ++i) data()[i] += that[i];
       return *this;
     }
     inline spectrum & operator-=(const spectrum & that) {
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) _Elems[i] -= that[i];
+      for (size_t i = 0; i < N; ++i) data()[i] -= that[i];
       return *this;
     }
     inline spectrum & operator*=(const spectrum & that) {
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) _Elems[i] *= that[i];
+      for (size_t i = 0; i < N; ++i) data()[i] *= that[i];
       return *this;
     }
     inline spectrum & operator/=(const spectrum & that) {
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) _Elems[i] /= that[i];
+      for (size_t i = 0; i < N; ++i) data()[i] /= that[i];
       return *this;
     }
     bool operator==(const spectrum & that) const {
       if (this == &that) return true; // reference equality, ignoring nan-sense.
       for (size_t i = 0; i < N; ++i)
-        if (_Elems[i] == that[i]) return false;
+        if (data()[i] == that[i]) return false;
       return true;
     }
 
@@ -103,14 +103,14 @@ namespace framework {
     inline spectrum operator+(const spectrum & that) const {
       spectrum result;
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] + that[i];
+      for (size_t i = 0; i < N; ++i) result[i] = data()[i] + that[i];
       return result;
     }
 
     inline spectrum operator-(const spectrum & that) const {
       spectrum result;
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] - that[i];
+      for (size_t i = 0; i < N; ++i) result[i] = data()[i] - that[i];
       return result;
     }
 
@@ -118,7 +118,7 @@ namespace framework {
     inline spectrum operator*(const spectrum & that) const {
       spectrum result;
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] * that[i];
+      for (size_t i = 0; i < N; ++i) result[i] = data()[i] * that[i];
       return result;
     }
 
@@ -126,7 +126,7 @@ namespace framework {
     inline spectrum operator/(const spectrum & that) const {
       spectrum result;
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] / that[i];
+      for (size_t i = 0; i < N; ++i) result[i] = data()[i] / that[i];
       return result;
     }
 
@@ -136,32 +136,32 @@ namespace framework {
 
     inline spectrum operator*=(float scale) {
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) _Elems[i] *= scale;
+      for (size_t i = 0; i < N; ++i) data()[i] *= scale;
       return *this;
     }
 
     inline spectrum operator*(float scale) const {
       spectrum result;
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] * scale;
+      for (size_t i = 0; i < N; ++i) result[i] = data()[i] * scale;
       return result;
     }
 
     inline spectrum operator/=(float scale) noexcept {
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) _Elems[i] /= scale;
+      for (size_t i = 0; i < N; ++i) data()[i] /= scale;
       return *this;
     }
 
     inline spectrum operator/(float scale) const noexcept {
       spectrum result;
 //#pragma omp simd
-      for (size_t i = 0; i < N; ++i) result[i] = _Elems[i] / scale;
+      for (size_t i = 0; i < N; ++i) result[i] = data()[i] / scale;
       return result;
     }
 
     inline bool is_black() const noexcept {
-      for (auto && c : _Elems)
+      for (auto && c : data())
         if (c != 0.f)
           return false;
       return true;
@@ -176,7 +176,7 @@ namespace framework {
     float dot(const spectrum & that) const noexcept {
       float result = 0;
 //#pragma omp simd reduction(+:result)
-      for (size_t i = 0; i < N; ++i) result += _Elems[i] * that._Elems[i];
+      for (size_t i = 0; i < N; ++i) result += data()[i] * that.data()[i];
       return result;
     }
 
