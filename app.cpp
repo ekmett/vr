@@ -97,9 +97,9 @@ struct app : app_uniforms {
   bool show_demo_window = false;
   bool show_rendermodel_window = false;
   bool show_controllers_window = false;
-  bool gl_finish_hack = true;
-  bool read_pixel_hack = false;
-  bool show_sampling_debug_window = true;
+  bool gl_finish_hack = false;
+  bool read_pixel_hack = true;
+  bool show_sampling_debug_window = false;
   
  // mesh dragon{ "dragon" }; // , "objects/dragon.obj"
   gui::system gui { window };
