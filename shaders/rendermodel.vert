@@ -18,7 +18,7 @@ out vec3 V_ws;
 
 void main() {
   uv = uvIn;
-  mat4 M = predicted_device_to_world[device] * component_matrix;
+  mat4 M = device == -1 ? component_matrix : predicted_device_to_world[device] * component_matrix;
   vec3 camera_ws = (predicted_device_to_world[DEVICE_HEAD] * eye_to_head[gl_InstanceID][3]).xyz;
   V_ws = camera_ws - positionIn.xyz;
   N_ws = mat3(M) * normalIn; // NB: (M^-1)^T = M if no components scale
