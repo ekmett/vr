@@ -29,8 +29,6 @@ namespace framework {
       auto old_frame_index = frame_timing.m_nFrameIndex;
       frame_timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
       bool have_frame_timing = vr::VRCompositor()->GetFrameTiming(&frame_timing, 0);
-      if (frame_timing.m_nFrameIndex == old_frame_index)
-        log("quality")->warn("same frame");
       total_dropped_frames += frame_timing.m_nNumDroppedFrames;
 
       old_old_utilization = old_utilization;
@@ -43,19 +41,15 @@ namespace framework {
         if (frame_timing.m_nNumDroppedFrames != 0) {
           quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
           last_adapted = frame_timing.m_nFrameIndex;
-          log("quality")->info("lowering due to dropped frame");
         } else if (utilization >= 0.9) {
           quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
           last_adapted = frame_timing.m_nFrameIndex;
-          log("quality")->info("lowering due to long frame");
         } else if (utilization >= 0.85 && utilization + std::max(utilization - old_utilization, (utilization - old_old_utilization) * 0.5f) >= 0.9) {
           quality_change = quality_levels[clamp(quality_level - 2, minimum_quality_level, maximum_quality_level)].force_interleaved_reprojection ? -1 : -2;
           last_adapted = frame_timing.m_nFrameIndex;
-          log("quality")->info("lowering due to predicted long frame");
         } else if (utilization < 0.7 && old_utilization < 0.7 && old_old_utilization < 0.7) { // we have had a good run
           quality_change = +1;
           last_adapted = frame_timing.m_nFrameIndex;
-          log("quality")->info("increasing due to short frames");
         }
       }
 
@@ -162,7 +156,7 @@ namespace framework {
 
   void quality::present(bool read_pixel) {
     if (suspended_rendering) return;
-
+     
     if (double_buffer) { 
       int other_index = 1 - resolve_index;
       if (sync[other_index]) {
