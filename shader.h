@@ -25,6 +25,7 @@ namespace framework {
       }
       GLuint programId;
       operator GLuint () const { return programId; }
+      void use() { glUseProgram(programId); }
     };
 
     // this may eventually pick up more stuff
