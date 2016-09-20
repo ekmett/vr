@@ -2,6 +2,7 @@
 #define INCLUDED_BRDF_GLSL
 
 #include "common.glsl"
+#include "frustum.glsl"
 
 // [Numerical verification of bidirectional reflectance distribution functions for physical plausibility](https://www.researchgate.net/publication/259885429_Numerical_Verification_of_Bidirectional_Reflectance_Distribution_Functions_for_Physical_Plausibility)
 // notes some basic properties any BRDF should satisfy

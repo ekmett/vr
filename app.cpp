@@ -200,7 +200,7 @@ void app::calculate_composite_frustum() {
   );
 
   float aspect_ratio = tan_half.x / tan_half.y;
-  float fov = 2 * atan(tan_half.y) * 180.0f / float(M_PI);
+  float fov = 2 * radians_to_degrees(atan(tan_half.y));
 
   log("app")->info("composite frustum has an {} degree fov, aspect ratio: {}", fov, aspect_ratio);
 

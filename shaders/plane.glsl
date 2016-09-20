@@ -20,6 +20,12 @@ plane make_plane(vec3 N, vec3 p) {
   return make_plane(N, -dot(N, p));
 }
 
+// construct a plane from a clockwise triangle within the plane,
+plane make_plane(vec3 A, vec3 B, vec3 C) {
+  vec3 N = normalize(cross(A-C,B-C));
+  return make_plane(N, C);
+}
+
 float signed_distance(plane p, vec3 pt) {
   return dot(p.data, vec4(pt, 1.f));
 }
