@@ -7,12 +7,15 @@
 
 // [Space-Efficient, High-Performance Rank & Select Structures on Uncompressed Bit Sequences](https://www.cs.cmu.edu/~dga/papers/zhou-sea2013.pdf)
 // by Zhou, Andersen, and Kaminsky, but modified to use texture loads, and remove L0.
+
+// 20 bytes
 struct poppy {
   // for every 2k block we store a cumulative prefix sum up to the block (L12.r)
   // and non cumulative prefix sums within the block for each 512 bits, 10 bits each, 
   // packed into a 32 bit member as rgb10_a2ui
   layout(rg32ui) readonly uimage1D L12;
   layout(rgba32ui) readonly uimage1D raw;
+  int n_bits;
 };
 
 // 2k blocks, 3.15% overhead, no L0, so there is a 2^32 entry, 512mb limit

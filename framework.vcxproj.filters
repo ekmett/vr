@@ -392,7 +392,9 @@
     <None Include="shaders\plane.glsl" />
     <None Include="shaders\quat.glsl" />
     <None Include="shaders\screw.glsl" />
-    <None Include="shaders\succinct.glsl" />
+    <None Include="shaders\poppy.glsl" />
+    <None Include="shaders\poppy_scan.comp" />
+    <None Include="shaders\scan.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="concurrency">

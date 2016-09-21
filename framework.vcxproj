@@ -369,13 +369,15 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <None Include="shaders\quat.glsl" />
     <None Include="shaders\rendermodel.frag" />
     <None Include="shaders\rendermodel.vert" />
+    <None Include="shaders\scan.glsl" />
     <None Include="shaders\screw.glsl" />
     <None Include="shaders\seascape.glsl" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
     <None Include="shaders\sphere.glsl" />
     <None Include="shaders\spherical_harmonics.glsl" />
-    <None Include="shaders\succinct.glsl" />
+    <None Include="shaders\poppy.glsl" />
+    <None Include="shaders\poppy_scan.comp" />
     <None Include="shaders\terrain.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

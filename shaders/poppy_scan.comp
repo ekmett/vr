@@ -1,0 +1,30 @@
+#version 450 core
+#extension GL_ARB_bindless_texture : require
+#extension GL_ARB_shading_language_include : require
+#extension GL_NV_shader_thread_group : require
+#extension GL_NV_shader_thread_shuffle : require
+
+#include "poppy.glsl"
+#include "scan.glsl"
+
+layout(std140, binding = 2) uniform poppy_scan {
+  layout(rg32ui) restrict writeonly uimage1D L12;
+  layout(rgba32ui) uniform restrict readonly uimage1D raw;
+  uniform uint n_bits;
+};
+
+void main() {
+  uint i = gl_GlobalInvocationID.x;
+  bool valid = i < (n_bits + 2047) >> 11;
+  uvec4 parts;
+  if (valid)
+	for (uint j=0, i16 = i<<4;j<4;++j) {
+	  ivec4 sums = ivec4(0);
+	  for (int k = 0;k < 3;++k)
+		sums += bitCount(imageLoad(raw, int(i16+j*4+k)));
+	  parts[j] = sums.x+sums.y+sums.z+sums.w;
+	}
+  uint sum = scan1_exclusive(parts.r + parts.g + parts.b + parts.a, BATCH_SIZE);
+  if (valid)
+	imageStore(L12, int(i), uvec4(sum, parts.g << 20 + parts.b << 10 + parts.r, 0u, 0u));
+}

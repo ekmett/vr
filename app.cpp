@@ -80,16 +80,17 @@ struct app : app_uniforms {
   }
 
   void calculate_composite_frustum();
- 
-  sdl::window window { "framework", { 4, 5, gl::profile::core }, true, 50, 50, 1280, 1024 };  
-  gl::compiler compiler { path("shaders") };
+
+  sdl::window window{ "framework", { 4, 5, gl::profile::core }, true, 50, 50, 1280, 1024 };
+  gl::compiler compiler{ path("shaders") };
   openvr::system vr;
   openal::system al;
-  rendermodel_manager rendermodels { vr };
-  quality quality { 3 };
-  post post { quality };
+  rendermodel_manager rendermodels{ vr };
+  quality quality{ 3 };
+  post post{ quality };
   GLuint ubo;
   GLuint dummy_vao;
+  gl::shader poppy_scan { GL_COMPUTE_SHADER, "poppy_scan" }; // only for linting purposes
   framework::sky sky;
   distortion distorted;
 
