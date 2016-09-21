@@ -10,6 +10,13 @@ namespace framework {
   vec3 sample_sphere(vec2 uv) noexcept;
   static constexpr const float sample_sphere_pdf = float(0.25 / M_PI);
 
+  // sample uniformly from a cylinder
+  static inline vec3 sample_cylinder(vec2 uv) noexcept {
+    float phi = tau*uv.x;
+    return vec3(sin(phi), cos(phi), 2 * uv.y - 1);
+  }
+  static constexpr const float sample_cylinder_pdf = float(M_1_PI);
+
   // Sample, cosine weighted, from the surface of a sphere
   vec3 sample_sphere_cos(vec2 uv, float * pdf = nullptr) noexcept;
 
@@ -88,7 +95,7 @@ namespace framework {
   // http://blog.tobias-franke.eu/2014/03/30/notes_on_importance_sampling.html
   vec3 sample_hemisphere_power_cos(vec2 uv, float exponent, float * pdf = nullptr) noexcept;
 
-  // Sample from a directional cone using Archimedes hat box.
+  // Sample from a directional cone (spherical cap) using Archimedes' hat box.
   vec3 sample_cone(vec2 uv, float cosThetaMax) noexcept;
   inline float constexpr sample_cone_pdf(float cosThetaMax) noexcept {
     return 1.f / (tau * (1.f - cosThetaMax));
