@@ -21,19 +21,19 @@ uint rank1(usampler1D s, uint i, uint bits, int lod) {
   return p.r + bitCount(p.g&((1 << (i&(bits - 1))) - 1));
 }
 
-uint rank1(layout(rg32ui) uimage1D s, uint i) {
+uint rank1(layout(rg32ui) readonly uimage1D s, uint i) {
   const uint bits = 32;
   uvec2 p = imageLoad(s, int(i >> bits)).rg;
   return p.r + bitCount(p.g&((1 << (i&(bits - 1))) - 1));
 }
 
-uint rank1(layout (rg16ui) uimage1D s, uint i) {
+uint rank1(layout (rg16ui) readonly uimage1D s, uint i) {
   const uint bits = 16;
   uvec2 p = imageLoad(s,int(i>>bits)).rg;
   return p.r + bitCount(p.g&((1<<(i&(bits-1)))-1));
 }
 
-uint rank1(layout(rg8ui) uimage1D s, uint i) {
+uint rank1(layout(rg8ui) readonly uimage1D s, uint i) {
   const uint bits = 8;
   uvec2 p = imageLoad(s, int(i >> bits)).rg;
   return p.r + bitCount(p.g&((1 << (i&(bits - 1))) - 1));
@@ -43,15 +43,15 @@ uint rank0(usampler1D s, uint i, uint bits, int lod) {
   return i - rank1(s, i, bits, lod);
 }
 
-uint rank0(layout(rg32ui) uimage1D s, uint i) {
+uint rank0(layout(rg32ui) readonly uimage1D s, uint i) {
   return i - rank1(s, i);
 }
 
-uint rank0(layout(rg16ui) uimage1D s, uint i) {
+uint rank0(layout(rg16ui) readonly uimage1D s, uint i) {
   return i - rank1(s, i);
 }
 
-uint rank0(layout(rg8ui) uimage1D s, uint i) {
+uint rank0(layout(rg8ui) readonly uimage1D s, uint i) {
   return i - rank1(s, i);
 }
 
