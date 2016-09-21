@@ -82,13 +82,6 @@ quat make_quat(vec3 o, vec3 d) {
   return make_quat(0.5 * s, axis / s);
 }
 
-/*
-quat make_quat(vec3 u, vec3 v) {
-  return quat(normalize(vec4(cross(u, v), 1 + dot(u, v)));
-}
-*/
-
-
 // check 2 quaternions for equality
 bool eq(quat q1, quat q2) {
   return q1.data == q2.data;
@@ -144,7 +137,7 @@ quat mul(quat q1, quat q2) {
   );
 }
 
-// quaternion vector multiplication
+// rotate a vector. named by analogy to applying a mat3, but isn't really multiplication.
 vec3 mul(quat q, vec3 v) {
   // return v + 2.f * cross(cross(v, q.data.xyz) + q.data.w * v), q.data.xyz);
   vec3 qv = q.data.xyz;
@@ -166,12 +159,8 @@ quat inverseq(quat q) {
   return quat(vec4(-q.data.xyz, q.data.w) / quadrance(q));
 }
 
-vec3 crossq(vec3 v, quat q) {
+vec3 mul(vec3 v, quat q) {
   return mul(inverseq(q), v);
-}
-
-vec3 crossq(quat q, vec3 v) {
-  return mul(q, v);
 }
 
 // construct a quaternion from euler angles

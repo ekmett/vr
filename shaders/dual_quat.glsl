@@ -11,7 +11,8 @@
 // [Dual Quaternions: From Classical Mechanics to Computer Graphics and Beyond](http://www.xbdev.net/misc_demos/demos/dual_quaternions_beyond/paper.pdf)
 // by Ben Kenwright
 
-// 32 bytes (8 floats)
+// 32 bytes (8 floats), representing a 6-dof rigid body transformation.
+// (subject to 2 constraints)
 struct dquat {
   quat r, d; // primal (real) and dual components
 };
@@ -27,6 +28,11 @@ dquat make_dquat() {
 // build a dual quaternion from a quaternion rotation
 dquat make_dquat(quat q) {
   return dquat(q, make_quat(0,0,0,0));
+}
+
+// dual quaternion representation of a vector
+dquat make_dquat(vec3 v) {
+  return dquat(make_quat(1, 0, 0, 0), make_quat(0, v));
 }
 
 // build a dual quaternion from a quaternion rotation and a translation vector
@@ -135,6 +141,7 @@ dquat conjugate(dquat a) {
 float dotq(dquat a, dquat b) {
   return dotq(a.r, b.r) + dotq(a.d, b.d);
 }
+
 
 float quadrance(dquat a) {
   return dotq(a, a);
