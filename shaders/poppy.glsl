@@ -8,7 +8,7 @@
 // [Space-Efficient, High-Performance Rank & Select Structures on Uncompressed Bit Sequences](https://www.cs.cmu.edu/~dga/papers/zhou-sea2013.pdf)
 // by Zhou, Andersen, and Kaminsky, but modified to use texture loads, and remove L0.
 
-// 20 bytes
+// 2k blocks, 3.15% overhead, Unlike the paper there is no L0, so there is a 2^32 entry, 512mb limit.
 struct poppy {
   // for every 2k block we store a cumulative prefix sum up to the block (L12.r)
   // and non cumulative prefix sums within the block for each 512 bits, 10 bits each, 
@@ -18,8 +18,8 @@ struct poppy {
   int n_bits;
 };
 
-// 2k blocks, 3.15% overhead, no L0, so there is a 2^32 entry, 512mb limit
-// but 64 bit ints aren't well supported in glsl anyways
+
+// O(1) compute the non-inclusive prefix sum of the number of 1 bits in a poppy compact indexed dictionary.
 uint rank1(poppy p, uint i) {
   uvec2 header = imageLoad(p.L12, int(i >> 11)).rg;
   int subblock = int(i >> 9);
@@ -49,6 +49,16 @@ uint rank1(poppy p, uint i) {
 
 uint rank0(poppy p, uint i) {
   return i - rank1(p, i);
+}
+
+// access the ith bit in a packed bit vector
+bool access(layout(rgba32ui) readonly uimage1D raw, uint i) {
+  return (imageLoad(raw, int(i >> 7))[int(i >> 5) & 3] & (1 << int(i & 31))) != 0;
+}
+
+// access the ith bit in a poppy array
+bool access(poppy p, uint i) {
+  return access(p.raw, i);
 }
 
 #endif
