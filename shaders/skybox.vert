@@ -1,6 +1,5 @@
 #version 450 core
 #extension GL_AMD_vertex_shader_layer : enable
-// #extension GL_ARB_shader_viewport_layer_array : require
 #extension GL_ARB_bindless_texture : require
 #extension GL_ARB_shading_language_include : require
 #include "uniforms.h"

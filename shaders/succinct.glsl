@@ -16,6 +16,7 @@
 // This naive encoding has 2x overhead, but that is still better than 8x-32x overhead caused 
 // by storing indices!
 
+// 100% overhead
 uint rank1(usampler1D s, uint i, uint bits, int lod) {
   uvec2 p = texelFetch(s, int(i >> bits), lod).rg;
   return p.r + bitCount(p.g&((1 << (i&(bits - 1))) - 1));
@@ -55,5 +56,75 @@ uint rank0(layout(rg8ui) readonly uimage1D s, uint i) {
   return i - rank1(s, i);
 }
 
+// 12.5% overhead, modified form of poppy to deal with single loads, no l0, 512 bit blocks. 0.5gb limit.
+// Based on
+// [Space-Efficient, High-Performance Rank & Select Structures on Uncompressed Bit Sequences](https://www.cs.cmu.edu/~dga/papers/zhou-sea2013.pdf)
+// by Zhou, Andersen, and Kaminsky.
+// but modified to use texture loads.
+struct poppy125 {
+  layout(r32ui) readonly uimage1D L1;
+  layout(rgb10_a2ui) readonly uimage1D L2;
+  layout(rgba32ui) readonly uimage1D raw;
+};
+
+uint rank1(poppy125 p, uint i) {
+  int block = int (i >> 9);
+  uint block_prefix = imageLoad(p.L1, block).r;
+  int subblock = int (i >> 7);
+  int word = int ((i >> 5) & 3);
+  uvec4 subblock_prefix = imageLoad(p.L2, block).argb;
+  subblock_prefix.z += subblock_prefix.y;
+  subblock_prefix.w += subblock_prefix.z;
+  uvec4 data = imageLoad(p.raw, subblock);
+  data[word] &= (1 << (i & 31)) - 1; // mask off bits in the target word;
+  ivec4 sums = bitCount(data);
+  sums.zw += sums.xy;
+  sums.yzw += sums.xyz;
+  return block_prefix + subblock_prefix[subblock & 3] + sums[word];
+}
+
+uint rank0(poppy125 p, uint i) {
+  return i - rank1(p, i);
+}
+
+struct poppy {
+  // for every 2k block we store a cumulative prefix sum up to the block (L12.r)
+  // and non cumulative prefix sums within the block for each 512 bits, 10 bits each, packed into a 32 bit register.
+  // rgb32_a2
+  layout(rg32ui) readonly uimage1D L12;
+  layout(rgba32ui) readonly uimage1D raw;
+};
+
+// 2k blocks, 3.15% overhead, no L0, so 2^32 entry, 512mb limit
+uint rank1(poppy p, uint i) {
+  uvec2 header = imageLoad(p.L12, int(i>>11)).rg;
+  int subblock = int(i >> 9);
+  int subblock_base = subblock << 2;
+  uint m = header.g & ((1 << (10 * (subblock&3))) - 1); // mask off the parts we want to keep
+  uint subblock_count = m & 1023 + (m >> 10) & 1023 + (m >> 20) & 1023; // SWAR prefix sum
+
+  uvec4 data[4];
+  for (int j = 0;j < 4;++j) // use j <= z ? save half the loads on average
+    data[j] = imageLoad(p.raw, subblock_base + j);
+
+  int z = int(i >> 7) & 3; // uvec4 within subblock
+  int w = int(i >> 5) & 3; // uint within uvec4
+  data[z][w] &= (1 << (i & 31)) - 1;
+
+  ivec4 counts[4];
+  int last = 0;
+  for (int j = 0;j < 4;++j) { // use j <= z ?
+    counts[j] = bitCount(data[j]);
+    counts[j].zw  += counts[j].xy;
+    counts[j].yzw += counts[j].xyz; // prefix sum w/in uvec4
+    counts[j] += last;              // prefix sum w/in subblock
+    last = counts[j].w;
+  }
+  return header.r + subblock_count + counts[z][w];
+}
+
+uint rank0(poppy p, uint i) {
+  return i - rank1(p, i);
+}
 
 #endif
