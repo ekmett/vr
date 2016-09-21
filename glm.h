@@ -9,8 +9,8 @@
 #include <glm/detail/type_half.hpp>
 #include <glm/gtc/vec1.hpp>
 
-// helpers so that glm types can be dumped to spdlog
 namespace glm {
+  // helpers so that glm types can be dumped to spdlog
   template <typename T, glm::precision P, typename ostream> ostream & operator << (ostream & os, const tvec1<T, P> & v) {
     return os << "[" << v.x << "]";
   }

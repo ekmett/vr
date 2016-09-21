@@ -125,6 +125,10 @@ quat mul(quat q, float s) {
   return quat(q.data*s);
 }
 
+quat div(quat q, float s) {
+  return quat(q.data / s);
+}
+
 // scalar quaternion multiplication
 quat mul(float s, quat q) {
   return quat(s*q.data);
@@ -153,7 +157,7 @@ vec4 mul(quat q, vec4 v) {
 }
 
 // conjugate a quaternion
-quat conjugateq(quat q) {
+quat conjugate(quat q) {
   return quat(vec4(-q.data.xyz, q.data.w));
 }
 

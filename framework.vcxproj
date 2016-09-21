@@ -267,6 +267,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <ClInclude Include="sampling_bridson.h" />
     <ClInclude Include="sampling_hammersley.h" />
     <ClInclude Include="sampling_sobol.h" />
+    <ClInclude Include="shaders\dual_quat.glsl" />
     <ClInclude Include="wip\scene.h" />
     <ClInclude Include="shaders\common.glsl" />
     <ClInclude Include="mesh.h" />
@@ -367,6 +368,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <None Include="shaders\quat.glsl" />
     <None Include="shaders\rendermodel.frag" />
     <None Include="shaders\rendermodel.vert" />
+    <None Include="shaders\screw.glsl" />
     <None Include="shaders\seascape.glsl" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
