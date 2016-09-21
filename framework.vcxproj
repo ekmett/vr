@@ -263,6 +263,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gl_types-x.h" />
+    <ClInclude Include="hash_grid.h" />
     <ClInclude Include="obj.h" />
     <ClInclude Include="sampling_bridson.h" />
     <ClInclude Include="sampling_hammersley.h" />
@@ -374,6 +375,7 @@ MOVE /Y "$(TargetDir)soft_oal.dll" "$(TargetDir)OpenAL32.dll"</Command>
     <None Include="shaders\skybox.vert" />
     <None Include="shaders\sphere.glsl" />
     <None Include="shaders\spherical_harmonics.glsl" />
+    <None Include="shaders\succinct.glsl" />
     <None Include="shaders\terrain.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

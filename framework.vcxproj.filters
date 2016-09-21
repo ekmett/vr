@@ -309,6 +309,7 @@
     <ClInclude Include="wip\shadows.h" />
     <ClInclude Include="wip\scene.h" />
     <ClInclude Include="shaders\dual_quat.glsl" />
+    <ClInclude Include="hash_grid.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\distortion_mask.frag">
@@ -391,6 +392,7 @@
     <None Include="shaders\plane.glsl" />
     <None Include="shaders\quat.glsl" />
     <None Include="shaders\screw.glsl" />
+    <None Include="shaders\succinct.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="concurrency">
