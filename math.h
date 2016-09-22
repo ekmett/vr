@@ -119,8 +119,8 @@ namespace framework {
       }
     };
 
-    // damn it, this crashes Visual C++
-    // static constexpr std::array<float, 55> cached_K = make_array<55, K_helper>(K_helper());
+    // damn it, this crashes Visual C++, even with cumulative update KB3165756 installed
+    //static constexpr std::array<float, 55> cached_K = make_array<55, K_helper>(K_helper());
   }
 
   // FactorialPower[x,n,h]
@@ -152,9 +152,9 @@ namespace framework {
                       : (x * (2 * l - 1) * legendre(l - 1, m, x) - (l + m - 1) * legendre(l - 2, m, x)) / (l - m);
   }
   inline float spherical_harmonic_cos(int l, int m, float cosTheta, float phi) {
-    return m > 0 ? sqrt(2) * K(l, m) * cos(m*phi) * legendre(l, m, cosTheta)
-         : m < 0 ? sqrt(2) * K(l, m) * sin(-m*phi) * legendre(l, -m, cosTheta)
-                           : K(l, m) * legendre(l, 0, cosTheta);
+    return m > 0 ? sqrtf(2) * K(l, m) * cos(m*phi) * legendre(l, m, cosTheta)
+         : m < 0 ? sqrtf(2) * K(l, m) * sin(-m*phi) * legendre(l, -m, cosTheta)
+                            : K(l, m) * legendre(l, 0, cosTheta);
   }
 
   inline float spherical_harmonic(int l, int m, float theta, float phi) {
