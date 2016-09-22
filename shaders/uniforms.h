@@ -76,7 +76,6 @@ UNIFORM_STRUCT(1) app_uniforms {
   UNIFORM_ALIGN(4) float cos_sun_angular_radius
                        , sin_sun_angular_radius, sun_angular_radius;
 
-
   // camera
   UNIFORM_ALIGN(4) float bloom_exposure, bloom_magnitude, blur_sigma;
   UNIFORM_ALIGN(4) float exposure;
