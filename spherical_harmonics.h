@@ -25,6 +25,20 @@ namespace framework {
     template <typename... Ts>
     sh(Ts && ... ts) : array { ts... } {}
 
+    const T & operator() (int l, int m) const {
+      return data()[l*l+l+m];
+      // 0,0  = 0
+      // 1,-1 = 1
+      // 1,0  = 2
+      // 1,1  = 3
+      // 2,-2 = 4
+      // ...
+    }
+
+    T & operator() (int l, int m) {
+      return data()[l*l+l+m];
+    }
+
     template <typename F>
     inline auto map(F f) -> sh<decltype(f(data()[0])), N> const {
       sh<decltype(f(data()[0])), N> result{};
@@ -100,7 +114,7 @@ namespace framework {
       return result;
     }
 
-    sh convolved_with_cos_kernel() {
+    sh convolved_with_cos_kernel() const {
       // Constants
       static const float cosA0 = M_PI;
       static const float cosA1 = (2.0f  * M_PI) / 3.0f;
@@ -114,6 +128,16 @@ namespace framework {
       return result;
     }
 
+    bool is_azimuthally_invariant() const {
+      int i = 0, i2i = 0;
+      for (int j = 0;j < size();j++) {
+        if (j == i2i) // data() + j == &operator()(i,0), j is a triangular number
+          i2i += 2 * ++i; // next triangular number
+        else if (abs(data()[j]) > std::numeric_limits<T>::epsilon())
+          return false;
+      }
+      return true;
+    }
   };
   template <typename OStream, typename T, size_t N> inline OStream & operator<<(OStream & os, const sh<T, N> & s) {
     os << "sh {";
