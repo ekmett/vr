@@ -665,7 +665,7 @@ bool app::show_gui(bool * open) {
 }
 
 int SDL_main(int argc, char ** argv) {
-  logging::harness logs("vr", "al", "main", "post", "distortion", "rendermodel");
+  logging::harness logs("vr", "al", "app", "main", "post", "distortion", "rendermodel","vao");
   SetProcessDPIAware(); // lest SDL2 lie and always tell us that DPI = 96
   cds_main_thread_attachment<> main_thread; // Allow use of concurrent data structures in the main threads
   log("main")->info("pid: {}", GetCurrentProcessId());
