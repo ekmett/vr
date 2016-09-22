@@ -1,9 +1,9 @@
 #ifndef INCLUDED_SUCCINCT_GLSL
 #define INCLUDED_SUCCINCT_GLSL
 
-// --------------------------------------
-// (pseudo)-succinct indexed dictionaries
-// --------------------------------------
+// ----------------------------
+// compact indexed dictionaries
+// ----------------------------
 
 // [Space-Efficient, High-Performance Rank & Select Structures on Uncompressed Bit Sequences](https://www.cs.cmu.edu/~dga/papers/zhou-sea2013.pdf)
 // by Zhou, Andersen, and Kaminsky, but modified to use texture loads, and remove L0.
@@ -18,6 +18,15 @@ struct poppy {
   int n_bits;
 };
 
+// access the ith bit in a packed bit vector
+bool access(layout(rgba32ui) readonly uimage1D raw, uint i) {
+  return (imageLoad(raw, int(i >> 7))[int(i >> 5) & 3] & (1 << int(i & 31))) != 0;
+}
+
+// access the ith bit in a poppy array
+bool access(poppy p, uint i) {
+  return access(p.raw, i);
+}
 
 // O(1) compute the non-inclusive prefix sum of the number of 1 bits in a poppy compact indexed dictionary.
 uint rank1(poppy p, uint i) {
@@ -51,14 +60,5 @@ uint rank0(poppy p, uint i) {
   return i - rank1(p, i);
 }
 
-// access the ith bit in a packed bit vector
-bool access(layout(rgba32ui) readonly uimage1D raw, uint i) {
-  return (imageLoad(raw, int(i >> 7))[int(i >> 5) & 3] & (1 << int(i & 31))) != 0;
-}
-
-// access the ith bit in a poppy array
-bool access(poppy p, uint i) {
-  return access(p.raw, i);
-}
 
 #endif
