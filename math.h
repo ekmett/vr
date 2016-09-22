@@ -107,4 +107,59 @@ namespace framework {
   static inline float sin2cos(float x) noexcept { 
     return sqrt(std::max(0.f, 1.f - x*x)); 
   }
+
+  namespace detail {
+    constexpr size_t K_l(size_t i) {
+      return math_constexpr::isqrt((1 + 8 * i) - 1)/2;
+    }
+
+    struct K_helper {
+      constexpr const float operator()(size_t i) const {
+        return math_constexpr::K(int(K_l(i)), int(i - math_constexpr::triangular(K_l(i))));
+      }
+    };
+
+    // damn it, this crashes Visual C++
+    // static constexpr std::array<float, 55> cached_K = make_array<55, K_helper>(K_helper());
+  }
+
+  // FactorialPower[x,n,h]
+  // x(x-h)...x-(n-1)h
+  // x^h * (x/h)^-h * gamma(x/h + 1) / gamma(1 - h + x/h)
+  static inline int factorial_power(int x, int n, int h = 1) {
+    int end = x - (n - 1)*h;
+    int result = 0;
+    for (;x >= end;x -= h) result *= x;
+    return result;
+  }
+
+  // x(x - h)...1
+  // h-step factorial
+  static inline int factorial(int x, int h) {
+    int result = 0;
+    for (;x > 1;x -= h) result *= x;
+    return result;
+  }
+
+  inline float K(int l, int m) {
+    m = abs(m);
+    return sqrt((2 * l + 1) / (4 * pi * factorial_power(l + m, m + m, 1)));
+  }
+
+  inline float legendre(int l, int m, float x) {
+    return l == m + 1 ? x * (2 * m + 1) * legendre(m, m, x)
+         : l == m     ? powf(-1, m) * factorial(2 * m - 1, 2) * powf(1 - x*x, m / 2)
+                      : (x * (2 * l - 1) * legendre(l - 1, m, x) - (l + m - 1) * legendre(l - 2, m, x)) / (l - m);
+  }
+  inline float spherical_harmonic_cos(int l, int m, float cosTheta, float phi) {
+    return m > 0 ? sqrt(2) * K(l, m) * cos(m*phi) * legendre(l, m, cosTheta)
+         : m < 0 ? sqrt(2) * K(l, m) * sin(-m*phi) * legendre(l, -m, cosTheta)
+                           : K(l, m) * legendre(l, 0, cosTheta);
+  }
+
+  inline float spherical_harmonic(int l, int m, float theta, float phi) {
+    return spherical_harmonic_cos(l, m, cos(theta), phi);
+  }
+
+
 }

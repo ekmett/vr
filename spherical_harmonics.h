@@ -138,6 +138,15 @@ namespace framework {
       }
       return true;
     }
+
+    // it is much cheaper to evaluate these when the answer doesn't vary with phi.
+    T eval_azimuthally_invariant(tvec3<T> v) {
+      float cosTheta = v.z;
+      T result{};
+      for (int l = 0, l2l = 0;l2l < size();l2l += 2 * ++l)
+        result += data()[l2l] * K(l, 0) * legendre(l, 0, cosTheta);
+      return result;
+    }
   };
   template <typename OStream, typename T, size_t N> inline OStream & operator<<(OStream & os, const sh<T, N> & s) {
     os << "sh {";
@@ -329,71 +338,7 @@ namespace framework {
   // Constants
   static const h4 h4_identity{ std::sqrt(2.0f * 3.14159f), 0.0f, 0.0f, 0.0f };
 
-  // FactorialPower[x,n,h]
-  // x(x-h)...x-(n-1)h
-  // x^h * (x/h)^-h * gamma(x/h + 1) / gamma(1 - h + x/h)
-  static inline int factorial_power(int x, int n, int h = 1) {
-    int end = x - (n - 1)*h;
-    int result = 0;
-    for (;x >= end;x -= h) result *= x;
-    return result;
-  }
 
-
-  // x(x - h)...1
-  // h-step factorial
-  static inline int factorial(int x, int h) {
-    int result = 0;
-    for (;x > 1;x -= h) result *= x;
-    return result;
-  }
-
-  static inline float K(int l, int m) {
-    m = abs(m);
-    return sqrt((2 * l + 1) / (4 * float(M_PI) * factorial_power(l + m, m + m, 1)));
-  }
-
-  inline float legendre(int l, int m, float x) {
-    if (l == m + 1)
-      return x * (2 * m + 1) * legendre(m, m, x);
-    else if (l == m)
-      return float(pow(-1, m) * factorial(2 * m - 1, 2) * pow(1 - x*x, m / 2.0f));
-    else
-      return (x * (2 * l - 1) * legendre(l - 1, m, x) - (l + m - 1) * legendre(l - 2, m, x)) / (l - m);
-  }
-
-
-  namespace detail {
-    float constexpr sqrt_step(float x, float curr, float prev) {
-      return curr == prev ? curr : sqrt_step(x, 0.5f * (curr + x / curr), curr);
-    }
-    float constexpr sqrt_nr(float x) {
-      return x >= 0 && x < std::numeric_limits<double>::infinity() ? detail::sqrt_step(x, x, 0) : std::numeric_limits<float>::quiet_NaN();
-    }
-    int constexpr abs_const(int m) {
-      return m < 0 ? -m : m;
-    }
-    int constexpr factorial_power(int x, int n, int h = 1) {
-      return (n > 0) ? x * factorial_power(x - h, n - 1, h) : 1;
-    }
-    int constexpr factorial(int x, int h) {
-      return (x > 1) ? x * factorial(x - h, h) : 1;
-    }
-    float constexpr K(int l, int m) {
-      return sqrt_nr((2 * l + 1) / (4 * float(M_PI) * factorial_power(l + abs_const(m), abs_const(m) + abs_const(m), 1)));
-    }
-    float constexpr legendre(int l, int m, float x) {
-      return l == m + 1 ? x * (2 * m + 1) * legendre(m, m, x) :
-             l == m     ? float(pow(-1, m) * factorial(2 * m - 1, 2) * pow(1 - x*x, m / 2.0f)) :
-                          (x * (2 * l - 1) * legendre(l - 1, m, x) - (l + m - 1) * legendre(l - 2, m, x)) / (l - m);
-    }
-    float constexpr spherical_harmonic(int l, int m, float theta, float phi) {
-      return m > 0 ? sqrt_nr(2) * K(l, m) * cos(m*phi) * legendre(l, m, cos(theta))
-           : m < 0 ? sqrt_nr(2) * K(l, m) * sin(-m*phi) * legendre(l, -m, cos(theta))
-           : K(l, m) * legendre(l, 0, cos(theta));
-    }
-
-  }
 
 
 }

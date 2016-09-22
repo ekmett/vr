@@ -2,6 +2,7 @@
 
 #include "std.h"
 #include <limits>
+#include <utility> // integer_sequence
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -10,11 +11,11 @@ namespace framework {
   namespace math_constexpr {
 
     inline constexpr uint32_t triangular(uint32_t n) {
-      return n == 0 ? 0 : n * (n - 1);
+      return n*(n+1)/2;
     }
 
     inline constexpr uint64_t triangular(uint64_t n) {
-      return n == 0 ? 0 : n * (n - 1);
+      return n*(n+1)/2;
     }
 
     inline constexpr int abs(int m) {
@@ -34,7 +35,7 @@ namespace framework {
     }
 
     namespace detail {
-      static constexpr float epsilon = 0.00001f;
+      static constexpr float epsilon = 0.00001f; // largest legal FLT_EPSILON
 
       // Newton-Raphson
       inline constexpr float sqrt_step(float x, float curr, float prev) {
@@ -50,8 +51,23 @@ namespace framework {
       inline constexpr float sinh_step(float x) {
         return x < epsilon ? x : 3 * sinh_step(x / 3.f) + 4 * cube(sinh_step(x / 3.f));
       }
-    }
 
+      template <typename T> static inline constexpr T mid(T l, T h) {
+        return l + (h - l) / 2;
+      }
+
+      // assumes l <= h, p(h)
+      template <typename T, typename P> static inline constexpr T search(P p, T l, T h) {
+        return l == h       ? l
+             : p(mid(l, h)) ? search(p, l, mid(l, h))
+                            : search(p, mid(l, h) + 1, h);
+      }
+
+      struct isqrt_test {
+        const size_t n;
+        constexpr const bool operator()(size_t i) const noexcept { return (i+1)*(i+1) > n; }
+      };
+    }
 
     inline constexpr float pow(float base, int exponent) {
       return exponent <  0 ? 1.f / pow(base, -exponent) 
@@ -61,6 +77,10 @@ namespace framework {
 
     inline constexpr float sqrt(float x) {
       return x >= 0 && x < std::numeric_limits<float>::infinity() ? detail::sqrt_step(x, x, 0) : std::numeric_limits<float>::quiet_NaN();
+    }
+  
+    inline constexpr size_t isqrt(size_t n) {
+      return detail::search(detail::isqrt_test{ n }, size_t(0), n);
     }
 
     inline constexpr float sin(float x) {
@@ -105,7 +125,6 @@ namespace framework {
                         : (x * (2 * l - 1) * legendre(l - 1, m, x) - (l + m - 1) * legendre(l - 2, m, x)) / (l - m);
     }
     
-
     inline constexpr float spherical_harmonic(int l, int m, float theta, float phi) {
       return m > 0 ? sqrt(2) * K(l, m) * cos(m*phi) * legendre(l, m, cos(theta))
            : m < 0 ? sqrt(2) * K(l, m) * sin(-m*phi) * legendre(l, -m, cos(theta))
