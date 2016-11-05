@@ -80,7 +80,7 @@ namespace framework {
 
     int minimum_quality_level = 0;
     int maximum_quality_level = quality_level_count - 1;
-    int resolve_index = 0;
+    int resolve_index = 1;
 
     bool show_timing_window = true;
     bool show_quality_window = true;
@@ -101,7 +101,7 @@ namespace framework {
     stereo_render_fbo render_target[render_target_count];
     stereo_fbo resolve_target[2];
 
-    bool double_buffer = true;
+    bool double_buffer = false;
     GLsync sync[2];
   };
 }
